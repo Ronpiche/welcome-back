@@ -5,6 +5,6 @@ import { MsalProvider } from './msalProvider';
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, MsalProvider]
+  providers: [AuthService, MsalProvider],
 })
-export class AuthModule { }
+export class AuthModule {}

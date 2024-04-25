@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "../",
+    "paths": {
+      "@modules/*": ["src/modules/*"]
+    }
+  },
+  "exclude": ["../build", "../dist"],
+  "include": ["../src", "../test", "../jest.config.ts", "__mocks__/.ts"]
+}

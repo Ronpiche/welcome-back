@@ -18,9 +18,9 @@ describe('AuthService', () => {
           provide: JwtService,
           useValue: {
             sign: jest.fn(),
-            verify: jest.fn()
-          }
-        }
+            verify: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -36,8 +36,8 @@ describe('AuthService', () => {
         surname: 'Doe',
         mail: 'john.doe@example.com',
         jobTitle: 'Developer',
-        id: '12345'
-      }
+        id: '12345',
+      },
     };
     mockedAxios.get.mockImplementation(() => Promise.resolve(mockResponse));
     //jest.spyOn(service['axios'], 'get').mockResolvedValue(mockResponse);
@@ -61,7 +61,7 @@ describe('AuthService', () => {
       email: 'john.doe@example.com',
       exp: Math.floor(Date.now() / 1000) + 3600, // Token expires in an hour
       picture: 'https://example.com/picture.jpg',
-      sub: '12345'
+      sub: '12345',
     });
 
     // Mocking _generateTokenWithValidity method

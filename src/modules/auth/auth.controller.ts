@@ -6,9 +6,10 @@ import { Request, Response } from 'express';
 
 @Controller('authentication-api/api')
 export class AuthController {
-  constructor(private msalProvider: MsalProvider,
-    private authService: AuthService) {
-  }
+  constructor(
+    private msalProvider: MsalProvider,
+    private authService: AuthService,
+  ) {}
 
   @Get('login')
   @IsPublic()
@@ -16,7 +17,7 @@ export class AuthController {
     this.msalProvider.login({
       scopes: ['User.Read'],
       redirectUri: process.env.REDIRECT_URI,
-      successRedirect: 'https://hub.daveo.fr/'
+      successRedirect: 'https://hub.daveo.fr/',
     })(request, res, next);
   }
 
@@ -37,7 +38,5 @@ export class AuthController {
   @IsPublic()
   async test(@Res() res: Response) {
     res.json(process.env);
-    ;
   }
-
 }

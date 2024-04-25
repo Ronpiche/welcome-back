@@ -1,0 +1,74 @@
+{
+  "token": {
+    "authority": "https://localhost:3337.login/91a30855-a777-43a6-8fad-66854b9a4d1b/",
+    "uniqueId": "",
+    "tenantId": "",
+    "scopes": [
+      "http://localhost:3337/graph/.default",
+      "openid",
+      "profile",
+      "offline_access"
+    ],
+    "account": null,
+    "idToken": "",
+    "idTokenClaims": {},
+    "accessToken": "eyJ0eXAiOiJKV1QiLCJub25jZSI6Ik9HcWpFT2FESDU3Wmc2Yk9IejhNdHQwa29adnlYQ3U2QjVudmVQVFJRWTAiLCJhbGciOiJSUzI1NiIsIng1dCI6IlhSdmtvOFA3QTNVYVdTblU3Yk05blQwTWpoQSIsImtpZCI6IlhSdmtvOFA3QTNVYVdTblU3Yk05blQwTWpoQSJ9.eyJhdWQiOiJodHRwczovL2dyYXBoLm1pY3Jvc29mdC5jb20iLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC85MWEzMDg1NS1hNzc3LTQzYTYtOGZhZC02Njg1NGI5YTRkMWIvIiwiaWF0IjoxNzExNDU0MDg2LCJuYmYiOjE3MTE0NTQwODYsImV4cCI6MTcxMTQ1Nzk4NiwiYWlvIjoiRTJOZ1lEaWpkdGlMcHpqU2RLdXowTEtPODlQakFBPT0iLCJhcHBfZGlzcGxheW5hbWUiOiJJVC1EQVZFTy1XRUxDT01FLVByb2QiLCJhcHBpZCI6IjkxOWJmODFlLThhNmEtNDQ0Yy04MmFhLTU0MmUxNjU0OWE2MSIsImFwcGlkYWNyIjoiMSIsImlkcCI6Imh0dHBzOi8vc3RzLndpbmRvd3MubmV0LzkxYTMwODU1LWE3NzctNDNhNi04ZmFkLTY2ODU0YjlhNGQxYi8iLCJpZHR5cCI6ImFwcCIsIm9pZCI6IjE4MWViZTE5LTg4ZDQtNDlmNS04MDE0LTVjMWNmMTMxYTU0NyIsInJoIjoiMC5BU0VBVlFpamtYZW5wa09QcldhRlM1cE5Hd01BQUFBQUFBQUF3QUFBQUFBQUFBQWhBQUEuIiwicm9sZXMiOlsiVXNlci5SZWFkLkFsbCJdLCJzdWIiOiIxODFlYmUxOS04OGQ0LTQ5ZjUtODAxNC01YzFjZjEzMWE1NDciLCJ0ZW5hbnRfcmVnaW9uX3Njb3BlIjoiRVUiLCJ0aWQiOiI5MWEzMDg1NS1hNzc3LTQzYTYtOGZhZC02Njg1NGI5YTRkMWIiLCJ1dGkiOiJfVXh5WHYwbzZFMmY4MXZxVDcyTkFBIiwidmVyIjoiMS4wIiwid2lkcyI6WyIwOTk3YTFkMC0wZDFkLTRhY2ItYjQwOC1kNWNhNzMxMjFlOTAiXSwieG1zX3RjZHQiOjE1MDEwODQxNDMsInhtc190ZGJyIjoiRVUifQ.RPhqkoJjSvnWqnaYSGjubRIrJerzFgzY37VWRVXDn8i8h-JM2cM03TtSfKOrKWkuwD9jCqY7YU2CpNwThDbyLmdRmRXbi3hyw2LHNqQTT9lvSTMiKj3rqkPgVM4qDTkFc7BxdpcvpDhFz2Ae3y1Vub2lwUk9zhRYLArIp5f6N4qa5hmHkJj0xl6vfxLAFropF7jP1D1RnU7SSOWOnQBFf9lrjcux1mg6gaKlvgzu4WKfFYm_rjJQrPTTPNd2yl5VF2mGRf9KnG9XqZuTHu-A3qBLL1e8hfmdPICK8Bs-tM65mkhhcHb1rZf6DO9az9628F2fxK8bH1pVXaSc7hry5w",
+    "fromCache": false,
+    "expiresOn": "2024-03-26T10:56:41.000Z",
+    "correlationId": "53f9dc2e-4a04-4e7c-ac95-ba80791bdd06",
+    "extExpiresOn": "2024-03-26T11:56:40.000Z",
+    "familyId": "",
+    "tokenType": "Bearer",
+    "state": "",
+    "cloudGraphHostName": "",
+    "msGraphHost": "",
+    "code": null,
+    "fromNativeBroker": false
+  },
+  "users": {
+    "value": [
+      {
+        "id": "f21cb6de-8d8a-47b5-bf23-546abf502001",
+        "businessPhones": [],
+        "displayName": "John",
+        "givenName": "John",
+        "surname": "Doe",
+        "jobTitle": "Software Engineer",
+        "mail": "john.doe@daveo.fr",
+        "myString": "repellat perferendis consequatur aut",
+        "mobilePhone": null,
+        "officeLocation": "New York",
+        "preferredLanguage": "en",
+        "userPrincipalName": "john.doe@daveo.fr"
+      },
+      {
+        "id": "ca6d7d9f-abb1-47f0-8b88-2e4b8fbd9cc9",
+        "businessPhones": [],
+        "displayName": "Jane",
+        "givenName": "Jane",
+        "surname": "Smith",
+        "jobTitle": "Developer",
+        "mail": "jane.smith@daveo.fr",
+        "myString": "magnam sit natus doloribus est",
+        "mobilePhone": null,
+        "officeLocation": "San Francisco",
+        "preferredLanguage": null,
+        "userPrincipalName": "jane.smith@daveo.fr"
+      },
+      {
+        "id": "b1b8ae9f-6ef6-43ff-a488-99a5f9fc2e95",
+        "businessPhones": [],
+        "displayName": "David",
+        "givenName": "David",
+        "surname": "Brown",
+        "jobTitle": "HR Manager",
+        "mail": "david.brown@daveo.fr",
+        "myString": "temporibus explicabo cumque voluptas voluptatem",
+        "mobilePhone": "+1 (212) 555-1234",
+        "officeLocation": "Los Angeles",
+        "preferredLanguage": "fr",
+        "userPrincipalName": "david.brown@daveo.fr"
+      }
+    ]
+  }
+}
