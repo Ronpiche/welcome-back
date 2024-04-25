@@ -2,13 +2,18 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+import { JwtItem } from 'src/module/auth/jwt';
 
 @Injectable()
 export class AccessGuard implements CanActivate {
-  constructor(
+
+  private jwtItem: JwtItem;
+
+  constructor(private _jwt: JwtService,
     private readonly reflector: Reflector,
-    private readonly jwtService: JwtService,
-  ) {}
+    private readonly jwtService: JwtService,) {
+    this.jwtItem = new JwtItem(this._jwt);
+  }
 
   canActivate(context: ExecutionContext): boolean {
     const isPublic = this.reflector.get<boolean>(
@@ -30,7 +35,7 @@ export class AccessGuard implements CanActivate {
     }
 
     try {
-      const decoded = this.jwtService.verify(token);
+      const decoded = this.jwtItem._verifyToken(token);
       request['decodedToken'] = decoded; // Attach the decoded user object to the request
 
       return true;
