@@ -18,7 +18,7 @@ export class MsalProvider {
           console.log(message);
         },
         piiLoggingEnabled: false,
-        logLevel: 3,
+        logLevel: msal.LogLevel.Verbose,
       },
     },
   };
