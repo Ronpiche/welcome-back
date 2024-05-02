@@ -48,7 +48,7 @@ describe('Microsoft Service', () => {
     });
 
     it('should get users with @daveo.fr email', async () => {
-      const axiosResponse = { data: MOCK_RESPONSE.users };
+      const axiosResponse = { data: MOCK_RESPONSE.microsoft.users };
       jest.spyOn(axios, 'get').mockResolvedValueOnce(axiosResponse);
 
       const users = await microsoftService.getUsers();
@@ -67,7 +67,7 @@ describe('Microsoft Service', () => {
           lastName: 'Smith',
         },
         {
-          _id: 'b1b8ae9f-6ef6-43ff-a488-99a5f9fc2e95',
+          _id: 'fba5ff05-8188-4cfa-b7d3-8c5d86c83d2f',
           email: 'david.brown@daveo.fr',
           firstName: 'David',
           lastName: 'Brown',
@@ -78,7 +78,7 @@ describe('Microsoft Service', () => {
 
   describe('getUserById', () => {
     it('should get a user by id', async () => {
-      const axiosResponse = { data: MOCK_RESPONSE.users.value[0] };
+      const axiosResponse = { data: MOCK_RESPONSE.microsoft.users.value[0] };
       jest.spyOn(axios, 'get').mockResolvedValueOnce(axiosResponse);
 
       const user = await microsoftService.getUserById('f21cb6de-8d8a-47b5-bf23-546abf502001');
@@ -99,7 +99,7 @@ describe('Microsoft Service', () => {
 
   describe('getUserByEmail', () => {
     it('should get a user by email', async () => {
-      const axiosResponse = { data: { value: [MOCK_RESPONSE.users.value[0]] } };
+      const axiosResponse = { data: { value: [MOCK_RESPONSE.microsoft.users.value[0]] } };
       jest.spyOn(axios, 'get').mockResolvedValueOnce(axiosResponse);
 
       const user = await microsoftService.getUserByEmail('john.doe@daveo.fr');

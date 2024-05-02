@@ -25,49 +25,208 @@
     "code": null,
     "fromNativeBroker": false
   },
-  "users": {
-    "value": [
+  "microsoft": {
+    "users": {
+      "value": [
+        {
+          "id": "f21cb6de-8d8a-47b5-bf23-546abf502001",
+          "businessPhones": [],
+          "displayName": "John",
+          "givenName": "John",
+          "surname": "Doe",
+          "jobTitle": "Software Engineer",
+          "mail": "john.doe@daveo.fr",
+          "myString": "repellat perferendis consequatur aut",
+          "mobilePhone": null,
+          "officeLocation": "New York",
+          "preferredLanguage": "en",
+          "userPrincipalName": "john.doe@daveo.fr"
+        },
+        {
+          "id": "ca6d7d9f-abb1-47f0-8b88-2e4b8fbd9cc9",
+          "businessPhones": [],
+          "displayName": "Jane",
+          "givenName": "Jane",
+          "surname": "Smith",
+          "jobTitle": "Developer",
+          "mail": "jane.smith@daveo.fr",
+          "myString": "magnam sit natus doloribus est",
+          "mobilePhone": null,
+          "officeLocation": "San Francisco",
+          "preferredLanguage": null,
+          "userPrincipalName": "jane.smith@daveo.fr"
+        },
+        {
+          "id": "fba5ff05-8188-4cfa-b7d3-8c5d86c83d2f",
+          "businessPhones": [],
+          "displayName": "David",
+          "givenName": "David",
+          "surname": "Brown",
+          "jobTitle": "HR Manager",
+          "mail": "david.brown@daveo.fr",
+          "myString": "temporibus explicabo cumque voluptas voluptatem",
+          "mobilePhone": "+1 (212) 555-1234",
+          "officeLocation": "Los Angeles",
+          "preferredLanguage": "fr",
+          "userPrincipalName": "david.brown@daveo.fr"
+        }
+      ]
+    }
+  },
+  "authorization": {
+    "roles": [
       {
-        "id": "f21cb6de-8d8a-47b5-bf23-546abf502001",
-        "businessPhones": [],
-        "displayName": "John",
-        "givenName": "John",
-        "surname": "Doe",
-        "jobTitle": "Software Engineer",
-        "mail": "john.doe@daveo.fr",
-        "myString": "repellat perferendis consequatur aut",
-        "mobilePhone": null,
-        "officeLocation": "New York",
-        "preferredLanguage": "en",
-        "userPrincipalName": "john.doe@daveo.fr"
+        "id": "2RQpaAtWn4qJMGbkUqhC",
+        "app": "hub",
+        "name": "TestRole_updated",
+        "rules": [
+          "welcome:visit",
+          "welcome:create",
+          "welcome:update",
+          "welcome:delete",
+          "welcome:visitUser",
+          "authorization:visit"
+        ]
       },
       {
-        "id": "ca6d7d9f-abb1-47f0-8b88-2e4b8fbd9cc9",
-        "businessPhones": [],
-        "displayName": "Jane",
-        "givenName": "Jane",
-        "surname": "Smith",
-        "jobTitle": "Developer",
-        "mail": "jane.smith@daveo.fr",
-        "myString": "magnam sit natus doloribus est",
-        "mobilePhone": null,
-        "officeLocation": "San Francisco",
-        "preferredLanguage": null,
-        "userPrincipalName": "jane.smith@daveo.fr"
+        "id": "5f073acc525d8a7ac8ebf377",
+        "app": "hub",
+        "createdAt": "2020-07-09 15:44:04.822",
+        "__v": "0.0",
+        "name": "Admin",
+        "rules": "['welcome:visit', 'welcome:create', 'welcome:update', 'welcome:delete', 'welcome:visitUser', 'authorization:visit', 'authorization:update', 'home:visit']",
+        "_id": "5f073acc525d8a7ac8ebf377",
+        "updatedAt": "2020-07-10 08:02:25.475"
       },
       {
-        "id": "b1b8ae9f-6ef6-43ff-a488-99a5f9fc2e95",
-        "businessPhones": [],
-        "displayName": "David",
-        "givenName": "David",
-        "surname": "Brown",
-        "jobTitle": "HR Manager",
-        "mail": "david.brown@daveo.fr",
-        "myString": "temporibus explicabo cumque voluptas voluptatem",
-        "mobilePhone": "+1 (212) 555-1234",
-        "officeLocation": "Los Angeles",
-        "preferredLanguage": "fr",
-        "userPrincipalName": "david.brown@daveo.fr"
+        "id": "5f0c85b70d779867c4473eb5",
+        "app": "hub",
+        "createdAt": "2020-07-13 16:03:03.700",
+        "__v": "0.0",
+        "name": "Collaborateur",
+        "rules": "[]",
+        "_id": "5f0c85b70d779867c4473eb5",
+        "updatedAt": "2020-07-13 16:03:03.700"
+      },
+      {
+        "id": "5f0c85feeb634e8a8cb8c3bd",
+        "app": "hub",
+        "createdAt": "2020-07-13 16:04:14.731",
+        "__v": "0.0",
+        "name": "Talent Manager",
+        "rules": "['welcome:visit', 'welcome:create', 'welcome:update', 'welcome:delete', 'welcome:visitUser', 'home:visit']",
+        "_id": "5f0c85feeb634e8a8cb8c3bd",
+        "updatedAt": "2020-07-13 16:04:14.731"
+      },
+      {
+        "id": "5f1044d12f62bd2ce845b5a9",
+        "app": "hub",
+        "createdAt": "2020-07-16 12:15:13.991",
+        "__v": "0.0",
+        "name": "Business Manager",
+        "rules": "['home:visit', 'welcome:visit', 'welcome:visitUser']",
+        "_id": "5f1044d12f62bd2ce845b5a9",
+        "updatedAt": "2020-07-16 12:15:13.991"
+      },
+      {
+        "id": "5f3b95365bff205cf0053562",
+        "app": "hub",
+        "createdAt": "",
+        "__v": "",
+        "name": "Directeur Agence",
+        "rules": "['welcome:visit', 'welcome:create', 'welcome:update', 'welcome:delete', 'welcome:visitUser', 'home:visit']",
+        "_id": "5f3b95365bff205cf0053562",
+        "updatedAt": ""
+      },
+      {
+        "id": "5f3b95365bff205cf0053563",
+        "app": "hub",
+        "createdAt": "",
+        "__v": "",
+        "name": "Leader Communauté",
+        "rules": "['welcome:visit', 'welcome:visitUser', 'home:visit']",
+        "_id": "5f3b95365bff205cf0053563",
+        "updatedAt": "2021-01-20 15:12:16.492"
+      },
+      {
+        "id": "60083f71fc72d61429ac106c",
+        "app": "hub",
+        "createdAt": "2021-01-20 14:34:25.707",
+        "__v": "0.0",
+        "name": "Consultant",
+        "rules": "[]",
+        "_id": "60083f71fc72d61429ac106c",
+        "updatedAt": "2021-01-20 14:34:25.707"
+      },
+      {
+        "id": "60084871fc72d6a11cac106d",
+        "app": "hub",
+        "createdAt": "2021-01-20 15:12:49.842",
+        "__v": "0.0",
+        "name": "Finances et Opérations",
+        "rules": "['welcome:visitUser', 'home:visit']",
+        "_id": "60084871fc72d6a11cac106d",
+        "updatedAt": "2022-01-25 16:49:19.184"
+      },
+      {
+        "id": "HeKL0aAaUZiqUjHum3XN",
+        "app": "hub",
+        "name": "TestRole3",
+        "rules": [
+          "welcome:visit",
+          "welcome:create",
+          "welcome:update",
+          "welcome:delete",
+          "welcome:visitUser",
+          "authorization:visit",
+          "authorization:update",
+          "home:visit"
+        ]
+      },
+      {
+        "id": "Ox4gfCcEHHGDlgF7EmHc",
+        "app": "hub",
+        "name": "TestRole2",
+        "rules": [
+          "welcome:visit",
+          "welcome:create",
+          "welcome:update",
+          "welcome:delete",
+          "welcome:visitUser",
+          "authorization:visit",
+          "authorization:update",
+          "home:visit"
+        ]
+      },
+      {
+        "id": "rIv3NLQDZPd4k8O7iiDV",
+        "app": "hub",
+        "name": "TestRole5",
+        "rules": [
+          "welcome:visit",
+          "welcome:create",
+          "welcome:update",
+          "welcome:delete",
+          "welcome:visitUser",
+          "authorization:visit",
+          "authorization:update",
+          "home:visit"
+        ]
+      },
+      {
+        "id": "tsonxTGchhEkp7rXA4qa",
+        "app": "hub",
+        "name": "TestRole",
+        "rules": [
+          "welcome:visit",
+          "welcome:create",
+          "welcome:update",
+          "welcome:delete",
+          "welcome:visitUser",
+          "authorization:visit",
+          "authorization:update",
+          "home:visit"
+        ]
       }
     ]
   }

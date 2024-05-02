@@ -42,14 +42,7 @@ export class MicrosoftService {
         scopes: [`${process.env.GRAPH_API_ENDPOINT}/.default`],
       };
 
-      let accessToken = '';
-
-      // avoid calling microsoft in development mode
-      if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
-        accessToken = MOCK_RESPONSE.token.accessToken;
-      } else {
-        accessToken = (await this.msalInstance.acquireTokenByClientCredential(clientCredentialRequest)).accessToken;
-      }
+      const { accessToken } = await this.msalInstance.acquireTokenByClientCredential(clientCredentialRequest);
 
       this.axiosConfig = {
         headers: {
@@ -130,10 +123,10 @@ export class MicrosoftService {
 
       throw new HttpException('User not found in Daveo directory', HttpStatus.NOT_FOUND);
     } catch (error) {
+      this.logger.error(error);
       if (error.response && error.response.status === HttpStatus.NOT_FOUND) {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
-      this.logger.error(error);
       throw new Error('Failed to retrieve user');
     }
   }

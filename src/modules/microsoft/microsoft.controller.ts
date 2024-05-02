@@ -17,8 +17,8 @@ export class MicrosoftController {
   @ApiOperation({ summary: 'Get all users', description: 'Returns a list of all Microsoft users.' })
   @ApiQuery({
     name: 'email',
-    description: 'Optional user email address',
-    required: true,
+    description: 'Optional user address email',
+    required: false,
     example: 'john.doe@daveo.fr',
   })
   @ApiOkResponse({

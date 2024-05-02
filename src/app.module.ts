@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
+import { FirestoreModule } from './modules/shared/firestore/firestore.module';
+import { AuthorizationModule } from './modules/authorization/authorization.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AccessGuard } from './middleware/AuthGuard';
 import { MicrosoftModule } from '@modules/microsoft/microsoft.module';
@@ -11,13 +13,17 @@ import { MicrosoftModule } from '@modules/microsoft/microsoft.module';
     ConfigModule.forRoot({ isGlobal: true }),
     JwtModule.register({
       global: true,
-      privateKey: { key: process.env.PV_KEY, passphrase: process.env.PF_KEY },
+      privateKey: {
+        key: process.env.PV_KEY,
+        passphrase: process.env.PF_KEY,
+      },
       signOptions: { expiresIn: '2h' },
       publicKey: process.env.PB_KEY,
     }),
     AuthModule,
-    ConfigModule,
     MicrosoftModule,
+    FirestoreModule,
+    AuthorizationModule,
   ],
   providers: [
     {

@@ -1,16 +1,24 @@
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { Logger, UnprocessableEntityException, ValidationPipe } from '@nestjs/common';
+import cookieParser from 'cookie-parser';
 import { ValidationError } from 'class-validator';
 import mockedServer from '../mocks/mockServiceWorker';
 import { AppModule } from './app.module';
-import cookieParser from 'cookie-parser';
 
 const DEFAULT_HTTP_PORT = 3337;
 
 async function bootstrap() {
   const logger = new Logger('hub-back');
   const app = await NestFactory.create(AppModule);
+
+  app.setGlobalPrefix('api');
+
+  app.use(cookieParser());
+  app.enableCors({
+    origin: process.env.HUB_FRONT_URL,
+    credentials: true,
+  });
 
   //Swagger
   const config = new DocumentBuilder()
@@ -27,14 +35,6 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
-
-  app.use(cookieParser());
-  app.enableCors({
-    origin: process.env.HUB_FRONT_URL,
-    credentials: true,
-  });
-
-  app.setGlobalPrefix('api');
 
   // Validation Pipes
   app.useGlobalPipes(
@@ -53,6 +53,7 @@ async function bootstrap() {
   }
 
   await app.listen(process.env.PORT || DEFAULT_HTTP_PORT);
+
   logger.log(`Application running on port ${process.env.PORT || DEFAULT_HTTP_PORT}`);
 }
 
