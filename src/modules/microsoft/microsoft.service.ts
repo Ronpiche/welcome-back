@@ -9,7 +9,6 @@ import { formatUser, isDaveoUser } from './microsoft.utils';
 @Injectable()
 export class MicrosoftService {
   private readonly msalInstance: ConfidentialClientApplication;
-  private axiosConfig: AxiosRequestConfig;
 
   constructor(
     private readonly logger: Logger,
@@ -31,8 +30,6 @@ export class MicrosoftService {
         },
       },
     });
-
-    this.setupAxiosConfig();
   }
 
   private async setupAxiosConfig() {
@@ -43,7 +40,7 @@ export class MicrosoftService {
 
       const { accessToken } = await this.msalInstance.acquireTokenByClientCredential(clientCredentialRequest);
 
-      this.axiosConfig = {
+      return {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           ConsistencyLevel: 'eventual',
@@ -72,7 +69,8 @@ export class MicrosoftService {
         return cachedUsers as MsUser[];
       }
 
-      const response = await axios.get(url, this.axiosConfig);
+      const axiosConfig: AxiosRequestConfig = await this.setupAxiosConfig();
+      const response = await axios.get(url, axiosConfig);
       const users: MsUser[] = (response.data.value as MicrosoftUserDto[]).filter(isDaveoUser).map(formatUser);
 
       result = result.concat(users);
@@ -110,7 +108,8 @@ export class MicrosoftService {
         return cachedUser as MsUser;
       }
 
-      const response = await axios.get(`${process.env.GRAPH_USERS_ENDPOINT}/${id}`, this.axiosConfig);
+      const axiosConfig: AxiosRequestConfig = await this.setupAxiosConfig();
+      const response = await axios.get(`${process.env.GRAPH_USERS_ENDPOINT}/${id}`, axiosConfig);
       const user: MicrosoftUserDto = response.data;
 
       if (user.mail && user.mail.endsWith('@daveo.fr')) {
@@ -137,10 +136,8 @@ export class MicrosoftService {
         return cachedUserByEmail as MsUser;
       }
 
-      const response = await axios.get(
-        `${process.env.GRAPH_USERS_ENDPOINT}?$filter=mail eq '${email}'`,
-        this.axiosConfig,
-      );
+      const axiosConfig: AxiosRequestConfig = await this.setupAxiosConfig();
+      const response = await axios.get(`${process.env.GRAPH_USERS_ENDPOINT}?$filter=mail eq '${email}'`, axiosConfig);
 
       const user: MicrosoftUserDto = response.data.value[0];
       if (user) {
