@@ -43,14 +43,14 @@ async function bootstrap() {
       disableErrorMessages: false,
       validationError: { target: false, value: true },
       whitelist: true,
-      exceptionFactory: (errors: ValidationError[]) => new UnprocessableEntityException(errors),
+      //exceptionFactory: (errors: ValidationError[]) => new UnprocessableEntityException(errors),
     }),
   );
 
   // Start the mock server in development mode
-  if (process.env.NODE_ENV === 'development') {
-    mockedServer.listen();
-  }
+  // if (process.env.NODE_ENV === 'development') {
+  //   mockedServer.listen();
+  // }
 
   await app.listen(process.env.PORT || DEFAULT_HTTP_PORT);
 

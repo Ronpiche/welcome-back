@@ -2,7 +2,6 @@ import axios, { AxiosRequestConfig } from 'axios';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { AuthError, ClientCredentialRequest, ConfidentialClientApplication, LogLevel } from '@azure/msal-node';
 import { CacheService } from '@modules/shared/cache/cache.service';
-import MOCK_RESPONSE from '@mocks/data.json';
 import { MicrosoftUserDto } from './dto/microsoft.dto';
 import { MsUser } from './types/microsoft.types';
 import { formatUser, isDaveoUser } from './microsoft.utils';

@@ -1,12 +1,13 @@
 // firestore.module.ts
 
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { FirestoreService } from './firestore.service';
 import { Firestore } from '@google-cloud/firestore';
 
 @Module({
   providers: [
     FirestoreService,
+    Logger,
     {
       provide: Firestore,
       useFactory: () => {

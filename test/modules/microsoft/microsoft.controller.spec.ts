@@ -3,16 +3,10 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { MicrosoftController } from '@modules/microsoft/microsoft.controller';
 import { MicrosoftService } from '@modules/microsoft/microsoft.service';
+import { mockMicrosoftService } from '../../__mocks__/firestore.service';
 
 describe('MicrosoftController', () => {
   let app: INestApplication;
-
-  // Mock MicrosoftService
-  const mockMicrosoftService = {
-    getUsers: jest.fn(),
-    getUserByEmail: jest.fn(),
-    getUserById: jest.fn(),
-  };
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({

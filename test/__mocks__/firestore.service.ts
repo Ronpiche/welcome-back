@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Filter } from '@google-cloud/firestore';
 import { RoleDto } from '@modules/authorization/dto/authorization.dto';
-import { HttpException, HttpStatus } from '@nestjs/common';
 
 export class FirestoreServiceMock {
   getAllDocuments = jest.fn(async (collection: string, filter?: Filter) => {
@@ -28,3 +27,9 @@ export class FirestoreServiceMock {
     return;
   });
 }
+
+export const mockMicrosoftService = {
+  getUsers: jest.fn(),
+  getUserByEmail: jest.fn(),
+  getUserById: jest.fn(),
+};

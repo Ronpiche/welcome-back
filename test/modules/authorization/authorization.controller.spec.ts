@@ -3,16 +3,41 @@ import { Test } from '@nestjs/testing';
 import { FirestoreService } from '@modules/shared/firestore/firestore.service';
 import { INestApplication, Logger, UnprocessableEntityException, ValidationPipe } from '@nestjs/common';
 import { ValidationError } from 'class-validator';
-import { FirestoreServiceMock } from '../../__mocks__/firestore.service';
+import { FirestoreServiceMock, mockMicrosoftService } from '../../__mocks__/firestore.service';
 import { AuthorizationController } from '@modules/authorization/authorization.controller';
 import { MicrosoftService } from '@modules/microsoft/microsoft.service';
+import { ConfigModule } from '@nestjs/config';
+import { CacheService } from '@modules/shared/cache/cache.service';
 
 describe('AuthorizationController', () => {
-  const mockMicrosoftService = {
-    getUsers: jest.fn(),
-    getUserByEmail: jest.fn(),
-    getUserById: jest.fn(),
+  let microsoftService: MicrosoftService;
+
+  const loggerService = {
+    log: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+    verbose: jest.fn(),
+    fatal: jest.fn(),
+    locaInstance: jest.fn(() => ''),
   };
+
+  beforeEach(async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        MicrosoftService,
+        CacheService,
+        {
+          provide: Logger,
+          useValue: loggerService,
+        },
+      ],
+      imports: [ConfigModule.forRoot()],
+    }).compile();
+
+    microsoftService = moduleRef.get<MicrosoftService>(MicrosoftService);
+  });
 
   let authorizationController: AuthorizationController;
   let authorizationService: AuthorizationService;

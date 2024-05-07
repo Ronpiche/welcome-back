@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
-import { AuthModule } from './modules/auth/auth.module';
+import { AuthModule } from '@modules/auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
-import { FirestoreModule } from './modules/shared/firestore/firestore.module';
-import { AuthorizationModule } from './modules/authorization/authorization.module';
+import { FirestoreModule } from '@modules/shared/firestore/firestore.module';
+import { AuthorizationModule } from '@modules/authorization/authorization.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AccessGuard } from './middleware/AuthGuard';
 import { MicrosoftModule } from '@modules/microsoft/microsoft.module';
+import { WelcomeModule } from '@modules/welcome/welcome.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { MicrosoftModule } from '@modules/microsoft/microsoft.module';
     MicrosoftModule,
     FirestoreModule,
     AuthorizationModule,
+    WelcomeModule,
   ],
   providers: [
     {

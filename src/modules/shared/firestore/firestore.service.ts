@@ -1,11 +1,14 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { Filter, Firestore, Query } from '@google-cloud/firestore';
 import { RoleDto } from '@/modules/authorization/dto/authorization.dto';
 import { FirestoreDocumentType, FirestoreErrorCode } from '../types/Firestore.types';
 
 @Injectable()
 export class FirestoreService {
-  constructor(private readonly firestore: Firestore) {}
+  constructor(
+    private readonly firestore: Firestore,
+    private readonly logger: Logger,
+  ) {}
 
   private applyFilters(query: FirebaseFirestore.Query, filter: Filter): FirebaseFirestore.Query {
     let filteredQuery = query;
@@ -56,6 +59,7 @@ export class FirestoreService {
       if (error.code === FirestoreErrorCode.ALREADY_EXISTS) {
         throw new HttpException('Document already exists.', HttpStatus.CONFLICT);
       }
+      this.logger.error(error);
       throw error;
     }
   }
@@ -89,7 +93,7 @@ export class FirestoreService {
 
       await batch.commit();
     } catch (error) {
-      console.error('Error updating Firestore data:', error);
+      this.logger.error(error);
       throw error;
     }
   }
