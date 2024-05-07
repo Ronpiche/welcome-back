@@ -23,7 +23,7 @@ import { AccessGuard } from '@/middleware/AuthGuard';
 export class WelcomeController {
   constructor(private readonly welcomeService: WelcomeService) {}
 
-  @Post()
+  @Post('users')
   @IsPublic()
   @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(AccessGuard)
