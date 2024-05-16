@@ -1,11 +1,12 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { CreateUserDto } from './dto/input/create-user.dto';
-import { UpdateUserDto } from './dto/input/update-user.dto';
-import { FirestoreService } from '../shared/firestore/firestore.service';
-import { FIRESTORE_COLLECTIONS } from '../shared/firestore/constants';
+import { CreateUserDto } from '@modules/welcome/dto/input/create-user.dto';
+import { UpdateUserDto } from '@modules/welcome/dto/input/update-user.dto';
+import { FirestoreService } from '@modules/shared/firestore/firestore.service';
+import { FIRESTORE_COLLECTIONS } from '@modules/shared/firestore/constants';
 import dayjs from 'dayjs';
-import { calculateEmailDate } from './welcome.utils';
-import { NUMBER_OF_STEPS } from './constants';
+import { calculateEmailDate } from '@modules/welcome/welcome.utils';
+import { NUMBER_OF_STEPS } from '@modules/welcome/constants';
+import { WelcomeUser } from './entities/user.entity';
 
 @Injectable()
 export class WelcomeService {
@@ -52,7 +53,19 @@ export class WelcomeService {
     }
   }
 
-  async findAll(): Promise<any> {}
+  async findAll(filter: any): Promise<WelcomeUser[]> {
+    try {
+      this.logger.log('[FindAllUsers] - find all users with filter : ', filter);
+      return await this.firestoreService.getAllDocuments(FIRESTORE_COLLECTIONS.welcomeUsers,filter) as Array<WelcomeUser>;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        this.logger.error(error);
+        throw error;
+      } else {
+        throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+    }
+  }
 
   findOne(_id) {
     throw new Error('No implemented yet');

@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import Holidays from 'date-holidays';
 import dayjs from 'dayjs';
-import { NUMBER_OF_STEPS } from './constants';
+import { NUMBER_OF_STEPS } from '@modules/welcome/constants';
 
 /**
  * Parcourt un tableau de dates et décale toutes les dates qui sont un samedi, un dimanche ou un jour férié

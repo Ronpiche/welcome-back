@@ -13,7 +13,17 @@ export class FirestoreService {
   private applyFilters(query: FirebaseFirestore.Query, filter: Filter): FirebaseFirestore.Query {
     let filteredQuery = query;
     Object.entries(filter).forEach(([field, value]) => {
-      filteredQuery = filteredQuery.where(field, '==', value);
+      if (field === 'arrivalDate'){
+        Object.entries(value).forEach(([index,val]) => {
+          if(index === '$gte'){
+            filteredQuery = filteredQuery.where(field, '>=', val);
+          } else if(index  === '$lte'){
+            filteredQuery = filteredQuery.where(field, '<=', val);
+          }
+        })
+      } else {
+        filteredQuery = filteredQuery.where(field, '==', value);
+      }
     });
 
     return filteredQuery;

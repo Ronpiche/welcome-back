@@ -1,3 +1,4 @@
+import { WelcomeUser } from '@/modules/welcome/entities/user.entity';
 import { CreateUpdateRoleDto } from '@/modules/authorization/dto/create-role.dto';
 import { UserDto } from '@modules/authorization/dto/authorization.dto';
 
@@ -22,7 +23,7 @@ export enum UserRoles {
   FinancesEtOpérations = 'Finances et Opérations',
 }
 
-export type FirestoreDocumentType = CreateUpdateRoleDto | UserDto;
+export type FirestoreDocumentType = CreateUpdateRoleDto | UserDto | WelcomeUser;
 
 export enum FirestoreErrorCode {
   OK = 0,

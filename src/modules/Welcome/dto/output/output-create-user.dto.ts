@@ -1,26 +1,74 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Expose } from 'class-transformer';
 
 export class OutputCreateUserDto {
   @ApiProperty()
+  @Expose()
   _id: string;
   @ApiProperty()
-  firstname: string;
+  @Expose()
+  appGames: object;
   @ApiProperty()
-  lastname: string;
+  @Expose()
+  note: string;
   @ApiProperty()
-  email: string;
+  @Expose()
+  signupDate: string;
   @ApiProperty()
-  arrivalDate: number;
+  @Expose()
+  lastName: string;
   @ApiProperty()
-  accessExpirationDate: number;
+  @Expose()
+  finishedOnBoarding: boolean;
   @ApiProperty()
-  nextEmailDate: number;
+  @Expose()
+  civility: string;
   @ApiProperty()
-  currentSection: number;
+  @Expose()
+  stepEmailSent: Array<boolean>;
   @ApiProperty()
-  scorePresentationGame: number;
+  @Expose()
+  agency: string;
   @ApiProperty()
-  scoreCommunitiesGame: number;
+  @Expose()
+  personnalProject: string;
   @ApiProperty()
-  hiringProcessEvaluation: boolean;
+  @Expose()
+  hiringProcessEvaluation: string;
+  @ApiProperty()
+  @Expose()
+  creationDate: string;
+  @ApiProperty()
+  @Expose()
+  referentRH: object;
+  @ApiProperty()
+  @Expose()
+  arrivalDate: string;
+  @ApiProperty()
+  @Expose()
+  currentStep: string;
+  @ApiProperty()
+  @Expose()
+  firstName: string;
+  @ApiProperty()
+  @Expose()
+  satisfactionQuestions: string;
+  @ApiProperty()
+  @Expose()
+  lastUpdate: string;
+  @ApiProperty()
+  @Expose()
+  finishedCurrentStep: boolean;
+  @ApiProperty()
+  @Expose()
+  communitiesQuestions: string;
+  @ApiProperty()
+  @Expose()
+  currentPage: string;
+  @ApiProperty()
+  @Expose()
+  emailDates: Array<Date>;
+  @ApiProperty()
+  @Expose()
+  maxStep: string;
 }
