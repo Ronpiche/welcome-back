@@ -10,7 +10,7 @@ import {
   UseGuards,
   Put,
   Query,
-  HttpCode
+  HttpCode,
 } from '@nestjs/common';
 import { WelcomeService } from '@modules/welcome/welcome.service';
 import { CreateUserDto } from '@modules/welcome/dto/input/create-user.dto';
@@ -44,15 +44,13 @@ export class WelcomeController {
   @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(AccessGuard)
   @HttpCode(200)
-  @ApiQuery({ name: 'arrivalDate[startDate]', type: String, required: false, example: "10/05/2024" })
-  @ApiQuery({ name: 'arrivalDate[endDate]', type: String, required: false, example: "14/05/2024" })
+  @ApiQuery({ name: 'arrivalDate[startDate]', type: String, required: false, example: '10/05/2024' })
+  @ApiQuery({ name: 'arrivalDate[endDate]', type: String, required: false, example: '14/05/2024' })
   @ApiOperation({ summary: 'Find all users', description: 'Returns all users.' })
   @ApiOkResponse({ description: 'OK', type: [OutputCreateUserDto] })
   async findAll(@Query('arrivalDate', FindAllUsersPipe) filter: any) {
-    let users: WelcomeUser[] = await this.welcomeService.findAll(filter);
-    return users.map((user) =>
-      plainToInstance(OutputCreateUserDto, user, { excludeExtraneousValues: true })
-    );
+    const users: WelcomeUser[] = await this.welcomeService.findAll(filter);
+    return users.map((user) => plainToInstance(OutputCreateUserDto, user, { excludeExtraneousValues: true }));
   }
 
   @Get('users/:id')

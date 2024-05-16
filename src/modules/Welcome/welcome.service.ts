@@ -20,6 +20,7 @@ export class WelcomeService {
       const now = dayjs().format();
 
       const dbUser = {
+        email: createUserDto.email,
         arrivalDate: createUserDto.arrivalDate,
         signupDate: createUserDto.signupDate,
         referentRH: createUserDto.referentRH.email,
@@ -39,9 +40,6 @@ export class WelcomeService {
 
       //TODO: send first email now updated by AK
       dbUser.emailDates[0] = now;
-
-      this.logger.log('[createUser] - saving user data to database: ', dbUser);
-
       return await this.firestoreService.saveDocument(FIRESTORE_COLLECTIONS.welcomeUsers, dbUser);
     } catch (error) {
       if (error instanceof HttpException) {
@@ -56,7 +54,10 @@ export class WelcomeService {
   async findAll(filter: any): Promise<WelcomeUser[]> {
     try {
       this.logger.log('[FindAllUsers] - find all users with filter : ', filter);
-      return await this.firestoreService.getAllDocuments(FIRESTORE_COLLECTIONS.welcomeUsers,filter) as Array<WelcomeUser>;
+      return (await this.firestoreService.getAllDocuments(
+        FIRESTORE_COLLECTIONS.welcomeUsers,
+        filter,
+      )) as Array<WelcomeUser>;
     } catch (error) {
       if (error instanceof HttpException) {
         this.logger.error(error);

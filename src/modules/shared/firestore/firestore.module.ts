@@ -3,7 +3,7 @@
 import { Logger, Module } from '@nestjs/common';
 import { FirestoreService } from './firestore.service';
 import { Firestore } from '@google-cloud/firestore';
-
+import { ServiceAccount } from '../types/Firestore.types';
 @Module({
   providers: [
     FirestoreService,
@@ -11,11 +11,18 @@ import { Firestore } from '@google-cloud/firestore';
     {
       provide: Firestore,
       useFactory: () => {
+        const base64EncodedServiceAccount = process.env.SERVICE_ACCOUNT_BASE64;
+        const decodedServiceAccount = Buffer.from(base64EncodedServiceAccount, 'base64').toString('utf-8');
+        const credentials: ServiceAccount = JSON.parse(decodedServiceAccount);
+
+        const { project_id, private_key, client_email } = credentials;
+
         return new Firestore({
-          projectId: process.env.PROJECT_ID,
+          projectId: project_id,
+          ssl: true,
           credentials: {
-            client_email: process.env.PROJECT_CLIENT_EMAIL,
-            private_key: process.env.PROJECT_PRIVATE_KEY.replace(/\\n/g, '\n'),
+            client_email,
+            private_key,
           },
         });
       },
