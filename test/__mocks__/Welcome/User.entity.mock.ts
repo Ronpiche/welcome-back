@@ -1,6 +1,5 @@
-import { WelcomeUserDto } from '@modules/welcome/dto/output/welcome-user.dto';
-import { WelcomeUser } from '@modules/welcome/entities/user.entity';
-
+import { WelcomeUserDto } from '../../../src/modules/welcome/dto/output/welcome-user.dto';
+import { WelcomeUser } from '../../../src/modules/welcome/entities/user.entity';
 export const welcomeUserEntityMock: WelcomeUser = {
   _id: '16156-585263',
   __v: '1',

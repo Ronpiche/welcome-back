@@ -31,6 +31,16 @@ export class CreateUserDto {
   email: string;
 
   @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  firstName: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  lastName: string;
+
+  @ApiProperty()
   @IsNotEmpty()
   arrivalDate: number;
 

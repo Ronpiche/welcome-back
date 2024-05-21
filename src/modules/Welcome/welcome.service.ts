@@ -8,6 +8,8 @@ import { calculateEmailDate } from '@modules/welcome/welcome.utils';
 import { NUMBER_OF_STEPS } from '@modules/welcome/constants';
 import { WelcomeUser } from './entities/user.entity';
 import { v4 as uuidv4 } from 'uuid';
+import { User } from './types/user.type';
+import { instanceToPlain } from 'class-transformer';
 
 @Injectable()
 export class WelcomeService {
@@ -20,12 +22,14 @@ export class WelcomeService {
     try {
       const now = dayjs().format();
 
-      const dbUser = {
+      const dbUser: User = {
         _id: uuidv4(),
+        firstName: createUserDto.firstName,
+        lastName: createUserDto.lastName,
         email: createUserDto.email,
-        arrivalDate: createUserDto.arrivalDate,
-        signupDate: createUserDto.signupDate,
-        referentRH: createUserDto.referentRH.email,
+        arrivalDate: new Date(createUserDto.arrivalDate).toISOString(),
+        signupDate: new Date(createUserDto.signupDate).toISOString(),
+        referentRH: instanceToPlain(createUserDto.referentRH),
         civility: createUserDto.civility,
         emailDates: calculateEmailDate(createUserDto.signupDate, createUserDto.arrivalDate),
         note: createUserDto.note ? createUserDto.note : '',
@@ -36,8 +40,12 @@ export class WelcomeService {
         stepEmailSent: new Array(NUMBER_OF_STEPS).fill(false),
         finishedCurrentStep: false,
         finishedOnBoarding: false,
-        createdAt: now,
-        updatedAt: now,
+        hiringProcessEvaluation: 0,
+        communitiesQuestions: {},
+        satisfactionQuestions: {},
+        personnalProject: '',
+        creationDate: now,
+        lastUpdate: now,
       };
 
       //TODO: send first email now updated by AK

@@ -1,0 +1,26 @@
+export type User = {
+  _id: string;
+  email: string;
+  lastName: string;
+  firstName: string;
+  finishedOnBoarding: boolean;
+  civility: string;
+  stepEmailSent: boolean[];
+  agency: string;
+  hiringProcessEvaluation: number;
+  referentRH: Record<string, any>;
+  signupDate: string;
+  arrivalDate: string;
+  currentStep: number;
+  currentPage: number;
+  personnalProject: string;
+  finishedCurrentStep: boolean;
+  satisfactionQuestions: Record<string, unknown>;
+  communitiesQuestions: Record<string, unknown>;
+  emailDates: string[];
+  maxStep: number;
+  creationDate: string;
+  lastUpdate: string;
+  appGames?: Record<string, unknown>;
+  note?: string;
+};
