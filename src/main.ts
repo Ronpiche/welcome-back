@@ -1,9 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { Logger, UnprocessableEntityException, ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
-import { ValidationError } from 'class-validator';
-import mockedServer from '../mocks/mockServiceWorker';
 import { AppModule } from './app.module';
 
 const DEFAULT_HTTP_PORT = 3337;

@@ -10,8 +10,6 @@ import { ConfigModule } from '@nestjs/config';
 import { CacheService } from '@modules/shared/cache/cache.service';
 
 describe('AuthorizationController', () => {
-  let microsoftService: MicrosoftService;
-
   const loggerService = {
     log: jest.fn(),
     error: jest.fn(),
@@ -24,7 +22,7 @@ describe('AuthorizationController', () => {
   };
 
   beforeEach(async () => {
-    const moduleRef = await Test.createTestingModule({
+    await Test.createTestingModule({
       providers: [
         MicrosoftService,
         CacheService,
@@ -35,12 +33,9 @@ describe('AuthorizationController', () => {
       ],
       imports: [ConfigModule.forRoot()],
     }).compile();
-
-    microsoftService = moduleRef.get<MicrosoftService>(MicrosoftService);
   });
 
   let authorizationController: AuthorizationController;
-  let authorizationService: AuthorizationService;
 
   let app: INestApplication;
 
@@ -77,7 +72,6 @@ describe('AuthorizationController', () => {
     app = moduleRef.createNestApplication();
 
     authorizationController = moduleRef.get<AuthorizationController>(AuthorizationController);
-    authorizationService = moduleRef.get<AuthorizationService>(AuthorizationService);
 
     app.useGlobalPipes(
       new ValidationPipe({

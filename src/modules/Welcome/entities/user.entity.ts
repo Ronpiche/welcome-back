@@ -1,4 +1,3 @@
-
 export class WelcomeUser {
   _id: string;
   __v: string;

@@ -15,7 +15,7 @@ import {
 import { WelcomeService } from '@modules/welcome/welcome.service';
 import { CreateUserDto } from '@modules/welcome/dto/input/create-user.dto';
 import { UpdateUserDto } from '@modules/welcome/dto/input/update-user.dto';
-import { OutputCreateUserDto } from '@modules/welcome/dto/output/output-create-user.dto';
+import { WelcomeUserDto } from '@modules/welcome/dto/output/welcome-user.dto';
 import { IsPublic } from '@/decorators/isPublic';
 import { ApiBody, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AccessGuard } from '@/middleware/AuthGuard';
@@ -34,7 +34,7 @@ export class WelcomeController {
   @UseGuards(AccessGuard)
   @ApiOperation({ summary: 'Create User', description: 'Returns new user.' })
   @ApiBody({ type: CreateUserDto })
-  @ApiOkResponse({ description: 'User created', type: OutputCreateUserDto })
+  @ApiOkResponse({ description: 'User created', type: WelcomeUserDto })
   create(@Body() createUserDto: CreateUserDto) {
     return this.welcomeService.createUser(createUserDto);
   }
@@ -47,27 +47,40 @@ export class WelcomeController {
   @ApiQuery({ name: 'arrivalDate[startDate]', type: String, required: false, example: '10/05/2024' })
   @ApiQuery({ name: 'arrivalDate[endDate]', type: String, required: false, example: '14/05/2024' })
   @ApiOperation({ summary: 'Find all users', description: 'Returns all users.' })
-  @ApiOkResponse({ description: 'OK', type: [OutputCreateUserDto] })
-  async findAll(@Query('arrivalDate', FindAllUsersPipe) filter: any) {
+  @ApiOkResponse({ description: 'OK', type: [WelcomeUserDto] })
+  async findAll(@Query('arrivalDate', FindAllUsersPipe) filter: any): Promise<WelcomeUserDto[]> {
     const users: WelcomeUser[] = await this.welcomeService.findAll(filter);
-    return users.map((user) => plainToInstance(OutputCreateUserDto, user, { excludeExtraneousValues: true }));
+    return users.map((user) => plainToInstance(WelcomeUserDto, user, { excludeExtraneousValues: true }));
   }
 
   @Get('users/:id')
   @IsPublic()
-  findOne(@Param('id') id: string) {
-    return this.welcomeService.findOne(id);
+  @UseInterceptors(ClassSerializerInterceptor)
+  @UseGuards(AccessGuard)
+  @HttpCode(200)
+  @ApiQuery({ name: 'id', type: String, required: false, example: '123e4567-e89b-12d3-a456-426614174000' })
+  @ApiOperation({ summary: 'Find one user', description: 'Returns one user' })
+  @ApiOkResponse({ description: 'OK', type: WelcomeUserDto })
+  async findOne(@Param('id') id: string): Promise<WelcomeUserDto> {
+    return plainToInstance(WelcomeUserDto, await this.welcomeService.findOne(id), { excludeExtraneousValues: true });
+  }
+
+  @IsPublic()
+  @Delete('users/:id')
+  @UseInterceptors(ClassSerializerInterceptor)
+  @UseGuards(AccessGuard)
+  @HttpCode(200)
+  @ApiQuery({ name: 'id', type: String, required: false, example: '123e4567-e89b-12d3-a456-426614174000' })
+  @ApiOperation({ summary: 'Remove one user', description: 'Remove user' })
+  @ApiOkResponse({ description: 'User deleted' })
+  async remove(@Param('id') id: string): Promise<string> {
+    await this.welcomeService.remove(id);
+    return 'User deleted';
   }
 
   @Put('users/:id')
   @IsPublic()
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.welcomeService.update(id, updateUserDto);
-  }
-
-  @IsPublic()
-  @Delete('users/:id')
-  remove(@Param('id') id: string) {
-    return this.welcomeService.remove(id);
   }
 }

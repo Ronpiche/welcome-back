@@ -8,7 +8,6 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('AuthService', () => {
   let service: AuthService;
-  let jwtService: JwtService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -25,7 +24,6 @@ describe('AuthService', () => {
     }).compile();
 
     service = module.get<AuthService>(AuthService);
-    jwtService = module.get<JwtService>(JwtService);
   });
 
   it('should generate session token', async () => {
