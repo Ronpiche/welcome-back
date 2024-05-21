@@ -20,7 +20,7 @@ jobs:
           create_credentials_file: true
           activate_credentials_file: true
           workload_identity_provider: github-pool
-          service_account: github-service-account
+          service_account: github-service-account@daveo-gcp-welcome-dev-6bb5.iam.gserviceaccount.com
           access_token_lifetime: '100s'
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v0.3.0
