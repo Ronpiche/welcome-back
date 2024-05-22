@@ -53,12 +53,9 @@ export class FirestoreService {
     }
   }
 
-  async saveDocument(
-    collection: string,
-    data: Record<string, unknown> | RoleDto,
-  ): Promise<{ id: string; status: string }> {
+  async saveDocument(collection: string, data: Record<string, any>): Promise<{ id: string; status: string }> {
     try {
-      const documentRef = this.firestore.collection(collection).doc();
+      const documentRef = this.firestore.collection(collection).doc(data._id);
 
       await documentRef.set(data, { merge: false });
 

@@ -2,7 +2,11 @@ import { WelcomeController } from '@modules/welcome/welcome.controller';
 import { WelcomeService } from '@modules/welcome/welcome.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { WelcomeServiceMock } from '../../__mocks__/welcome/welcome.service.mock';
-import { outputWelcomeMock } from '../../__mocks__/welcome/User.entity.mock';
+import {
+  outputWelcomeMock,
+  inputUpdateWelcomeMock,
+  outputUpdateWelcomeMock,
+} from '../../__mocks__/welcome/User.entity.mock';
 import { AccessGuard } from '../../../src/middleware/AuthGuard';
 import { FindAllUsersPipe } from '@modules/welcome/pipes/find-all-users.pipe';
 import { JwtService } from '@nestjs/jwt';
@@ -104,6 +108,16 @@ describe('Welcome controller', () => {
       const res = await controller.remove(documentId);
       expect(res).toBeDefined();
       expect(res).toEqual('User deleted');
+    });
+  });
+
+  describe('update', () => {
+    it('should update an user object', async () => {
+      const documentId = '789QSD123';
+      const res = await controller.update(documentId, inputUpdateWelcomeMock);
+      expect(res).toBeDefined();
+      expect(res).toEqual(outputUpdateWelcomeMock);
+      expect(res.lastName).toEqual(outputUpdateWelcomeMock.lastName);
     });
   });
 });

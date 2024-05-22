@@ -100,7 +100,19 @@ export class WelcomeService {
     }
   }
 
-  update(id: string, _updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<WelcomeUser> {
+    const userToUpdate: Record<string, any> = updateUserDto;
+    userToUpdate['lastUpdate'] = Date.now();
+    try {
+      await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.welcomeUsers, id, userToUpdate);
+    } catch (error) {
+      if (error instanceof HttpException) {
+        this.logger.error(error);
+        throw error;
+      } else {
+        throw new InternalServerErrorException('Internal Server Error');
+      }
+    }
+    return (await this.findOne(id)) as WelcomeUser;
   }
 }

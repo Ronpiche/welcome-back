@@ -80,7 +80,16 @@ export class WelcomeController {
 
   @Put('users/:id')
   @IsPublic()
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.welcomeService.update(id, updateUserDto);
+  @UseInterceptors(ClassSerializerInterceptor)
+  @UseGuards(AccessGuard)
+  @HttpCode(200)
+  @ApiQuery({ name: 'id', type: String, required: false, example: '123e4567-e89b-12d3-a456-426614174000' })
+  @ApiBody({ type: UpdateUserDto })
+  @ApiOperation({ summary: 'Update One User', description: 'Update user' })
+  @ApiOkResponse({ description: 'OK', type: WelcomeUserDto })
+  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto): Promise<WelcomeUserDto> {
+    return plainToInstance(WelcomeUserDto, await this.welcomeService.update(id, updateUserDto), {
+      excludeExtraneousValues: true,
+    });
   }
 }

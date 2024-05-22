@@ -3,7 +3,7 @@ import { WelcomeService } from '@modules/welcome/welcome.service';
 import { FirestoreService } from '../../../src/modules/shared/firestore/firestore.service';
 import { FirestoreServiceMock } from '../../__mocks__/firestore.service';
 import { HttpException, InternalServerErrorException, Logger } from '@nestjs/common';
-import { welcomeUserEntityMock } from '../../__mocks__/welcome/User.entity.mock';
+import { inputUpdateWelcomeMock, welcomeUserEntityMock } from '../../__mocks__/welcome/User.entity.mock';
 
 describe('UsersService', () => {
   let service: WelcomeService;
@@ -121,6 +121,44 @@ describe('UsersService', () => {
     service['firestoreService']['deleteDocument'] = jest.fn().mockRejectedValue(new Error('Internal Server Error'));
     try {
       await service.remove(documentId);
+    } catch (error) {
+      expect(error).toBeInstanceOf(InternalServerErrorException);
+      expect(error.message).toEqual('Internal Server Error');
+      expect(error.status).toEqual(500);
+    }
+  });
+
+  describe('update', () => {
+    it('should ypdated an user object', async () => {
+      const documentId = '789QSD123';
+      service['firestoreService']['updateDocument'] = jest.fn();
+      service['firestoreService']['getDocument'] = jest.fn().mockResolvedValue(welcomeUserEntityMock);
+      const res = await service.update(documentId, inputUpdateWelcomeMock);
+      expect(res).toEqual(welcomeUserEntityMock);
+    });
+  });
+
+  it('should throw an HttpException', async () => {
+    const documentId = '789QSD123';
+    service['firestoreService']['getDocument'] = jest.fn().mockResolvedValue(welcomeUserEntityMock);
+    service['firestoreService']['updateDocument'] = jest
+      .fn()
+      .mockRejectedValue(new HttpException('HttpExceptionError', 400));
+    try {
+      await service.update(documentId, inputUpdateWelcomeMock);
+    } catch (error) {
+      expect(error).toBeInstanceOf(HttpException);
+      expect(error.message).toEqual('HttpExceptionError');
+      expect(error.status).toEqual(400);
+    }
+  });
+
+  it('should throw an internalServerError', async () => {
+    const documentId = '789QSD123';
+    service['firestoreService']['getDocument'] = jest.fn().mockResolvedValue(welcomeUserEntityMock);
+    service['firestoreService']['updateDocument'] = jest.fn().mockRejectedValue(new Error('Internal Server Error'));
+    try {
+      await service.update(documentId, inputUpdateWelcomeMock);
     } catch (error) {
       expect(error).toBeInstanceOf(InternalServerErrorException);
       expect(error.message).toEqual('Internal Server Error');
