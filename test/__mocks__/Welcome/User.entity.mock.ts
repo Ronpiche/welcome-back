@@ -1,6 +1,7 @@
 import { CreateUserDto } from '@modules/welcome/dto/input/create-user.dto';
 import { WelcomeUserDto } from '../../../src/modules/welcome/dto/output/welcome-user.dto';
 import { WelcomeUser } from '../../../src/modules/welcome/entities/user.entity';
+
 export const welcomeUserEntityMock: WelcomeUser = {
   _id: '16156-585263',
   __v: '1',
@@ -107,6 +108,22 @@ export const inputUpdateWelcomeMock: CreateUserDto = {
   lastName: 'testtest',
   arrivalDate: 0,
   signupDate: 0,
+  referentRH: {
+    _id: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+  },
+  civility: 'M',
+  agency: 'Lille',
+};
+
+export const inputWelcomeMock: CreateUserDto = {
+  email: 'test-create@test.fr',
+  firstName: 'test-create',
+  lastName: 'testtest-create',
+  arrivalDate: 1717200000,
+  signupDate: 1715866214,
   referentRH: {
     _id: '',
     firstName: '',

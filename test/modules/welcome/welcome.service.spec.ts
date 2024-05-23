@@ -3,7 +3,12 @@ import { WelcomeService } from '@modules/welcome/welcome.service';
 import { FirestoreService } from '../../../src/modules/shared/firestore/firestore.service';
 import { FirestoreServiceMock } from '../../__mocks__/firestore.service';
 import { HttpException, InternalServerErrorException, Logger } from '@nestjs/common';
-import { inputUpdateWelcomeMock, welcomeUserEntityMock } from '../../__mocks__/welcome/User.entity.mock';
+import {
+  inputUpdateWelcomeMock,
+  inputWelcomeMock,
+  welcomeUserEntityMock,
+} from '../../__mocks__/welcome/User.entity.mock';
+import { verifyPublicHoliday } from '@modules/welcome/welcome.utils';
 
 describe('UsersService', () => {
   let service: WelcomeService;
@@ -32,6 +37,76 @@ describe('UsersService', () => {
     }).compile();
 
     service = module.get<WelcomeService>(WelcomeService);
+  });
+
+  describe('createUser', () => {
+    it('should create an user object and return an object', async () => {
+      service['firestoreService']['saveDocument'] = jest.fn().mockResolvedValue({ status: 'ok', id: '789QSD123' });
+      const create = await service.createUser(inputWelcomeMock);
+      expect(create).toBeDefined();
+      expect(create).toEqual({ status: 'ok', id: '789QSD123' });
+    });
+
+    it('should throw a httpException error', async () => {
+      service['firestoreService']['saveDocument'] = jest
+        .fn()
+        .mockRejectedValue(new HttpException('exception error', 400));
+      try {
+        await service.createUser(inputWelcomeMock);
+      } catch (error) {
+        expect(error).toBeInstanceOf(HttpException);
+        expect(error.message).toEqual('exception error');
+        expect(error.status).toEqual(400);
+      }
+    });
+
+    it('should throw a InternalServer error', async () => {
+      service['firestoreService']['saveDocument'] = jest.fn().mockRejectedValue(new Error('error'));
+      try {
+        await service.createUser(inputWelcomeMock);
+      } catch (error) {
+        expect(error).toBeInstanceOf(InternalServerErrorException);
+        expect(error.message).toEqual('Internal Server Error');
+        expect(error.status).toEqual(500);
+      }
+    });
+
+    it('should throw an error, because the arrivalDate is invalid', async () => {
+      inputWelcomeMock.arrivalDate = 100;
+      try {
+        await service.createUser(inputWelcomeMock);
+      } catch (error) {
+        expect(error).toBeInstanceOf(HttpException);
+        expect(error.message).toEqual('invalid end Date');
+        expect(error.status).toEqual(400);
+      }
+    });
+
+    describe('Testing holiday function', () => {
+      it('Should shift of one day the date, because is it a public holiday', async () => {
+        const datesArray = verifyPublicHoliday(['2024-05-08T08:14:08Z', '2024-09-05T08:14:08Z']);
+        expect(datesArray.includes('2024-05-09T08:14:08.000Z')).toBeTruthy();
+        expect(datesArray.includes('2024-09-05T08:14:08.000Z')).toBeTruthy();
+      });
+
+      it('Should shift of tuesday, because monday is a public holiday, and the date is a saturday', async () => {
+        const datesArray = verifyPublicHoliday(['2024-05-23T08:14:08Z', '2024-11-09T08:14:08Z']);
+        expect(datesArray.includes('2024-05-23T08:14:08.000Z')).toBeTruthy();
+        expect(datesArray.includes('2024-11-12T08:14:08.000Z')).toBeTruthy();
+      });
+
+      it('Should shift of Monday, because the date is a saturday', async () => {
+        const datesArray = verifyPublicHoliday(['2024-05-11T08:14:08Z', '2024-09-05T08:14:08Z']);
+        expect(datesArray.includes('2024-05-13T08:14:08.000Z')).toBeTruthy();
+        expect(datesArray.includes('2024-09-05T08:14:08.000Z')).toBeTruthy();
+      });
+
+      it('Should shift of Monday, because the date is a sunday', async () => {
+        const datesArray = verifyPublicHoliday(['2024-05-12T08:14:08Z', '2024-09-05T08:14:08Z']);
+        expect(datesArray.includes('2024-05-13T08:14:08.000Z')).toBeTruthy();
+        expect(datesArray.includes('2024-09-05T08:14:08.000Z')).toBeTruthy();
+      });
+    });
   });
 
   describe('findAll', () => {

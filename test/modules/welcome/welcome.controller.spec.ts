@@ -6,11 +6,13 @@ import {
   outputWelcomeMock,
   inputUpdateWelcomeMock,
   outputUpdateWelcomeMock,
+  inputWelcomeMock,
 } from '../../__mocks__/welcome/User.entity.mock';
 import { AccessGuard } from '../../../src/middleware/AuthGuard';
 import { FindAllUsersPipe } from '@modules/welcome/pipes/find-all-users.pipe';
 import { JwtService } from '@nestjs/jwt';
-import { BadRequestException, Logger } from '@nestjs/common';
+import { ArgumentsHost, BadRequestException, HttpException, Logger } from '@nestjs/common';
+import { CreateUserExceptionFilter } from '@modules/welcome/filters/create-user-filter';
 
 describe('Welcome controller', () => {
   let controller: WelcomeController;
@@ -40,11 +42,38 @@ describe('Welcome controller', () => {
     controller = module.get<WelcomeController>(WelcomeController);
   });
 
+  describe('create', () => {
+    it('should create an user, and return on object', async () => {
+      const data = await controller.create(inputWelcomeMock);
+      expect(data.status).toBeDefined();
+      expect(data.id).toBeDefined();
+      expect(data).toEqual({ status: 'ok', id: '789QSD123' });
+    });
+  });
+
   describe('findAll', () => {
     it('should return a array object with no filters', async () => {
       const users = await controller.findAll({});
       expect(users).toBeDefined();
       expect(users).toEqual([outputWelcomeMock]);
+    });
+
+    it('should testing the create-user filter', async () => {
+      const response = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      };
+      const argumentsHost = {
+        switchToHttp: jest.fn().mockReturnValue({
+          getResponse: jest.fn().mockReturnValue(response),
+        }),
+      };
+      const spyJson = jest.spyOn(response, 'json');
+      const spyStatus = jest.spyOn(response, 'status');
+      const filter = new CreateUserExceptionFilter();
+      filter.catch(new HttpException('error', 400), argumentsHost as unknown as ArgumentsHost);
+      expect(spyJson).toHaveBeenCalled();
+      expect(spyStatus).toHaveBeenCalled();
     });
 
     it('should return a array object with filters', async () => {

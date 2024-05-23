@@ -56,7 +56,7 @@ export class WelcomeService {
         this.logger.error(error);
         throw error;
       } else {
-        throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new InternalServerErrorException('Internal Server Error');
       }
     }
   }

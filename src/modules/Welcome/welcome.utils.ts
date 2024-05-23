@@ -13,26 +13,29 @@ export function verifyPublicHoliday(dateList: string[]): string[] {
   return dateList.map((date) => {
     const hd = new Holidays('FR');
 
-    const currentMoment = dayjs(date);
+    let currentMoment = dayjs(date);
     let holiday = hd.isHoliday(currentMoment.toDate());
     //si c'est un jour férié on décale la date à un jour plus tard
 
     if (holiday && holiday.find((element) => element.type === 'public')) {
-      currentMoment.add(1, 'days');
+      currentMoment = currentMoment.add(1, 'day');
     }
     //si le jour qui en résulte est un samedi ou un dimanche on décale au lundi
     if (currentMoment.day() === 6) {
-      currentMoment.day(7 + 1);
+      currentMoment = currentMoment.day(7 + 1);
     }
 
     if (currentMoment.day() === 0) {
-      currentMoment.day(1);
+      currentMoment = currentMoment.day(1);
     }
-    holiday = hd.isHoliday(currentMoment.toDate());
+
     //On vérifie le cas où le lundi serait férié
-    if (holiday && holiday.find((element) => element.type === 'public')) {
-      currentMoment.add(1, 'days');
+    holiday = hd.isHoliday(currentMoment.toDate());
+
+    if (holiday && holiday.find((element) => element.type === 'public') && currentMoment.day() === 1) {
+      currentMoment = currentMoment.add(1, 'day');
     }
+
     return currentMoment.toISOString();
   });
 }
