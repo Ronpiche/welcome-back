@@ -3,6 +3,7 @@ export type User = {
   email: string;
   lastName: string;
   firstName: string;
+  grade: string;
   finishedOnBoarding: boolean;
   civility: string;
   stepEmailSent: boolean[];
@@ -24,3 +25,10 @@ export type User = {
   appGames?: Record<string, unknown>;
   note?: string;
 };
+
+export enum GRADE {
+  PRACTIONNER = 'Practionner',
+  ASSOCIATE = 'Associate',
+  SPECIALIST = 'Specialist',
+  SENIOR_LEADER = 'Senior leader',
+}

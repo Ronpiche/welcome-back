@@ -26,6 +26,7 @@ export class WelcomeService {
         _id: uuidv4(),
         firstName: createUserDto.firstName,
         lastName: createUserDto.lastName,
+        grade: createUserDto.grade,
         email: createUserDto.email,
         arrivalDate: new Date(createUserDto.arrivalDate).toISOString(),
         signupDate: new Date(createUserDto.signupDate).toISOString(),

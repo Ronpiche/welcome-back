@@ -20,6 +20,16 @@ describe('Microsoft Service', () => {
     locaInstance: jest.fn(() => ''),
   };
 
+  const originalLog = console.log;
+
+  beforeAll(() => {
+    console.log = jest.fn(); // Overriding to avoid polluting logs
+  });
+
+  afterAll(() => {
+    console.log = originalLog;
+  });
+
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
