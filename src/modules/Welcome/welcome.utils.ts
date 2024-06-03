@@ -57,12 +57,13 @@ export function calculateEmailDate(startDate: number, endDate: number) {
   const deltaInDay = endMoment.diff(startMoment, 'days');
   const interval = Math.floor(deltaInDay / NUMBER_OF_STEPS) + 1;
   const emailDates: string[] = [];
-  const tempMoment = startMoment.startOf('day');
+
+  let tempMoment = startMoment.startOf('day');
   tempMoment.add(1, 'days');
 
   for (let i = 0; i < NUMBER_OF_STEPS; i++) {
     emailDates.push(tempMoment.format());
-    tempMoment.add(interval, 'days');
+    tempMoment = tempMoment.add(interval, 'days');
   }
 
   return verifyPublicHoliday(emailDates);

@@ -74,4 +74,7 @@ export class WelcomeUserDto {
   @ApiProperty()
   @Expose()
   email: string;
+  @ApiProperty()
+  @Expose()
+  grade: string;
 }
