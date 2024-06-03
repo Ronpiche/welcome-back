@@ -20,7 +20,7 @@ export class WelcomeService {
 
   async createUser(createUserDto: CreateUserDto) {
     try {
-      const now = dayjs().format();
+      const now = dayjs().toISOString();
 
       const dbUser: User = {
         _id: uuidv4(),
