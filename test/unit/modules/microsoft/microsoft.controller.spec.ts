@@ -3,7 +3,7 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { MicrosoftController } from '@modules/microsoft/microsoft.controller';
 import { MicrosoftService } from '@modules/microsoft/microsoft.service';
-import { mockMicrosoftService } from '../../__mocks__/firestore.service';
+import { mockMicrosoftService } from '../../../unit/__mocks__/firestore.service';
 
 describe('MicrosoftController', () => {
   let app: INestApplication;

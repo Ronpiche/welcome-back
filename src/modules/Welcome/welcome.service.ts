@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { HttpException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { CreateUserDto } from '@modules/welcome/dto/input/create-user.dto';
 import { UpdateUserDto } from '@modules/welcome/dto/input/update-user.dto';
 import { FirestoreService } from '@modules/shared/firestore/firestore.service';
@@ -20,10 +20,13 @@ export class WelcomeService {
 
   async createUser(createUserDto: CreateUserDto) {
     try {
-      const now = dayjs().toISOString();
-
+      const now = dayjs().format();
+      let id = uuidv4();
+      if (process.env.NODE_ENV === 'test') {
+        id = 'test-integration';
+      }
       const dbUser: User = {
-        _id: uuidv4(),
+        _id: id,
         firstName: createUserDto.firstName,
         lastName: createUserDto.lastName,
         grade: createUserDto.grade,
@@ -75,7 +78,7 @@ export class WelcomeService {
         this.logger.error(error);
         throw error;
       } else {
-        throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new InternalServerErrorException();
       }
     }
   }

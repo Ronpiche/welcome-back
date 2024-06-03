@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthService } from '@modules/auth/auth.service';
+import { AuthService } from '../../../../src/modules/auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
 import axios from 'axios';
 

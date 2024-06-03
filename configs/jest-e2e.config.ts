@@ -1,27 +1,27 @@
 import type { Config } from '@jest/types';
 
 const config: Config.InitialOptions = {
+  verbose: true,
+  preset: 'ts-jest',
   moduleFileExtensions: ['js', 'json', 'ts'],
-  rootDir: '.',
-  testRegex: '.(spec|test).tsx?$',
+  coverageReporters: ['json','clover', 'text', 'lcov'],
+  collectCoverage: true,
+  rootDir: '../',
+  testEnvironment: 'node',
+  testMatch: ["**/test/integration/**/*.e2e-spec.ts"],
+  coverageDirectory: '<rootDir>/coverage',
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest',
   },
-  collectCoverageFrom: ['**/*.(t|j)s'],
+  collectCoverageFrom:[
+    '<rootDir>/src/**/*.ts'
+  ],
   coveragePathIgnorePatterns: [
-    '<rootDir>/node_modules/',
-    '\\.module\\.ts',
-    '\\.entity\\.ts',
-    '\\.model\\.ts',
-    '\\.dto\\.ts',
+    '/node_modules/',
     '/dist/',
     '/mocks/',
     '/coverage/',
-    '/node_modules/',
-    '/jest.config.ts',
   ],
-  coverageDirectory: 'coverage',
-  testEnvironment: 'node',
   moduleNameMapper: {
     '@/(.*)$': '<rootDir>/src/$1',
     '@mocks/(.*)$': '<rootDir>/mocks/$1',

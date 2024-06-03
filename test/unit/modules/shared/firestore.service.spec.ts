@@ -3,7 +3,7 @@ import { FIRESTORE_COLLECTIONS } from '@modules/shared/firestore/constants';
 import { FirestoreService } from '@modules/shared/firestore/firestore.service';
 import { HttpException, InternalServerErrorException, Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { welcomeUserEntityMock } from '../../__mocks__/welcome/User.entity.mock';
+import { welcomeUserEntityMock } from '../../../unit/__mocks__/welcome/User.entity.mock';
 
 describe('firestoreService', () => {
   let service: FirestoreService;
@@ -136,7 +136,7 @@ describe('firestoreService', () => {
       service['firestore']['collection'] = jest.fn().mockReturnValue({
         doc: jest.fn().mockReturnValue({
           id: documentId,
-          set: jest.fn().mockResolvedValue({}),
+          create: jest.fn().mockResolvedValue({}),
         }),
       });
       const res = await service.saveDocument(collection, {});
@@ -150,7 +150,7 @@ describe('firestoreService', () => {
       service['firestore']['collection'] = jest.fn().mockReturnValue({
         doc: jest.fn().mockReturnValue({
           id: documentId,
-          set: jest.fn().mockRejectedValue(error),
+          create: jest.fn().mockRejectedValue(error),
         }),
       });
       try {
@@ -166,7 +166,7 @@ describe('firestoreService', () => {
       service['firestore']['collection'] = jest.fn().mockReturnValue({
         doc: jest.fn().mockReturnValue({
           id: documentId,
-          set: jest.fn().mockRejectedValue(new InternalServerErrorException('internal server error')),
+          create: jest.fn().mockRejectedValue(new InternalServerErrorException('internal server error')),
         }),
       });
       try {

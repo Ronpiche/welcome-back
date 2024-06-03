@@ -2,7 +2,7 @@ import { Logger, Module } from '@nestjs/common';
 import { WelcomeService } from '@modules/welcome/welcome.service';
 import { WelcomeController } from '@modules/welcome/welcome.controller';
 import { APP_FILTER } from '@nestjs/core';
-import { CreateUserExceptionFilter } from '@modules/welcome/filters/create-user-filter';
+import { CreateUserExceptionFilter } from '@modules/welcome/filters/create-user.filter';
 import { FirestoreModule } from '../shared/firestore/firestore.module';
 import { MicrosoftService } from '../microsoft/microsoft.service';
 import { CacheService } from '../shared/cache/cache.service';

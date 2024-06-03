@@ -3,10 +3,14 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
+import { accessAllSecrets } from './utils/accessSecret';
 
 const DEFAULT_HTTP_PORT = 3337;
 
 async function bootstrap() {
+  if (['local', 'docker', 'test'].includes(process.env.NODE_ENV)) {
+    await accessAllSecrets();
+  }
   const logger = new Logger('hub-back');
   const app = await NestFactory.create(AppModule);
 
@@ -51,7 +55,6 @@ async function bootstrap() {
   // }
 
   await app.listen(process.env.PORT || DEFAULT_HTTP_PORT);
-
   logger.log(`Application running on port ${process.env.PORT || DEFAULT_HTTP_PORT}`);
 }
 

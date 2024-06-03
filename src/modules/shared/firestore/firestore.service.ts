@@ -58,7 +58,7 @@ export class FirestoreService {
     try {
       const documentRef = this.firestore.collection(collection).doc(data._id);
 
-      await documentRef.set(data, { merge: false });
+      await documentRef.create(data);
 
       const id = documentRef.id;
 
@@ -75,10 +75,18 @@ export class FirestoreService {
   }
 
   async updateDocument(collection: string, documentId: string, data: RoleDto | Record<string, unknown>): Promise<void> {
-    await this.firestore
-      .collection(collection)
-      .doc(documentId)
-      .update({ ...data });
+    try {
+      await this.firestore
+        .collection(collection)
+        .doc(documentId)
+        .update({ ...data });
+    } catch (error) {
+      if (error.code === FirestoreErrorCode.NOT_FOUND) {
+        throw new HttpException('Document not found in DB', HttpStatus.NOT_FOUND);
+      }
+      this.logger.error(error);
+      throw error;
+    }
   }
 
   async deleteDocument(collection: string, documentId: string): Promise<void> {

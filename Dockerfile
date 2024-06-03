@@ -1,11 +1,13 @@
 # Use the official Node.js image as base
-FROM node:18-alpine
+FROM node:18-alpine as build
 
 # Set the working directory
-WORKDIR /code
+WORKDIR /app
 
 # Copy package.json and package-lock.json to the working directory
-COPY package*.json ./
+COPY package.json ./
+COPY package-lock.json ./
+COPY tsconfig*.json ./
 
 # Install NestJS dependencies
 RUN npm install
@@ -13,7 +15,4 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
-# Build the NestJS project
-RUN npm run build
-
-CMD [ "npm", "run", "start:prod" ]
+EXPOSE 3337

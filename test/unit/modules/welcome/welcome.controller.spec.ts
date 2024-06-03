@@ -1,18 +1,18 @@
 import { WelcomeController } from '@modules/welcome/welcome.controller';
 import { WelcomeService } from '@modules/welcome/welcome.service';
 import { Test, TestingModule } from '@nestjs/testing';
-import { WelcomeServiceMock } from '../../__mocks__/welcome/welcome.service.mock';
+import { WelcomeServiceMock } from '../../../unit/__mocks__/welcome/welcome.service.mock';
 import {
   outputWelcomeMock,
   inputUpdateWelcomeMock,
   outputUpdateWelcomeMock,
   inputWelcomeMock,
-} from '../../__mocks__/welcome/User.entity.mock';
-import { AccessGuard } from '../../../src/middleware/AuthGuard';
+} from '../../../unit/__mocks__/welcome/User.entity.mock';
+import { AccessGuard } from '../../../../src/middleware/AuthGuard';
 import { FindAllUsersPipe } from '@modules/welcome/pipes/find-all-users.pipe';
 import { JwtService } from '@nestjs/jwt';
 import { ArgumentsHost, BadRequestException, HttpException, Logger } from '@nestjs/common';
-import { CreateUserExceptionFilter } from '@modules/welcome/filters/create-user-filter';
+import { CreateUserExceptionFilter } from '@modules/welcome/filters/create-user.filter';
 
 describe('Welcome controller', () => {
   let controller: WelcomeController;

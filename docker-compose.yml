@@ -1,0 +1,18 @@
+services:
+  hub-back:
+      build: .
+      container_name: hub-back
+      command: 
+        - sh 
+        - -c
+        - |
+          npm run start:dev
+      environment:
+        - NAME_PROJECT=projects/222796272532
+        - PROJECT_ID=daveo-gcp-welcome-sbx-1745
+        - NODE_ENV=docker
+      ports:
+        - '3337:3337'
+      volumes:
+        - .:/app
+        - /app/node_modules

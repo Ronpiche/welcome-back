@@ -3,9 +3,11 @@
   "compilerOptions": {
     "baseUrl": "../",
     "paths": {
-      "@modules/*": ["src/modules/*"]
+      "@src/*": ["src/*"],
+      "@modules/*": ["src/modules/*"],
+      "@test/*": ["test/*"]
     }
   },
   "exclude": ["../build", "../dist"],
-  "include": ["../src", "../test", "../jest.config.ts", "__mocks__/.ts"]
+  "include": ["../src", "../test", "../configs/jest.config.ts", "unit/__mocks__/.ts", "../configs/jest-e2e.config.ts"]
 }

@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { FirestoreService } from '@modules/shared/firestore/firestore.service';
 import { INestApplication, Logger, UnprocessableEntityException, ValidationPipe } from '@nestjs/common';
 import { ValidationError } from 'class-validator';
-import { FirestoreServiceMock, mockMicrosoftService } from '../../__mocks__/firestore.service';
+import { FirestoreServiceMock, mockMicrosoftService } from '../../../unit/__mocks__/firestore.service';
 import { AuthorizationController } from '@modules/authorization/authorization.controller';
 import { MicrosoftService } from '@modules/microsoft/microsoft.service';
 import { ConfigModule } from '@nestjs/config';
