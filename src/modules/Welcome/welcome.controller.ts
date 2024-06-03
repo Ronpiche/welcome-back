@@ -92,4 +92,13 @@ export class WelcomeController {
       excludeExtraneousValues: true,
     });
   }
+
+  @Post('transform-property')
+  @IsPublic()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @UseGuards(AccessGuard)
+  @HttpCode(201)
+  async transformAppGames(@Query('name') propertyName: string): Promise<{ status: string }> {
+    return await this.welcomeService.transformDbOjectStringsToArray(propertyName);
+  }
 }

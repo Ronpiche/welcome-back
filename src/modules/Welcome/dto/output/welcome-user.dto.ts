@@ -71,4 +71,7 @@ export class WelcomeUserDto {
   @ApiProperty()
   @Expose()
   maxStep: string;
+  @ApiProperty()
+  @Expose()
+  email: string;
 }

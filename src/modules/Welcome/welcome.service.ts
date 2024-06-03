@@ -45,6 +45,7 @@ export class WelcomeService {
         communitiesQuestions: {},
         satisfactionQuestions: {},
         personnalProject: '',
+        appGames: {},
         creationDate: now,
         lastUpdate: now,
       };
@@ -115,5 +116,10 @@ export class WelcomeService {
       }
     }
     return (await this.findOne(id)) as WelcomeUser;
+  }
+
+  async transformDbOjectStringsToArray(propertyName: string): Promise<{ status: string }> {
+    await this.firestoreService.transformToObjectAndSaveProperty(FIRESTORE_COLLECTIONS.welcomeUsers, propertyName);
+    return { status: 'success' };
   }
 }

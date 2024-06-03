@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { Filter, Firestore, Query } from '@google-cloud/firestore';
 import { RoleDto } from '@/modules/authorization/dto/authorization.dto';
 import { FirestoreDocumentType, FirestoreErrorCode } from '../types/Firestore.types';
+import { WelcomeUser } from '@/modules/welcome/entities/user.entity';
 
 @Injectable()
 export class FirestoreService {
@@ -103,6 +104,44 @@ export class FirestoreService {
       await batch.commit();
     } catch (error) {
       this.logger.error(error);
+      throw error;
+    }
+  }
+
+  /**
+   * this function is here to fix problems in the database.
+   * When the legacy hub mongodb database was migrated to Firestore
+   * Some object properties was saved as strings. The function fixes easily
+   * the problem by changing the string property to an object, then saves back
+   * to Firestore. It may be removed when all similar problems will be fixed.
+   *
+   * @param {string} collection the name of the targetted collection
+   * @param  {string} property the property that needs to be transformed to an object
+   */
+  async transformToObjectAndSaveProperty(collection: string, property: string): Promise<void> {
+    try {
+      const documents = (await this.getAllDocuments(collection)) as WelcomeUser[];
+
+      for (const doc of documents) {
+        let value = doc[property];
+        if (value === undefined || value === null) {
+          continue;
+        }
+
+        if (value === '') {
+          value = {};
+        } else if (value && typeof value === 'string') {
+          try {
+            const propertyToObject: object = JSON.parse(value.replace(/'/g, '"'));
+            value = propertyToObject;
+            await this.updateDocument(collection, doc._id, { [property]: value });
+          } catch (error) {
+            this.logger.error(`Error parsing property for document ${doc._id}:`, error);
+          }
+        }
+      }
+    } catch (error) {
+      this.logger.error('Error transforming and saving appGames:', error);
       throw error;
     }
   }

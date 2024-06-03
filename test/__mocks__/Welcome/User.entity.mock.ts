@@ -45,6 +45,7 @@ export const outputWelcomeMock: WelcomeUserDto = {
   lastName: 'COBIGO',
   finishedOnBoarding: true,
   civility: 'M',
+  email: 'john.doe@daveo.fr',
   stepEmailSent: [true, true, true],
   agency: 'Lille',
   personnalProject:
@@ -78,6 +79,7 @@ export const outputUpdateWelcomeMock: WelcomeUserDto = {
   lastName: 'testtest',
   finishedOnBoarding: true,
   civility: 'M',
+  email: 'john.doe@daveo.fr',
   stepEmailSent: [true, true, true],
   agency: 'Lille',
   personnalProject:
