@@ -40,8 +40,29 @@ export function verifyPublicHoliday(dateList: string[]): string[] {
   });
 }
 
+function isEndDateInvalid(endMoment: dayjs.Dayjs, startMoment: dayjs.Dayjs): boolean {
+  return endMoment.unix() <= startMoment.unix();
+}
+
+function calculateInterval(startMoment: dayjs.Dayjs, endMoment: dayjs.Dayjs): number {
+  const deltaInDays = endMoment.diff(startMoment, 'days');
+  return Math.floor(deltaInDays / NUMBER_OF_STEPS) + 1;
+}
+
+function generateEmailDates(startMoment: dayjs.Dayjs, interval: number): string[] {
+  const emailDates: string[] = [];
+  let tempMoment = startMoment.startOf('day').add(1, 'day');
+
+  for (let i = 0; i < NUMBER_OF_STEPS; i++) {
+    emailDates.push(tempMoment.format());
+    tempMoment = tempMoment.add(interval, 'days');
+  }
+
+  return emailDates;
+}
+
 /**
- * Calculate the date at which email should be sent. It depends
+ * Calculate the date at which emails should be sent. It depends
  * on the number of steps with a minimal interval of 1 day between two dates.
  * @param {Date} startDate
  * @param {Date} endDate
@@ -51,20 +72,12 @@ export function calculateEmailDate(startDate: number, endDate: number) {
   const startMoment = dayjs(startDate);
   const endMoment = dayjs(endDate);
 
-  if (endMoment.unix() <= startMoment.unix()) {
-    throw new HttpException('invalid end Date', HttpStatus.BAD_REQUEST);
+  if (isEndDateInvalid(endMoment, startMoment)) {
+    throw new HttpException('Invalid end date', HttpStatus.BAD_REQUEST);
   }
-  const deltaInDay = endMoment.diff(startMoment, 'days');
-  const interval = Math.floor(deltaInDay / NUMBER_OF_STEPS) + 1;
-  const emailDates: string[] = [];
 
-  let tempMoment = startMoment.startOf('day');
-  tempMoment.add(1, 'days');
-
-  for (let i = 0; i < NUMBER_OF_STEPS; i++) {
-    emailDates.push(tempMoment.format());
-    tempMoment = tempMoment.add(interval, 'days');
-  }
+  const interval = calculateInterval(startMoment, endMoment);
+  const emailDates = generateEmailDates(startMoment, interval);
 
   return verifyPublicHoliday(emailDates);
 }

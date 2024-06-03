@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { WelcomeService } from '@modules/welcome/welcome.service';
-import { FirestoreService } from '../../../src/modules/shared/firestore/firestore.service';
+import { FirestoreService } from '@modules/shared/firestore/firestore.service';
 import { FirestoreServiceMock } from '../../__mocks__/firestore.service';
 import { HttpException, InternalServerErrorException, Logger } from '@nestjs/common';
 import {
@@ -77,7 +77,7 @@ describe('UsersService', () => {
         await service.createUser(inputWelcomeMock);
       } catch (error) {
         expect(error).toBeInstanceOf(HttpException);
-        expect(error.message).toEqual('invalid end Date');
+        expect(error.message).toEqual('Invalid end date');
         expect(error.status).toEqual(400);
       }
     });
