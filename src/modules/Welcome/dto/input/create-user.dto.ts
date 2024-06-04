@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { GRADE } from '../../types/user.type';
 
-class RhUserInfoDto {
+export class RhUserInfoDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()

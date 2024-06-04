@@ -106,7 +106,7 @@ export class WelcomeService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<WelcomeUser> {
-    const userToUpdate: Record<string, any> = updateUserDto;
+    const userToUpdate: Record<string, any> = instanceToPlain(updateUserDto);
     userToUpdate['lastUpdate'] = Date.now();
     try {
       await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.welcomeUsers, id, userToUpdate);

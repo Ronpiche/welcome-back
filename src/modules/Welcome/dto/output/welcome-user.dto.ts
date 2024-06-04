@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
+import { RhUserInfoDto } from '../input/create-user.dto';
 
 export class WelcomeUserDto {
   @ApiProperty()
@@ -40,7 +41,7 @@ export class WelcomeUserDto {
   creationDate: string;
   @ApiProperty()
   @Expose()
-  referentRH: object;
+  referentRH: RhUserInfoDto;
   @ApiProperty()
   @Expose()
   arrivalDate: string;

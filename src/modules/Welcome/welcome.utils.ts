@@ -64,9 +64,9 @@ function generateEmailDates(startMoment: dayjs.Dayjs, interval: number): string[
 /**
  * Calculate the date at which emails should be sent. It depends
  * on the number of steps with a minimal interval of 1 day between two dates.
- * @param {Date} startDate
- * @param {Date} endDate
- * @returns an array of date
+ * @param {Date} startDate start date in milliseconds
+ * @param {Date} endDate end date in milliseconds
+ * @returns an array of string dates
  */
 export function calculateEmailDate(startDate: number, endDate: number) {
   const startMoment = dayjs(startDate);
