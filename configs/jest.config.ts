@@ -4,25 +4,15 @@ const config: Config.InitialOptions = {
   verbose: true,
   preset: 'ts-jest',
   moduleFileExtensions: ['js', 'json', 'ts'],
-  coverageReporters:['json','clover','text', 'lcov'],
+  coverageReporters: ['json', 'clover', 'text', 'lcov'],
   collectCoverage: true,
   rootDir: '../',
-  testMatch: ['**/test/unit/modules/welcome/*.spec.ts','**/test/unit/modules/shared/*.spec.ts'],
+  testMatch: ['**/test/unit/modules/welcome/*.spec.ts', '**/test/unit/modules/shared/*.spec.ts'],
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest',
   },
-  collectCoverageFrom: [
-    'src/**/*.service.ts',
-    'src/**/*.controller.ts',
-    'src/**/*.pipe.ts',
-    'src/**/*.filter.ts'
-  ],
-  coveragePathIgnorePatterns: [
-    '/dist/',
-    '/mocks/',
-    '/coverage/',
-    '/node_modules/',
-  ],
+  collectCoverageFrom: ['src/**/*.service.ts', 'src/**/*.controller.ts', 'src/**/*.pipe.ts', 'src/**/*.filter.ts'],
+  coveragePathIgnorePatterns: ['/dist/', '/mocks/', '/coverage/', '/node_modules/'],
   coverageDirectory: '<rootDir>/coverage',
   testEnvironment: 'node',
   moduleNameMapper: {
