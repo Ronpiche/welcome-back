@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Filter, Firestore, Query } from '@google-cloud/firestore';
 import { RoleDto } from '@/modules/authorization/dto/authorization.dto';
 import { FirestoreDocumentType, FirestoreErrorCode } from '../types/Firestore.types';
@@ -52,6 +52,24 @@ export class FirestoreService {
     } else {
       throw new HttpException('Document not found in DB', HttpStatus.NOT_FOUND);
     }
+  }
+
+  async getByEmail(collection: string, email: string): Promise<WelcomeUser> {
+    const documents: WelcomeUser[] = [];
+    const documentsSnapshot = await this.firestore.collection(collection).where('email', '==', email).get();
+    if (documentsSnapshot.size > 1) {
+      throw new HttpException('Multiple users found', 400);
+    } else if (documentsSnapshot.size === 1) {
+      documentsSnapshot.forEach((doc) => {
+        documents.push({
+          ...(doc.data() as WelcomeUser),
+        });
+      });
+    } else {
+      throw new NotFoundException('User not found in DB');
+    }
+
+    return documents[0];
   }
 
   async saveDocument(collection: string, data: Record<string, any>): Promise<{ id: string; status: string }> {

@@ -18,9 +18,12 @@ async function bootstrap() {
 
   app.use(cookieParser());
   app.enableCors({
-    origin: process.env.HUB_FRONT_URL,
+    origin: ['https://daveo-gcp-welcome-sbx-cr-front-hub-s5fhodvgxa-od.a.run.app', 'https://dev-hub.daveo.fr'],
     credentials: true,
   });
+  // if (process.env.NODE_ENV === 'local') {
+  //   app.enableCors();
+  // }
 
   //Swagger
   const config = new DocumentBuilder()

@@ -1,22 +1,16 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import { JwtCognito } from '@/modules/cognito/jwtCognito.service';
+import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { JwtItem } from '@/modules/auth/jwt';
 
 @Injectable()
 export class AccessGuard implements CanActivate {
-  private jwtItem: JwtItem;
-
   constructor(
-    private _jwt: JwtService,
     private readonly reflector: Reflector,
-    private readonly jwtService: JwtService,
-  ) {
-    this.jwtItem = new JwtItem(this._jwt);
-  }
+    private readonly jwtCognito: JwtCognito,
+  ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const isPublic = this.reflector.get<boolean>('isPublic', context.getHandler());
 
     // check if IsPublic is used in api
@@ -26,19 +20,23 @@ export class AccessGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest<Request>();
-    const token = request.headers.authorization;
+    const token = this.extractTokenFromHeader(request);
 
     if (!token) {
-      return false;
+      throw new UnauthorizedException();
     }
 
     try {
-      const decoded = this.jwtItem._verifyToken(token);
-      request['decodedToken'] = decoded; // Attach the decoded user object to the request
-
-      return true;
+      const payload = await this.jwtCognito.verifyJwt(token);
+      request['email'] = payload.username.replace('azuread_', '');
     } catch (error) {
-      return false;
+      throw new UnauthorizedException();
     }
+    return true;
+  }
+
+  private extractTokenFromHeader(request: Request): string | undefined {
+    const [type, token] = request.headers.authorization?.split(' ') ?? [];
+    return type === 'Bearer' ? token : undefined;
   }
 }

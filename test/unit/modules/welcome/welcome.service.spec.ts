@@ -240,4 +240,12 @@ describe('UsersService', () => {
       expect(error.status).toEqual(500);
     }
   });
+
+  describe('transformAppGames', () => {
+    it('should return an array', async () => {
+      const res = await service.transformDbOjectStringsToArray('appGame');
+      expect(res).toBeDefined();
+      expect(res).toEqual({ status: 'success' });
+    });
+  });
 });

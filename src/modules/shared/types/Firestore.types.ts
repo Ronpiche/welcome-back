@@ -1,16 +1,6 @@
 import { WelcomeUser } from '@/modules/welcome/entities/user.entity';
-import { CreateUpdateRoleDto } from '@/modules/authorization/dto/create-role.dto';
-import { UserDto } from '@modules/authorization/dto/authorization.dto';
-
-export interface Role {
-  _id?: string;
-  __v?: string;
-  app: string;
-  name: string;
-  rules: string[];
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { User } from '@/modules/authorization/entities/User.entity';
+import { Role } from '@/modules/authorization/entities/Role.entity';
 
 export enum UserRoles {
   Admin = 'Admin',
@@ -23,7 +13,7 @@ export enum UserRoles {
   FinancesEtOpérations = 'Finances et Opérations',
 }
 
-export type FirestoreDocumentType = CreateUpdateRoleDto | UserDto | WelcomeUser;
+export type FirestoreDocumentType = WelcomeUser | User | Role;
 
 export enum FirestoreErrorCode {
   OK = 0,

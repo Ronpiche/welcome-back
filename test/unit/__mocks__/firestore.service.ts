@@ -26,6 +26,8 @@ export class FirestoreServiceMock {
   updateManyDocuments = jest.fn(async (collection: string, filter: Filter, data: Record<string, unknown>) => {
     return;
   });
+
+  transformToObjectAndSaveProperty = jest.fn().mockResolvedValue([]);
 }
 
 export const mockMicrosoftService = {

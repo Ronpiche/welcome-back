@@ -16,12 +16,12 @@ import { WelcomeService } from '@modules/welcome/welcome.service';
 import { CreateUserDto } from '@modules/welcome/dto/input/create-user.dto';
 import { UpdateUserDto } from '@modules/welcome/dto/input/update-user.dto';
 import { WelcomeUserDto } from '@modules/welcome/dto/output/welcome-user.dto';
-import { IsPublic } from '@/decorators/isPublic';
 import { ApiBody, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AccessGuard } from '@/middleware/AuthGuard';
 import { FindAllUsersPipe } from '@modules/welcome/pipes/find-all-users.pipe';
 import { plainToInstance } from 'class-transformer';
 import { WelcomeUser } from './entities/user.entity';
+import { IsPrivate } from '@/decorators/isPrivate';
 
 @ApiTags('Welcome')
 @Controller('welcome')
@@ -29,7 +29,7 @@ export class WelcomeController {
   constructor(private readonly welcomeService: WelcomeService) {}
 
   @Post('users')
-  @IsPublic()
+  @IsPrivate()
   @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(AccessGuard)
   @ApiOperation({ summary: 'Create User', description: 'Returns new user.' })
@@ -40,7 +40,7 @@ export class WelcomeController {
   }
 
   @Get('users')
-  @IsPublic()
+  @IsPrivate()
   @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(AccessGuard)
   @HttpCode(200)
@@ -54,7 +54,7 @@ export class WelcomeController {
   }
 
   @Get('users/:id')
-  @IsPublic()
+  @IsPrivate()
   @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(AccessGuard)
   @HttpCode(200)
@@ -65,7 +65,7 @@ export class WelcomeController {
     return plainToInstance(WelcomeUserDto, await this.welcomeService.findOne(id), { excludeExtraneousValues: true });
   }
 
-  @IsPublic()
+  @IsPrivate()
   @Delete('users/:id')
   @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(AccessGuard)
@@ -79,7 +79,7 @@ export class WelcomeController {
   }
 
   @Put('users/:id')
-  @IsPublic()
+  @IsPrivate()
   @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(AccessGuard)
   @HttpCode(200)
@@ -94,7 +94,7 @@ export class WelcomeController {
   }
 
   @Post('transform-property')
-  @IsPublic()
+  @IsPrivate()
   @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(AccessGuard)
   @HttpCode(201)

@@ -6,4 +6,5 @@ export class WelcomeServiceMock {
   remove = jest.fn().mockResolvedValue(undefined);
   update = jest.fn().mockResolvedValue(outputUpdateWelcomeMock);
   createUser = jest.fn().mockResolvedValue({ status: 'ok', id: '789QSD123' });
+  transformDbOjectStringsToArray = jest.fn().mockResolvedValue({ status: 'success' });
 }

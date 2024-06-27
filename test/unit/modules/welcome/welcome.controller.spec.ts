@@ -13,6 +13,10 @@ import { FindAllUsersPipe } from '@modules/welcome/pipes/find-all-users.pipe';
 import { JwtService } from '@nestjs/jwt';
 import { ArgumentsHost, BadRequestException, HttpException, Logger } from '@nestjs/common';
 import { CreateUserExceptionFilter } from '@modules/welcome/filters/create-user.filter';
+import { JwtCognito } from '../../../../src/modules/cognito/jwtCognito.service';
+import { ConfigService } from '@nestjs/config';
+import { CognitoServiceMock } from '../../../unit/__mocks__/cognito/cognito.service.mock';
+import { LoggerMock } from '../../../unit/__mocks__/logger.mock';
 
 describe('Welcome controller', () => {
   let controller: WelcomeController;
@@ -21,21 +25,12 @@ describe('Welcome controller', () => {
       controllers: [WelcomeController],
       providers: [
         JwtService,
+        ConfigService,
         AccessGuard,
         FindAllUsersPipe,
+        { provide: JwtCognito, useClass: CognitoServiceMock },
         { provide: WelcomeService, useClass: WelcomeServiceMock },
-        {
-          provide: Logger,
-          useValue: {
-            log: jest.fn(),
-            error: jest.fn(),
-            debug: jest.fn(),
-            warn: jest.fn(),
-            info: jest.fn(),
-            secure: jest.fn(),
-            isLevelEnabled: jest.fn(() => false),
-          },
-        },
+        { provide: Logger, useClass: LoggerMock },
       ],
     }).compile();
 
@@ -147,6 +142,14 @@ describe('Welcome controller', () => {
       expect(res).toBeDefined();
       expect(res).toEqual(outputUpdateWelcomeMock);
       expect(res.lastName).toEqual(outputUpdateWelcomeMock.lastName);
+    });
+  });
+
+  describe('transformAppGames', () => {
+    it('should return an array of appGame tranformed', async () => {
+      const res = await controller.transformAppGames('appGames');
+      expect(res).toBeDefined();
+      expect(res).toEqual({ status: 'success' });
     });
   });
 });

@@ -1,10 +1,29 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { AuthorizationService } from './authorization.service';
 import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { FilterType } from './types/authorization.types';
-import { IsPublic } from '@/decorators/isPublic';
 import { RoleDto, UserDto } from './dto/authorization.dto';
 import { CreateUpdateRoleDto } from './dto/create-role.dto';
+import { IsPrivate } from '@/decorators/isPrivate';
+import { AccessGuard } from '@/middleware/AuthGuard';
+import { plainToInstance } from 'class-transformer';
+import { OutputRoleDto } from './dto/outputRole.dto';
+import { OutputUserDto } from './dto/OutputUser.dto';
+import { User } from './entities/User.entity';
 
 @ApiTags('Authorization')
 @ApiBearerAuth()
@@ -12,7 +31,8 @@ import { CreateUpdateRoleDto } from './dto/create-role.dto';
 export class AuthorizationController {
   constructor(private readonly authorizationService: AuthorizationService) {}
 
-  @IsPublic()
+  @IsPrivate()
+  @UseGuards(AccessGuard)
   @HttpCode(HttpStatus.OK)
   @ApiQuery({
     name: 'app',
@@ -29,10 +49,10 @@ export class AuthorizationController {
   @ApiOkResponse({
     status: 200,
     description: 'The list of all available roles',
-    type: [CreateUpdateRoleDto],
+    type: [OutputRoleDto],
   })
   @Get('roles')
-  async getRoles(@Query('app') app?: string, @Query('name') name?: string): Promise<CreateUpdateRoleDto[]> {
+  async getRoles(@Query('app') app?: string, @Query('name') name?: string): Promise<OutputRoleDto[]> {
     const filters: FilterType = {};
     if (app) {
       filters.app = app;
@@ -40,20 +60,26 @@ export class AuthorizationController {
     if (name) {
       filters.name = name;
     }
-    return this.authorizationService.getAllRoles(filters);
+    return plainToInstance(OutputRoleDto, await this.authorizationService.getAllRoles(filters), {
+      excludeExtraneousValues: true,
+    });
   }
 
-  @IsPublic()
+  @IsPrivate()
+  @UseGuards(AccessGuard)
   @ApiOkResponse({
     status: 200,
     description: 'Retrieve a single role by the given ID',
   })
   @Get('roles/:id')
-  async getRoleById(@Param('id') id: string) {
-    return this.authorizationService.getRoleById(id);
+  async getRoleById(@Param('id') id: string): Promise<OutputRoleDto> {
+    return plainToInstance(OutputRoleDto, await this.authorizationService.getRoleById(id), {
+      excludeExtraneousValues: true,
+    });
   }
 
-  @IsPublic()
+  @IsPrivate()
+  @UseGuards(AccessGuard)
   @ApiBody({
     description: 'Creates a new role in database',
     type: CreateUpdateRoleDto,
@@ -62,10 +88,11 @@ export class AuthorizationController {
   @HttpCode(HttpStatus.CREATED)
   @Post('roles')
   async createRole(@Body() role: CreateUpdateRoleDto) {
-    return this.authorizationService.createRole(role);
+    return await this.authorizationService.createRole(role);
   }
 
-  @IsPublic()
+  @IsPrivate()
+  @UseGuards(AccessGuard)
   @Put('roles/:id')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
@@ -73,10 +100,11 @@ export class AuthorizationController {
     description: 'Updates a role',
   })
   async updateRole(@Param('id') id: string, @Body() roleDto: RoleDto) {
-    return this.authorizationService.updateRole(id, roleDto);
+    return await this.authorizationService.updateRole(id, roleDto);
   }
 
-  @IsPublic()
+  @IsPrivate()
+  @UseGuards(AccessGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     status: 200,
@@ -84,24 +112,31 @@ export class AuthorizationController {
   })
   @Delete('roles/:id')
   async deleteRole(@Param('id') id: string) {
-    return this.authorizationService.deleteRole(id);
+    return await this.authorizationService.deleteRole(id);
   }
 
-  @IsPublic()
+  @IsPrivate()
+  @UseGuards(AccessGuard)
   @Get('users')
-  async getUsers() {
-    return this.authorizationService.getAllUsers();
+  async getUsers(): Promise<OutputUserDto[]> {
+    return plainToInstance(OutputUserDto, await this.authorizationService.getAllUsers(), {
+      excludeExtraneousValues: true,
+    });
   }
 
-  @IsPublic()
+  @IsPrivate()
+  @UseGuards(AccessGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   @Get('users/:id')
-  async getUserById(@Param('id') id: string) {
-    return this.authorizationService.getUserById(id);
+  async getUserById(@Param('id') id: string): Promise<OutputUserDto> {
+    const user: User = await this.authorizationService.getUserById(id);
+    return plainToInstance(OutputUserDto, user, { excludeExtraneousValues: true });
   }
 
-  @IsPublic()
+  @IsPrivate()
+  @UseGuards(AccessGuard)
   @Put('users/:id')
   async updateUser(@Param('id') id: string, @Body() userData: UserDto) {
-    this.authorizationService.updateUser(id, userData);
+    return await this.authorizationService.updateUser(id, userData);
   }
 }

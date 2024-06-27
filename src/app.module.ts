@@ -1,28 +1,23 @@
 import { Module } from '@nestjs/common';
-import { AuthModule } from '@modules/auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { FirestoreModule } from '@modules/shared/firestore/firestore.module';
 import { AuthorizationModule } from '@modules/authorization/authorization.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AccessGuard } from './middleware/AuthGuard';
-import { MicrosoftModule } from '@modules/microsoft/microsoft.module';
 import { WelcomeModule } from '@modules/welcome/welcome.module';
+import { JwtCognito } from './modules/cognito/jwtCognito.service';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    JwtModule.register({
+    JwtModule.registerAsync({
       global: true,
-      privateKey: {
-        key: process.env.PV_KEY,
-        passphrase: process.env.PF_KEY,
-      },
-      signOptions: { expiresIn: '2h' },
-      publicKey: process.env.PB_KEY,
+      useFactory: async () => ({
+        secret: process.env.JWT_SECRET,
+        signOptions: { expiresIn: '2h', algorithm: 'HS256' },
+      }),
     }),
-    AuthModule,
-    MicrosoftModule,
     FirestoreModule,
     AuthorizationModule,
     WelcomeModule,
@@ -32,6 +27,7 @@ import { WelcomeModule } from '@modules/welcome/welcome.module';
       provide: APP_GUARD,
       useClass: AccessGuard,
     },
+    JwtCognito,
   ],
 })
 export class AppModule {}

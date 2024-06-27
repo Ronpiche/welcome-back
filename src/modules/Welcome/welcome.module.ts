@@ -4,8 +4,8 @@ import { WelcomeController } from '@modules/welcome/welcome.controller';
 import { APP_FILTER } from '@nestjs/core';
 import { CreateUserExceptionFilter } from '@modules/welcome/filters/create-user.filter';
 import { FirestoreModule } from '../shared/firestore/firestore.module';
-import { MicrosoftService } from '../microsoft/microsoft.service';
 import { CacheService } from '../shared/cache/cache.service';
+import { JwtCognito } from '../cognito/jwtCognito.service';
 
 @Module({
   imports: [FirestoreModule],
@@ -17,8 +17,8 @@ import { CacheService } from '../shared/cache/cache.service';
       useClass: CreateUserExceptionFilter,
     },
     WelcomeService,
-    MicrosoftService,
     CacheService,
+    JwtCognito,
   ],
 })
 export class WelcomeModule {}

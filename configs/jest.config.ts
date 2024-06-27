@@ -7,7 +7,7 @@ const config: Config.InitialOptions = {
   coverageReporters: ['json', 'clover', 'text', 'lcov'],
   collectCoverage: true,
   rootDir: '../',
-  testMatch: ['**/test/unit/modules/welcome/*.spec.ts', '**/test/unit/modules/shared/*.spec.ts'],
+  testMatch: ['**/test/unit/modules/welcome/*.spec.ts', '**/test/unit/modules/shared/*.spec.ts', '**/test/unit/modules/cognito/*.spec.ts'],
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest',
   },

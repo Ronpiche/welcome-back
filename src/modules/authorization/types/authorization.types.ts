@@ -2,7 +2,6 @@ export interface Role {
   _id: string;
   app: string;
   name: string;
-  __v: string;
   rules: string[];
   createdAt: string;
   updatedAt: string;

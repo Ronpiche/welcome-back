@@ -3,34 +3,33 @@ import { FirestoreService } from '../shared/firestore/firestore.service';
 import { FilterType, UserRoles } from './types/authorization.types';
 import { FIRESTORE_COLLECTIONS } from '../shared/firestore/constants';
 import { RoleDto, UserDto } from './dto/authorization.dto';
-import { MicrosoftService } from '../microsoft/microsoft.service';
 import { FieldValue } from '@google-cloud/firestore';
 import { CreateUpdateRoleDto } from './dto/create-role.dto';
-import { formatAuthorizedUser } from './authorization.utils';
+import { User } from './entities/User.entity';
+import { Role } from './entities/Role.entity';
 
 @Injectable()
 export class AuthorizationService {
   constructor(
     private readonly firestoreService: FirestoreService,
-    private readonly microsoftService: MicrosoftService,
     private readonly logger: Logger,
   ) {}
 
-  async getAllRoles(filter: FilterType): Promise<CreateUpdateRoleDto[]> {
+  async getAllRoles(filter: FilterType): Promise<Role[]> {
     try {
       const roles = await this.firestoreService.getAllDocuments(FIRESTORE_COLLECTIONS.roles, filter);
 
-      return roles as CreateUpdateRoleDto[];
+      return roles as Role[];
     } catch (error) {
       this.logger.error(error);
       throw new Error(`Error fetching roles: ${error.message}`);
     }
   }
 
-  async getRoleById(roleId: string): Promise<unknown> {
+  async getRoleById(roleId: string): Promise<Role> {
     try {
       const role = await this.firestoreService.getDocument(FIRESTORE_COLLECTIONS.roles, roleId);
-      return role;
+      return role as Role;
     } catch (error) {
       this.logger.error(error);
       throw error;
@@ -89,29 +88,24 @@ export class AuthorizationService {
     }
   }
 
-  async getAllUsers(): Promise<UserDto[]> {
+  async getAllUsers(): Promise<User[]> {
     try {
-      const gUsers = await this.microsoftService.getUsers();
       const authUsers = await this.firestoreService.getAllDocuments(FIRESTORE_COLLECTIONS.authorizedUsers);
 
-      const users = gUsers.map((gUser) => {
-        const authUser = authUsers.find((authUser: UserDto) => authUser._id === gUser._id);
-        return formatAuthorizedUser(gUser, authUser);
-      });
+      const users = authUsers;
 
-      return users as UserDto[];
+      return users as User[];
     } catch (error) {
       this.logger.error(error);
       throw new Error(`Error fetching users: ${error.message}`);
     }
   }
 
-  async getUserById(id: string): Promise<UserDto> {
+  async getUserById(id: string): Promise<User> {
     try {
-      const gUser = await this.microsoftService.getUserById(id);
       const authUser = await this.firestoreService.getDocument(FIRESTORE_COLLECTIONS.authorizedUsers, id);
 
-      return formatAuthorizedUser(gUser, authUser);
+      return authUser as User;
     } catch (error) {
       this.logger.error(error);
       throw new Error(`User not found: ${error.message}`);

@@ -20,7 +20,7 @@
     "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
     "test:unit": "jest --config ./configs/jest.config.ts",
     "test:integration": "cross-env NODE_ENV=test jest --config ./configs/jest-e2e.config.ts",
-    "docker:run:env": "docker-compose up",
+    "docker:run:env": "docker-compose -f ./configs/docker/docker-compose.yml up",
     "prepare": "husky"
   },
   "dependencies": {
@@ -38,6 +38,7 @@
     "@nestjs/schematics": "^10.1.1",
     "@nestjs/swagger": "^7.3.0",
     "@nestjs/testing": "^10.3.5",
+    "aws-jwt-verify": "^4.0.1",
     "axios": "^1.6.8",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
