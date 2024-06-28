@@ -1,7 +1,7 @@
 import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { GRADE } from '../../types/user.type';
+import { GRADE, PRACTICE } from '../../types/user.enum';
 
 export class RhUserInfoDto {
   @ApiProperty()
@@ -45,6 +45,11 @@ export class CreateUserDto {
   @IsEnum(GRADE)
   @IsNotEmpty()
   grade: string;
+
+  @ApiProperty()
+  @IsEnum(PRACTICE)
+  @IsNotEmpty()
+  practice: string;
 
   @ApiProperty()
   @IsNotEmpty()

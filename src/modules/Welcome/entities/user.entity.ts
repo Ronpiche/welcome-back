@@ -1,6 +1,6 @@
 export class WelcomeUser {
   _id: string;
-  __v: string;
+  email: string;
   appGames: object;
   note: string;
   signupDate: string;
@@ -16,11 +16,13 @@ export class WelcomeUser {
   arrivalDate: string;
   currentStep: string;
   firstName: string;
-  satisfactionQuestions: string;
+  satisfactionQuestions: Record<string, string>;
   lastUpdate: string;
   finishedCurrentStep: boolean;
-  communitiesQuestions: string;
+  communitiesQuestions: Record<string, string>;
   currentPage: string;
-  emailDates: Array<Date>;
+  emailDates: Array<string>;
   maxStep: string;
+  grade: string;
+  practice: string;
 }

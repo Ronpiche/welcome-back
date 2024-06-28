@@ -1,13 +1,13 @@
 import { CreateUserDto } from '@modules/welcome/dto/input/create-user.dto';
 import { WelcomeUserDto } from '../../../../src/modules/welcome/dto/output/welcome-user.dto';
 import { WelcomeUser } from '../../../../src/modules/welcome/entities/user.entity';
-import { GRADE } from '@modules/welcome/types/user.type';
+import { GRADE, PRACTICE } from '@modules/welcome/types/user.enum';
 
 export const welcomeUserEntityMock: WelcomeUser = {
   _id: '16156-585263',
-  __v: '1',
   appGames: { scoreTetris: 3000, scoreDemineur: 8050, scoreTrexGame: 777 },
   note: '',
+  email: 'test@test.fr',
   signupDate: '2022-04-24 22:00:00',
   lastName: 'COBIGO',
   finishedOnBoarding: true,
@@ -25,15 +25,16 @@ export const welcomeUserEntityMock: WelcomeUser = {
     email: 'alisson.vermetten@daveo.fr',
   },
   arrivalDate: '2023-02-01 22:00:00',
+  lastUpdate: '2023-02-01 22:00:00',
+  grade: GRADE.PRACTIONNER,
+  practice: PRACTICE.PRODUCT,
   currentStep: '2',
   firstName: 'Xavier',
-  satisfactionQuestions:
-    "{'generalFeedback': 'oui', 'pastExperience': 'non', 'feedback': \"Non mais c'était bien, pas d'idée\", 'discoverDaveo': 'oui', 'generalAccessibility': 'oui', 'videoAccessibility': 'oui', 'displayCorrectly': 'oui', 'commentary': 'nop', 'stepDuration': 'non', 'gameUtility': 'oui', 'clearInformation': 'oui', 'knowMore': 'non', 'moreSubject': '', 'stillWantDaveo': 'oui', 'rgpdRead': True, 'rgpdAgreement': True}",
-  lastUpdate: '2022-05-16 08:40:24.420',
+  satisfactionQuestions: {},
   finishedCurrentStep: true,
-  communitiesQuestions: "{'communities': ['dax'], 'answer':{'dax': 'AccompagnementEquipe'}}",
+  communitiesQuestions: {},
   currentPage: '7',
-  emailDates: [new Date(2022, 4, 25, 13, 24, 6), new Date(2022, 4, 25, 13, 24, 6), new Date(2022, 4, 25, 13, 24, 6)],
+  emailDates: ['', '', '', ''],
   maxStep: '2',
 };
 
@@ -45,6 +46,7 @@ export const outputWelcomeMock: WelcomeUserDto = {
   lastName: 'COBIGO',
   finishedOnBoarding: true,
   grade: GRADE.ASSOCIATE,
+  practice: PRACTICE.PRODUCT,
   civility: 'M',
   email: 'john.doe@daveo.fr',
   stepEmailSent: [true, true, true],
@@ -80,6 +82,7 @@ export const outputUpdateWelcomeMock: WelcomeUserDto = {
   lastName: 'testtest',
   finishedOnBoarding: true,
   grade: GRADE.ASSOCIATE,
+  practice: PRACTICE.PRODUCT,
   civility: 'M',
   email: 'john.doe@daveo.fr',
   stepEmailSent: [true, true, true],
@@ -112,6 +115,7 @@ export const inputUpdateWelcomeMock: CreateUserDto = {
   firstName: 'test',
   lastName: 'testtest',
   grade: GRADE.ASSOCIATE,
+  practice: PRACTICE.PRODUCT,
   arrivalDate: 0,
   signupDate: 0,
   referentRH: {
@@ -129,6 +133,7 @@ export const inputWelcomeMock: CreateUserDto = {
   firstName: 'test-create',
   lastName: 'testtest-create',
   grade: GRADE.ASSOCIATE,
+  practice: PRACTICE.PRODUCT,
   arrivalDate: 1717200000,
   signupDate: 1715866214,
   referentRH: {

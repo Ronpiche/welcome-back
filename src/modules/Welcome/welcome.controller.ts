@@ -23,7 +23,7 @@ import { plainToInstance } from 'class-transformer';
 import { WelcomeUser } from './entities/user.entity';
 import { IsPrivate } from '@/decorators/isPrivate';
 
-@ApiTags('Welcome')
+@ApiTags('welcome')
 @Controller('welcome')
 export class WelcomeController {
   constructor(private readonly welcomeService: WelcomeService) {}

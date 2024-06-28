@@ -8,7 +8,6 @@ import { calculateEmailDate } from '@modules/welcome/welcome.utils';
 import { NUMBER_OF_STEPS } from '@modules/welcome/constants';
 import { WelcomeUser } from './entities/user.entity';
 import { v4 as uuidv4 } from 'uuid';
-import { User } from './types/user.type';
 import { instanceToPlain } from 'class-transformer';
 
 @Injectable()
@@ -25,11 +24,12 @@ export class WelcomeService {
       if (process.env.NODE_ENV === 'test') {
         id = 'test-integration';
       }
-      const dbUser: User = {
+      const dbUser: WelcomeUser = {
         _id: id,
         firstName: createUserDto.firstName,
         lastName: createUserDto.lastName,
         grade: createUserDto.grade,
+        practice: createUserDto.practice,
         email: createUserDto.email,
         arrivalDate: new Date(createUserDto.arrivalDate).toISOString(),
         signupDate: new Date(createUserDto.signupDate).toISOString(),
@@ -38,13 +38,13 @@ export class WelcomeService {
         emailDates: calculateEmailDate(createUserDto.signupDate, createUserDto.arrivalDate),
         note: createUserDto.note ? createUserDto.note : '',
         agency: createUserDto.agency,
-        currentStep: 0,
-        currentPage: 0,
-        maxStep: 0,
+        currentStep: '0',
+        currentPage: '0',
+        maxStep: '0',
         stepEmailSent: new Array(NUMBER_OF_STEPS).fill(false),
         finishedCurrentStep: false,
         finishedOnBoarding: false,
-        hiringProcessEvaluation: 0,
+        hiringProcessEvaluation: '0',
         communitiesQuestions: {},
         satisfactionQuestions: {},
         personnalProject: '',
