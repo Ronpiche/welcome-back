@@ -85,7 +85,7 @@ describe('UsersService', () => {
     describe('Testing holiday function', () => {
       it('Should shift of one day the date, because is it a public holiday', async () => {
         const datesArray = verifyPublicHoliday(['2024-05-08T08:14:08Z', '2024-09-05T08:14:08Z']);
-        expect(datesArray.includes('2024-05-09T08:14:08.000Z')).toBeTruthy();
+        expect(datesArray.includes('2024-05-10T08:14:08.000Z')).toBeTruthy();
         expect(datesArray.includes('2024-09-05T08:14:08.000Z')).toBeTruthy();
       });
 

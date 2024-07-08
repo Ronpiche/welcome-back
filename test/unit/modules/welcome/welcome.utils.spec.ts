@@ -69,4 +69,32 @@ describe('calculateEmailDate', () => {
       expect(formattedDate).not.toBe('2023-01-01'); // Holiday
     });
   });
+
+  it('should handle multiple consecutive holidays', () => {
+    const startDate = dayjs('2024-05-07').valueOf();
+    const endDate = dayjs('2024-05-12').valueOf();
+
+    const result = calculateEmailDate(startDate, endDate);
+
+    result.forEach((date) => {
+      const formattedDate = dayjs(date).format('YYYY-MM-DD');
+      expect(formattedDate).not.toBe('2024-05-08'); // Holiday
+      expect(formattedDate).not.toBe('2024-05-09'); // Holiday
+      expect(formattedDate).not.toBe('2024-05-11'); // Saturday
+      expect(formattedDate).not.toBe('2024-05-12'); // Sunday
+    });
+
+    const startDate2 = dayjs('2043-05-06').valueOf();
+    const endDate2 = dayjs('2043-05-11').valueOf();
+
+    const result2 = calculateEmailDate(startDate2, endDate2);
+
+    result2.forEach((date) => {
+      const formattedDate = dayjs(date).format('YYYY-MM-DD');
+      expect(formattedDate).not.toBe('2043-05-07'); // Holiday
+      expect(formattedDate).not.toBe('2043-05-08'); // Holiday
+      expect(formattedDate).not.toBe('2043-05-09'); // Saturday
+      expect(formattedDate).not.toBe('2043-05-10'); // Sunday
+    });
+  });
 });
