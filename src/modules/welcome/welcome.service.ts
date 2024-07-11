@@ -3,9 +3,8 @@ import { CreateUserDto } from '@modules/welcome/dto/input/create-user.dto';
 import { UpdateUserDto } from '@modules/welcome/dto/input/update-user.dto';
 import { FirestoreService } from '@modules/shared/firestore/firestore.service';
 import { FIRESTORE_COLLECTIONS } from '@modules/shared/firestore/constants';
-import dayjs from 'dayjs';
+import { Timestamp } from '@google-cloud/firestore';
 import { calculateEmailDate } from '@modules/welcome/welcome.utils';
-import { NUMBER_OF_STEPS } from '@modules/welcome/constants';
 import { WelcomeUser } from './entities/user.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { instanceToPlain } from 'class-transformer';
@@ -19,7 +18,7 @@ export class WelcomeService {
 
   async createUser(createUserDto: CreateUserDto) {
     try {
-      const now = dayjs().format();
+      const now = Timestamp.now();
       let id = uuidv4();
       if (process.env.NODE_ENV === 'test') {
         id = 'test-integration';
@@ -31,19 +30,12 @@ export class WelcomeService {
         grade: createUserDto.grade,
         practice: createUserDto.practice,
         email: createUserDto.email,
-        arrivalDate: new Date(createUserDto.arrivalDate).toISOString(),
-        signupDate: new Date(createUserDto.signupDate).toISOString(),
+        arrivalDate: createUserDto.arrivalDate,
+        signupDate: createUserDto.signupDate,
         referentRH: instanceToPlain(createUserDto.referentRH),
         civility: createUserDto.civility,
-        emailDates: calculateEmailDate(createUserDto.signupDate, createUserDto.arrivalDate),
         note: createUserDto.note ? createUserDto.note : '',
         agency: createUserDto.agency,
-        currentStep: '0',
-        currentPage: '0',
-        maxStep: '0',
-        stepEmailSent: new Array(NUMBER_OF_STEPS).fill(false),
-        finishedCurrentStep: false,
-        finishedOnBoarding: false,
         hiringProcessEvaluation: '0',
         communitiesQuestions: {},
         satisfactionQuestions: {},
@@ -51,10 +43,14 @@ export class WelcomeService {
         appGames: {},
         creationDate: now,
         lastUpdate: now,
+        steps: calculateEmailDate(new Date(createUserDto.signupDate), new Date(createUserDto.arrivalDate)).map(
+          (unlockDate, _id) => ({
+            _id,
+            unlockDate: Timestamp.fromDate(new Date(unlockDate)),
+          }),
+        ),
       };
 
-      //TODO: send first email now updated by AK
-      dbUser.emailDates[0] = now;
       return await this.firestoreService.saveDocument(FIRESTORE_COLLECTIONS.welcomeUsers, dbUser);
     } catch (error) {
       if (error instanceof HttpException) {
@@ -107,7 +103,7 @@ export class WelcomeService {
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<WelcomeUser> {
     const userToUpdate: Record<string, any> = instanceToPlain(updateUserDto);
-    userToUpdate['lastUpdate'] = Date.now();
+    userToUpdate['lastUpdate'] = Timestamp.now();
     try {
       await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.welcomeUsers, id, userToUpdate);
     } catch (error) {

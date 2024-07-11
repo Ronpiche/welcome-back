@@ -12,33 +12,18 @@ export class FirestoreService {
   ) {}
 
   private applyFilters(query: FirebaseFirestore.Query, filter: Filter): FirebaseFirestore.Query {
-    let filteredQuery = query;
-    Object.entries(filter).forEach(([field, value]) => {
-      if (field === 'arrivalDate') {
-        Object.entries(value).forEach(([index, val]) => {
-          if (index === '$gte') {
-            filteredQuery = filteredQuery.where(field, '>=', val);
-          } else if (index === '$lte') {
-            filteredQuery = filteredQuery.where(field, '<=', val);
-          }
-        });
-      } else {
-        filteredQuery = filteredQuery.where(field, '==', value);
-      }
-    });
-
-    return filteredQuery;
+    return query.where(filter);
   }
 
-  async getAllDocuments(collection: string, filter?: Filter): Promise<FirestoreDocumentType[]> {
-    const documents: FirestoreDocumentType[] = [];
+  async getAllDocuments<T extends FirestoreDocumentType>(collection: string, filter?: Filter): Promise<T[]> {
+    const documents: T[] = [];
     const query = this.firestore.collection(collection);
     const filteredQuery = filter ? this.applyFilters(query, filter) : query;
     const querySnapshot = await filteredQuery.get();
 
     querySnapshot.forEach((doc) => {
       documents.push({
-        ...(doc.data() as FirestoreDocumentType),
+        ...(doc.data() as T),
       });
     });
 

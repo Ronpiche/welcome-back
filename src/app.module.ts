@@ -7,6 +7,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AccessGuard } from './middleware/AuthGuard';
 import { WelcomeModule } from '@modules/welcome/welcome.module';
 import { JwtCognito } from './modules/cognito/jwtCognito.service';
+import { EmailModule } from './modules/email/email.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { JwtCognito } from './modules/cognito/jwtCognito.service';
     FirestoreModule,
     AuthorizationModule,
     WelcomeModule,
+    EmailModule,
   ],
   providers: [
     {

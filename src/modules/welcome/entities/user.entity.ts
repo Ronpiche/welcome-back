@@ -1,3 +1,6 @@
+import { Timestamp } from '@google-cloud/firestore';
+import { WelcomeStep } from './step.entity';
+
 export class WelcomeUser {
   _id: string;
   email: string;
@@ -5,24 +8,18 @@ export class WelcomeUser {
   note: string;
   signupDate: string;
   lastName: string;
-  finishedOnBoarding: boolean;
   civility: string;
-  stepEmailSent: Array<boolean>;
   agency: string;
   personnalProject: string;
   hiringProcessEvaluation: string;
-  creationDate: string;
+  creationDate: Timestamp;
   referentRH: object;
   arrivalDate: string;
-  currentStep: string;
   firstName: string;
   satisfactionQuestions: Record<string, string>;
-  lastUpdate: string;
-  finishedCurrentStep: boolean;
+  lastUpdate: Timestamp;
   communitiesQuestions: Record<string, string>;
-  currentPage: string;
-  emailDates: Array<string>;
-  maxStep: string;
   grade: string;
   practice: string;
+  steps: WelcomeStep[];
 }

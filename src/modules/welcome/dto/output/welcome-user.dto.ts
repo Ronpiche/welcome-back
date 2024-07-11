@@ -20,13 +20,7 @@ export class WelcomeUserDto {
   lastName: string;
   @ApiProperty()
   @Expose()
-  finishedOnBoarding: boolean;
-  @ApiProperty()
-  @Expose()
   civility: string;
-  @ApiProperty()
-  @Expose()
-  stepEmailSent: Array<boolean>;
   @ApiProperty()
   @Expose()
   agency: string;
@@ -47,9 +41,6 @@ export class WelcomeUserDto {
   arrivalDate: string;
   @ApiProperty()
   @Expose()
-  currentStep: string;
-  @ApiProperty()
-  @Expose()
   firstName: string;
   @ApiProperty()
   @Expose()
@@ -59,19 +50,10 @@ export class WelcomeUserDto {
   lastUpdate: string;
   @ApiProperty()
   @Expose()
-  finishedCurrentStep: boolean;
-  @ApiProperty()
-  @Expose()
   communitiesQuestions: string;
   @ApiProperty()
   @Expose()
   currentPage: string;
-  @ApiProperty()
-  @Expose()
-  emailDates: Array<Date>;
-  @ApiProperty()
-  @Expose()
-  maxStep: string;
   @ApiProperty()
   @Expose()
   email: string;
