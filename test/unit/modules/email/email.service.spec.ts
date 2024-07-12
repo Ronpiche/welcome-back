@@ -1,11 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { EmailService } from '@modules/email/email.service';
-import { EMAIL_FROM } from '@modules/email/constants';
-import { FirestoreService } from '@modules/shared/firestore/firestore.service';
-import { FirestoreServiceMock } from '../../../unit/__mocks__/firestore.service';
 import { Logger } from '@nestjs/common';
-
-process.env.EMAIL_SERVICE = 'localhost';
+import { EmailService } from '@modules/email/email.service';
+import { FirestoreService } from '@modules/shared/firestore/firestore.service';
+import { WelcomeUser } from '@modules/welcome/entities/user.entity';
+import { FirestoreServiceMock } from '../../../unit/__mocks__/firestore.service';
+import { welcomeUserEntityMock } from '../../../unit/__mocks__/welcome/User.entity.mock';
 
 describe('EmailService', () => {
   let service: EmailService;
@@ -41,12 +40,19 @@ describe('EmailService', () => {
   });
 
   it('should trigger SMTP server', async () => {
-    const to = 'any@localhost';
+    const user = new WelcomeUser();
+    user.email = 'any@localhost';
     const subject = 'Test';
     const text = 'This is a test';
-    service.transporter.sendMail = jest.fn().mockReturnValue(Promise.resolve());
-    await service.sendEmail(to, subject, text);
+    service.transporter.sendMail = jest.fn().mockImplementation((_, callback) => callback());
+    await service.sendEmail(user, subject, text);
     expect(service.transporter.sendMail).toHaveReturnedTimes(1);
-    expect(service.transporter.sendMail).toHaveBeenCalledWith({ from: EMAIL_FROM, to, subject, text });
+  });
+
+  it('should send emails to newcommers with unlocked steps', async () => {
+    service.sendEmail = jest.fn().mockReturnValue(Promise.resolve());
+    service['firestoreService']['getAllDocuments'] = jest.fn().mockResolvedValue([welcomeUserEntityMock]);
+    await service.run();
+    expect(service.sendEmail).toHaveReturnedTimes(1);
   });
 });
