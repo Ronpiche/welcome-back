@@ -1,4 +1,3 @@
-export const EMAIL_FROM = 'noreply@localhost';
 export const STEP_EMAIL_SUBJECT = 'Nouvelle étape disponible';
 export const STEP_EMAIL_TEXT = `<html lang="fr">
   <head>

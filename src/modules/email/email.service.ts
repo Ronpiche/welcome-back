@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import nodemailer, { Transporter } from 'nodemailer';
-import { EMAIL_FROM, STEP_EMAIL_SUBJECT, STEP_EMAIL_TEXT } from './constants';
+import { MailerService } from '@nestjs-modules/mailer';
+import { STEP_EMAIL_SUBJECT, STEP_EMAIL_TEXT } from './constants';
 import { Filter, Timestamp } from '@google-cloud/firestore';
 import { FirestoreService } from '@modules/shared/firestore/firestore.service';
 import { FIRESTORE_COLLECTIONS } from '@modules/shared/firestore/constants';
@@ -8,54 +8,32 @@ import { WelcomeUser } from '@modules/welcome/entities/user.entity';
 
 @Injectable()
 export class EmailService {
-  transporter: Transporter;
-
   constructor(
+    private readonly mailerService: MailerService,
     private readonly firestoreService: FirestoreService,
     private readonly logger: Logger,
-  ) {
-    if (process.env.EMAIL_SERVICE) {
-      this.transporter = nodemailer.createTransport({
-        service: process.env.EMAIL_SERVICE,
-        auth: {
-          user: process.env.EMAIL_USERNAME,
-          pass: process.env.EMAIL_PASSWORD,
-        },
-      });
-    } else {
-      this.transporter = nodemailer.createTransport({
-        streamTransport: true,
-        newline: 'unix',
-      });
+  ) {}
+
+  /**
+   * Send an email.
+   * @param user - The receiver
+   * @param subject - The subject of the email
+   * @param html - The HTML of the email
+   * @return The success/failure of the email sending
+   */
+  async sendEmail(user: WelcomeUser, subject: string, html: string) {
+    try {
+      await this.mailerService.sendMail({ to: user.email, subject, html });
+      return { _id: user._id };
+    } catch (e) {
+      throw { _id: user._id, error: e.message };
     }
   }
 
-  sendEmail(
-    user: WelcomeUser,
-    subject: nodemailer.SendMailOptions['subject'],
-    text: nodemailer.SendMailOptions['text'],
-  ) {
-    return new Promise((resolve, reject) => {
-      this.transporter.sendMail(
-        {
-          from: EMAIL_FROM,
-          to: user.email,
-          subject,
-          text,
-        },
-        (error, email) => {
-          if (error) {
-            return reject({ _id: user._id, error: error.message });
-          }
-          if (!process.env.EMAIL_SERVICE) {
-            this.logger.log({ email });
-          }
-          return resolve({ _id: user._id });
-        },
-      );
-    });
-  }
-
+  /**
+   * Get the list of newcomers (where arrival date is in the future).
+   * @return The list of newcomers
+   */
   async getNewcomers() {
     return await this.firestoreService.getAllDocuments<WelcomeUser>(
       FIRESTORE_COLLECTIONS.welcomeUsers,
@@ -63,6 +41,12 @@ export class EmailService {
     );
   }
 
+  /**
+   * Update date of email sent on unlocked steps.
+   * @param user - The user to update
+   * @param unlockedSteps - The list of steps to update
+   * @return The database result
+   */
   async updateSteps(user: WelcomeUser, unlockedSteps: number[]) {
     const emailSentAt = Timestamp.now();
     return await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.welcomeUsers, user._id, {
@@ -71,15 +55,15 @@ export class EmailService {
   }
 
   /**
-   * Get all of the newly unlocked steps
-   * @param {WelcomeUser} user The user
-   * @return {number[]} List of unlocked steps
+   * Get all of the newly unlocked steps.
+   * @param user - The user to check
+   * @return The list of unlocked steps
    */
   getNewlyUnlockedSteps(user: WelcomeUser): number[] {
-    const now = new Date();
     if (!user.steps) {
       return [];
     }
+    const now = new Date();
     return user.steps.reduce((acc, step) => {
       if (!step.emailSentAt && step.unlockDate.toDate() <= now) {
         acc.push(step._id);
@@ -88,6 +72,10 @@ export class EmailService {
     }, []);
   }
 
+  /**
+   * Launch a task that search all of the newcomers and send them an email if they have unloked a step.
+   * @return List of unlocked steps
+   */
   async run() {
     this.logger.log('[Email] - send email to users');
     const userEmails = [];

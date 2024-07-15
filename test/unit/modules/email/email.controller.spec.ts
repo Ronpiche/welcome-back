@@ -13,6 +13,10 @@ import { LoggerMock } from '../../../unit/__mocks__/logger.mock';
 
 describe('Email controller', () => {
   let controller: EmailController;
+  const response: Partial<Response> = {
+    status: jest.fn().mockImplementation().mockReturnValue(200),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [EmailController],
@@ -30,9 +34,17 @@ describe('Email controller', () => {
   });
 
   describe('run', () => {
-    it('should launch the check for unlocked steps', async () => {
-      const data = await controller.run({} as Response);
+    it('should launch the task and return the result (OK)', async () => {
+      const data = await controller.run(response as Response);
       expect(data).toEqual([{ status: 'fulfilled', value: { _id: 1 } }]);
+    });
+
+    it('should launch the task and return the result (KO)', async () => {
+      controller['emailService']['run'] = jest
+        .fn()
+        .mockResolvedValue([{ status: 'rejected', reason: { _id: 1, error: 'unknown' } }]);
+      const data = await controller.run(response as Response);
+      expect(data).toEqual([{ status: 'rejected', reason: { _id: 1, error: 'unknown' } }]);
     });
   });
 });
