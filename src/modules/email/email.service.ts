@@ -1,10 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
-import { STEP_EMAIL_SUBJECT, STEP_EMAIL_TEXT } from './constants';
+import { STEP_EMAIL_SUBJECT, WELCOME_EMAIL_SUBJECT } from './constants';
+import { stepTemplate, welcomeTemplate } from './templates';
 import { Filter, Timestamp } from '@google-cloud/firestore';
 import { FirestoreService } from '@modules/shared/firestore/firestore.service';
 import { FIRESTORE_COLLECTIONS } from '@modules/shared/firestore/constants';
 import { WelcomeUser } from '@modules/welcome/entities/user.entity';
+
+const FIRST_STEP_ID = 0;
 
 @Injectable()
 export class EmailService {
@@ -26,7 +29,8 @@ export class EmailService {
       await this.mailerService.sendMail({ to: user.email, subject, html });
       return { _id: user._id };
     } catch (e) {
-      throw { _id: user._id, error: e.message };
+      e._id = user._id;
+      throw e;
     }
   }
 
@@ -57,13 +61,13 @@ export class EmailService {
   /**
    * Get all of the newly unlocked steps.
    * @param user - The user to check
+   * @param now - The actual date
    * @return The list of unlocked steps
    */
-  getNewlyUnlockedSteps(user: WelcomeUser): number[] {
+  getNewlyUnlockedSteps(user: WelcomeUser, now: Date): number[] {
     if (!user.steps) {
       return [];
     }
-    const now = new Date();
     return user.steps.reduce((acc, step) => {
       if (!step.emailSentAt && step.unlockDate.toDate() <= now) {
         acc.push(step._id);
@@ -74,29 +78,26 @@ export class EmailService {
 
   /**
    * Launch a task that search all of the newcomers and send them an email if they have unloked a step.
+   * @param now - The actual date
    * @return List of unlocked steps
    */
-  async run() {
+  async run(now: Date) {
     this.logger.log('[Email] - send email to users');
     const userEmails = [];
     (await this.getNewcomers()).forEach((user) => {
-      const unlockedSteps = this.getNewlyUnlockedSteps(user);
+      const unlockedSteps = this.getNewlyUnlockedSteps(user, now);
       if (unlockedSteps.length > 0) {
         userEmails.push(
           new Promise((resolve, reject) => {
-            this.sendEmail(
-              user,
-              STEP_EMAIL_SUBJECT,
-              STEP_EMAIL_TEXT.replaceAll('{USER}', user.firstName).replaceAll(
-                '{STEP}',
-                unlockedSteps.map((s) => s + 1).join(', '),
-              ),
-            )
+            const isNew = unlockedSteps.includes(FIRST_STEP_ID);
+            const subject = isNew ? WELCOME_EMAIL_SUBJECT : STEP_EMAIL_SUBJECT;
+            const html = isNew ? welcomeTemplate(user, unlockedSteps) : stepTemplate(user, unlockedSteps);
+            this.sendEmail(user, subject, html)
               .then(async (response) => {
                 await this.updateSteps(user, unlockedSteps);
                 resolve(response);
               })
-              .catch(reject);
+              .catch(({ _id, message }) => reject({ _id, message }));
           }),
         );
       }

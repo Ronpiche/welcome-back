@@ -21,7 +21,7 @@ export class EmailController {
   @ApiCreatedResponse({ description: 'Users notified', type: EmailRunOK, isArray: true })
   @ApiInternalServerErrorResponse({ description: 'Error on user notification', type: EmailRunKO, isArray: true })
   async run(@Res({ passthrough: true }) response: Response) {
-    const results = await this.emailService.run();
+    const results = await this.emailService.run(new Date());
     if (results.some((result) => result.status === 'rejected')) {
       response.status(HttpStatus.INTERNAL_SERVER_ERROR);
     }

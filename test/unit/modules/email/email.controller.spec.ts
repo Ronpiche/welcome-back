@@ -13,9 +13,16 @@ import { LoggerMock } from '../../../unit/__mocks__/logger.mock';
 
 describe('Email controller', () => {
   let controller: EmailController;
-  const response: Partial<Response> = {
-    status: jest.fn().mockImplementation().mockReturnValue(200),
-  };
+  const response = {
+    get statusCode() {
+      return this._status;
+    },
+    status(s: number) {
+      this._status = s;
+      return this;
+    },
+    _status: 201,
+  } as unknown as Response;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -35,7 +42,8 @@ describe('Email controller', () => {
 
   describe('run', () => {
     it('should launch the task and return the result (OK)', async () => {
-      const data = await controller.run(response as Response);
+      const data = await controller.run(response);
+      expect(response.statusCode).toBe(201);
       expect(data).toEqual([{ status: 'fulfilled', value: { _id: 1 } }]);
     });
 
@@ -43,7 +51,8 @@ describe('Email controller', () => {
       controller['emailService']['run'] = jest
         .fn()
         .mockResolvedValue([{ status: 'rejected', reason: { _id: 1, error: 'unknown' } }]);
-      const data = await controller.run(response as Response);
+      const data = await controller.run(response);
+      expect(response.statusCode).toBe(500);
       expect(data).toEqual([{ status: 'rejected', reason: { _id: 1, error: 'unknown' } }]);
     });
   });
