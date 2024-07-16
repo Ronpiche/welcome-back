@@ -36,12 +36,13 @@ export class EmailService {
 
   /**
    * Get the list of newcomers (where arrival date is in the future).
+   * @param now - The actual date
    * @return The list of newcomers
    */
-  async getNewcomers() {
+  async getNewcomers(now: Date) {
     return await this.firestoreService.getAllDocuments<WelcomeUser>(
       FIRESTORE_COLLECTIONS.welcomeUsers,
-      Filter.where('arrivalDate', '>', new Date().toISOString()),
+      Filter.where('arrivalDate', '>', now.toISOString()),
     );
   }
 
@@ -84,7 +85,7 @@ export class EmailService {
   async run(now: Date) {
     this.logger.log('[Email] - send email to users');
     const userEmails = [];
-    (await this.getNewcomers()).forEach((user) => {
+    (await this.getNewcomers(now)).forEach((user) => {
       const unlockedSteps = this.getNewlyUnlockedSteps(user, now);
       if (unlockedSteps.length > 0) {
         userEmails.push(
