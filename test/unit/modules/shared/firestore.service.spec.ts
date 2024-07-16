@@ -131,7 +131,7 @@ describe('firestoreService', () => {
     });
   });
 
-  describe('saveDocucment', () => {
+  describe('saveDocument', () => {
     it('firestoreDb should create an user object', async () => {
       service['firestore']['collection'] = jest.fn().mockReturnValue({
         doc: jest.fn().mockReturnValue({

@@ -72,7 +72,7 @@ describe('UsersService', () => {
     });
 
     it('should throw an error, because the arrivalDate is invalid', async () => {
-      inputWelcomeMock.arrivalDate = 100;
+      inputWelcomeMock.arrivalDate = '-1';
       try {
         await service.createUser(inputWelcomeMock);
       } catch (error) {
@@ -84,27 +84,27 @@ describe('UsersService', () => {
 
     describe('Testing holiday function', () => {
       it('Should shift of one day the date, because is it a public holiday', async () => {
-        const datesArray = verifyPublicHoliday(['2024-05-08T08:14:08Z', '2024-09-05T08:14:08Z']);
-        expect(datesArray.includes('2024-05-10T08:14:08.000Z')).toBeTruthy();
-        expect(datesArray.includes('2024-09-05T08:14:08.000Z')).toBeTruthy();
+        const datesArray = verifyPublicHoliday([new Date('2024-05-08T08:14:08Z'), new Date('2024-09-05T08:14:08Z')]);
+        expect(datesArray.map((d) => d.toISOString()).includes('2024-05-10T08:14:08.000Z')).toBeTruthy();
+        expect(datesArray.map((d) => d.toISOString()).includes('2024-09-05T08:14:08.000Z')).toBeTruthy();
       });
 
       it('Should shift of tuesday, because monday is a public holiday, and the date is a saturday', async () => {
-        const datesArray = verifyPublicHoliday(['2024-05-23T08:14:08Z', '2024-11-09T08:14:08Z']);
-        expect(datesArray.includes('2024-05-23T08:14:08.000Z')).toBeTruthy();
-        expect(datesArray.includes('2024-11-12T08:14:08.000Z')).toBeTruthy();
+        const datesArray = verifyPublicHoliday([new Date('2024-05-23T08:14:08Z'), new Date('2024-11-09T08:14:08Z')]);
+        expect(datesArray.map((d) => d.toISOString()).includes('2024-05-23T08:14:08.000Z')).toBeTruthy();
+        expect(datesArray.map((d) => d.toISOString()).includes('2024-11-12T08:14:08.000Z')).toBeTruthy();
       });
 
       it('Should shift of Monday, because the date is a saturday', async () => {
-        const datesArray = verifyPublicHoliday(['2024-05-11T08:14:08Z', '2024-09-05T08:14:08Z']);
-        expect(datesArray.includes('2024-05-13T08:14:08.000Z')).toBeTruthy();
-        expect(datesArray.includes('2024-09-05T08:14:08.000Z')).toBeTruthy();
+        const datesArray = verifyPublicHoliday([new Date('2024-05-11T08:14:08Z'), new Date('2024-09-05T08:14:08Z')]);
+        expect(datesArray.map((d) => d.toISOString()).includes('2024-05-13T08:14:08.000Z')).toBeTruthy();
+        expect(datesArray.map((d) => d.toISOString()).includes('2024-09-05T08:14:08.000Z')).toBeTruthy();
       });
 
       it('Should shift of Monday, because the date is a sunday', async () => {
-        const datesArray = verifyPublicHoliday(['2024-05-12T08:14:08Z', '2024-09-05T08:14:08Z']);
-        expect(datesArray.includes('2024-05-13T08:14:08.000Z')).toBeTruthy();
-        expect(datesArray.includes('2024-09-05T08:14:08.000Z')).toBeTruthy();
+        const datesArray = verifyPublicHoliday([new Date('2024-05-12T08:14:08Z'), new Date('2024-09-05T08:14:08Z')]);
+        expect(datesArray.map((d) => d.toISOString()).includes('2024-05-13T08:14:08.000Z')).toBeTruthy();
+        expect(datesArray.map((d) => d.toISOString()).includes('2024-09-05T08:14:08.000Z')).toBeTruthy();
       });
     });
   });

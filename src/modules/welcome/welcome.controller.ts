@@ -44,8 +44,18 @@ export class WelcomeController {
   @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(AccessGuard)
   @HttpCode(200)
-  @ApiQuery({ name: 'arrivalDate[startDate]', type: String, required: false, example: '10/05/2024' })
-  @ApiQuery({ name: 'arrivalDate[endDate]', type: String, required: false, example: '14/05/2024' })
+  @ApiQuery({
+    name: 'arrivalDate[startDate]',
+    type: Date,
+    required: false,
+    example: new Date().toISOString().substring(0, 10),
+  })
+  @ApiQuery({
+    name: 'arrivalDate[endDate]',
+    type: Date,
+    required: false,
+    example: new Date(new Date().setDate(new Date().getDate() + 90)).toISOString().substring(0, 10),
+  })
   @ApiOperation({ summary: 'Find all users', description: 'Returns all users.' })
   @ApiOkResponse({ description: 'OK', type: [WelcomeUserDto] })
   async findAll(@Query('arrivalDate', FindAllUsersPipe) filter: any): Promise<WelcomeUserDto[]> {

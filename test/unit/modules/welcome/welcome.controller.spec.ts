@@ -76,8 +76,7 @@ describe('Welcome controller', () => {
         startDate: '14/05/2024',
         endDate: '14/05/2024',
       };
-      const logger = new Logger();
-      const pipe = new FindAllUsersPipe(logger);
+      const pipe = new FindAllUsersPipe();
       const filter = pipe.transform(arrivalDate);
       const users = await controller.findAll(filter);
       expect(users).toBeDefined();
@@ -89,8 +88,7 @@ describe('Welcome controller', () => {
         startDate: '14/05/202',
         endDate: '14/05/2024',
       };
-      const logger = new Logger();
-      const pipe = new FindAllUsersPipe(logger);
+      const pipe = new FindAllUsersPipe();
       try {
         pipe.transform(arrivalDate);
       } catch (error) {
@@ -105,8 +103,7 @@ describe('Welcome controller', () => {
         startDate: '14/05/2024',
         endDate: '14/05/202',
       };
-      const logger = new Logger();
-      const pipe = new FindAllUsersPipe(logger);
+      const pipe = new FindAllUsersPipe();
       try {
         pipe.transform(arrivalDate);
       } catch (error) {

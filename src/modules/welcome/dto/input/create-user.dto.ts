@@ -53,11 +53,11 @@ export class CreateUserDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  arrivalDate: number;
+  arrivalDate: string;
 
   @ApiProperty()
   @IsNotEmpty()
-  signupDate: number;
+  signupDate: string;
 
   @ApiProperty()
   @ValidateNested()
