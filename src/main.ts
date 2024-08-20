@@ -20,7 +20,7 @@ async function bootstrap() {
 
   app.use(cookieParser());
   app.enableCors({
-    origin: ['https://welcome-hub-front-dev-s5fhodvgxa-od.a.run.app', 'https://dev-hub.daveo.fr'],
+    origin: ['https://daveo-gcp-welcome-sbx-cr-front-hub-s5fhodvgxa-od.a.run.app', 'https://dev-hub.daveo.fr'],
     credentials: true,
   });
   // if (process.env.NODE_ENV === 'local') {
