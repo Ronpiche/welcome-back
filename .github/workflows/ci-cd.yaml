@@ -98,7 +98,7 @@ jobs:
         id: deploy
         uses: google-github-actions/deploy-cloudrun@v2
         with:
-          image: ${{ env.REGISTRY_URL }}/backend:${{ env.GITHUB_SHA_SHORT }}
+          image: ${{ env.REGISTRY_URL }}/hub-backend:${{ env.GITHUB_SHA_SHORT }}
           service: welcome-hub-back-dev
           region: ${{ env.PROJECT_ZONE }}
           flags: --vpc-connector=welcome-connector
