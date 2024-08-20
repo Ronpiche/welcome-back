@@ -1,7 +1,9 @@
-import { NestFactory } from '@nestjs/core';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { Logger, ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
+
+import { Logger, ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+
 import { AppModule } from './app.module';
 import { accessAllSecrets } from './utils/accessSecret';
 
@@ -18,7 +20,7 @@ async function bootstrap() {
 
   app.use(cookieParser());
   app.enableCors({
-    origin: ['https://daveo-gcp-welcome-sbx-cr-front-hub-s5fhodvgxa-od.a.run.app', 'https://dev-hub.daveo.fr'],
+    origin: ['https://welcome-hub-front-dev-s5fhodvgxa-od.a.run.app', 'https://dev-hub.daveo.fr'],
     credentials: true,
   });
   // if (process.env.NODE_ENV === 'local') {
