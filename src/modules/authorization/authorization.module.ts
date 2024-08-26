@@ -1,7 +1,7 @@
 import { Logger, Module } from '@nestjs/common';
 import { AuthorizationController } from './authorization.controller';
 import { AuthorizationService } from './authorization.service';
-import { FirestoreModule } from '../shared/firestore/firestore.module';
+import { FirestoreModule } from '@src/services/firestore/firestore.module';
 import { CacheService } from '../shared/cache/cache.service';
 import { JwtCognito } from '../cognito/jwtCognito.service';
 

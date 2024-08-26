@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { WelcomeService } from '@modules/welcome/welcome.service';
-import { FirestoreService } from '@modules/shared/firestore/firestore.service';
-import { FirestoreServiceMock } from '../../../unit/__mocks__/firestore.service';
+import { FirestoreService } from '@src/services/firestore/firestore.service';
+import { FirestoreServiceMock } from '@test/unit/__mocks__/firestore.service';
 import { HttpException, InternalServerErrorException, Logger } from '@nestjs/common';
 import {
   inputUpdateWelcomeMock,
   inputWelcomeMock,
   welcomeUserEntityMock,
-} from '../../../unit/__mocks__/welcome/User.entity.mock';
+} from '@test/unit/__mocks__/welcome/User.entity.mock';
 import { verifyPublicHoliday } from '@modules/welcome/welcome.utils';
 
 describe('UsersService', () => {

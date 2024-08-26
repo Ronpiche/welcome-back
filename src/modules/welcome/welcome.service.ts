@@ -1,8 +1,8 @@
 import { HttpException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { CreateUserDto } from '@modules/welcome/dto/input/create-user.dto';
 import { UpdateUserDto } from '@modules/welcome/dto/input/update-user.dto';
-import { FirestoreService } from '@modules/shared/firestore/firestore.service';
-import { FIRESTORE_COLLECTIONS } from '@modules/shared/firestore/constants';
+import { FirestoreService } from '@src/services/firestore/firestore.service';
+import { FIRESTORE_COLLECTIONS } from '@src/configs/types/Firestore.types';
 import { Timestamp } from '@google-cloud/firestore';
 import { calculateEmailDate } from '@modules/welcome/welcome.utils';
 import { WelcomeUser } from './entities/user.entity';
@@ -16,9 +16,8 @@ export class WelcomeService {
     private readonly logger: Logger,
   ) {}
 
-  async createUser(createUserDto: CreateUserDto) {
+  async createUser(createUserDto: CreateUserDto): Promise<WelcomeUser> {
     try {
-      const now = Timestamp.now();
       let id = uuidv4();
       if (process.env.NODE_ENV === 'test') {
         id = 'test-integration';
@@ -41,8 +40,8 @@ export class WelcomeService {
         satisfactionQuestions: {},
         personnalProject: '',
         appGames: {},
-        creationDate: now,
-        lastUpdate: now,
+        creationDate: Timestamp.fromDate(new Date()),
+        lastUpdate: Timestamp.fromDate(new Date()),
         steps: calculateEmailDate(new Date(createUserDto.signupDate), new Date(createUserDto.arrivalDate)).map(
           (unlockDate, _id) => ({
             _id,
@@ -51,7 +50,7 @@ export class WelcomeService {
         ),
       };
 
-      return await this.firestoreService.saveDocument(FIRESTORE_COLLECTIONS.welcomeUsers, dbUser);
+      return (await this.firestoreService.saveDocument(FIRESTORE_COLLECTIONS.WELCOME_USERS, dbUser)) as WelcomeUser;
     } catch (error) {
       if (error instanceof HttpException) {
         this.logger.error(error);
@@ -66,7 +65,7 @@ export class WelcomeService {
     try {
       this.logger.log('[FindAllUsers] - find all users with filter : ', filter);
       return (await this.firestoreService.getAllDocuments(
-        FIRESTORE_COLLECTIONS.welcomeUsers,
+        FIRESTORE_COLLECTIONS.WELCOME_USERS,
         filter,
       )) as Array<WelcomeUser>;
     } catch (error) {
@@ -81,7 +80,7 @@ export class WelcomeService {
 
   async findOne(id: string): Promise<WelcomeUser> {
     try {
-      return (await this.firestoreService.getDocument(FIRESTORE_COLLECTIONS.welcomeUsers, id)) as WelcomeUser;
+      return (await this.firestoreService.getDocument(FIRESTORE_COLLECTIONS.WELCOME_USERS, id)) as WelcomeUser;
     } catch (error) {
       if (error instanceof HttpException) {
         this.logger.error('User is not registered in welcome');
@@ -95,7 +94,7 @@ export class WelcomeService {
   async remove(id: string): Promise<void> {
     await this.findOne(id);
     try {
-      await this.firestoreService.deleteDocument(FIRESTORE_COLLECTIONS.welcomeUsers, id);
+      await this.firestoreService.deleteDocument(FIRESTORE_COLLECTIONS.WELCOME_USERS, id);
     } catch (error) {
       throw new InternalServerErrorException('Internal Server Error');
     }
@@ -105,7 +104,7 @@ export class WelcomeService {
     const userToUpdate: Record<string, any> = instanceToPlain(updateUserDto);
     userToUpdate['lastUpdate'] = Timestamp.now();
     try {
-      await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.welcomeUsers, id, userToUpdate);
+      await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.WELCOME_USERS, id, userToUpdate);
     } catch (error) {
       if (error instanceof HttpException) {
         this.logger.error(error);
@@ -118,7 +117,7 @@ export class WelcomeService {
   }
 
   async transformDbOjectStringsToArray(propertyName: string): Promise<{ status: string }> {
-    await this.firestoreService.transformToObjectAndSaveProperty(FIRESTORE_COLLECTIONS.welcomeUsers, propertyName);
+    await this.firestoreService.transformToObjectAndSaveProperty(FIRESTORE_COLLECTIONS.WELCOME_USERS, propertyName);
     return { status: 'success' };
   }
 }

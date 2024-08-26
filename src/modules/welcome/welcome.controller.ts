@@ -17,11 +17,11 @@ import { CreateUserDto } from '@modules/welcome/dto/input/create-user.dto';
 import { UpdateUserDto } from '@modules/welcome/dto/input/update-user.dto';
 import { WelcomeUserDto } from '@modules/welcome/dto/output/welcome-user.dto';
 import { ApiBody, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { AccessGuard } from '@/middleware/AuthGuard';
+import { AccessGuard } from '@src/middleware/AuthGuard';
 import { FindAllUsersPipe } from '@modules/welcome/pipes/find-all-users.pipe';
-import { plainToInstance } from 'class-transformer';
 import { WelcomeUser } from './entities/user.entity';
-import { IsPrivate } from '@/decorators/isPrivate';
+import { IsPublic } from '@src/decorators/isPublic';
+import { plainToInstance } from 'class-transformer';
 
 @ApiTags('welcome')
 @Controller('welcome')
@@ -29,18 +29,19 @@ export class WelcomeController {
   constructor(private readonly welcomeService: WelcomeService) {}
 
   @Post('users')
-  @IsPrivate()
+  @IsPublic(false)
   @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(AccessGuard)
   @ApiOperation({ summary: 'Create User', description: 'Returns new user.' })
   @ApiBody({ type: CreateUserDto })
   @ApiOkResponse({ description: 'User created', type: WelcomeUserDto })
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.welcomeService.createUser(createUserDto);
+  async create(@Body() createUserDto: CreateUserDto): Promise<WelcomeUserDto> {
+    const user: WelcomeUser = await this.welcomeService.createUser(createUserDto);
+    return plainToInstance(WelcomeUserDto, user, { excludeExtraneousValues: true });
   }
 
   @Get('users')
-  @IsPrivate()
+  @IsPublic(false)
   @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(AccessGuard)
   @HttpCode(200)
@@ -64,7 +65,7 @@ export class WelcomeController {
   }
 
   @Get('users/:id')
-  @IsPrivate()
+  @IsPublic(false)
   @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(AccessGuard)
   @HttpCode(200)
@@ -72,10 +73,11 @@ export class WelcomeController {
   @ApiOperation({ summary: 'Find one user', description: 'Returns one user' })
   @ApiOkResponse({ description: 'OK', type: WelcomeUserDto })
   async findOne(@Param('id') id: string): Promise<WelcomeUserDto> {
-    return plainToInstance(WelcomeUserDto, await this.welcomeService.findOne(id), { excludeExtraneousValues: true });
+    const user: WelcomeUser = await this.welcomeService.findOne(id);
+    return plainToInstance(WelcomeUserDto, user, { excludeExtraneousValues: true });
   }
 
-  @IsPrivate()
+  @IsPublic(false)
   @Delete('users/:id')
   @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(AccessGuard)
@@ -89,7 +91,7 @@ export class WelcomeController {
   }
 
   @Put('users/:id')
-  @IsPrivate()
+  @IsPublic(false)
   @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(AccessGuard)
   @HttpCode(200)
@@ -98,13 +100,12 @@ export class WelcomeController {
   @ApiOperation({ summary: 'Update One User', description: 'Update user' })
   @ApiOkResponse({ description: 'OK', type: WelcomeUserDto })
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto): Promise<WelcomeUserDto> {
-    return plainToInstance(WelcomeUserDto, await this.welcomeService.update(id, updateUserDto), {
-      excludeExtraneousValues: true,
-    });
+    const user: WelcomeUser = await this.welcomeService.update(id, updateUserDto);
+    return plainToInstance(WelcomeUserDto, user, { excludeExtraneousValues: true });
   }
 
   @Post('transform-property')
-  @IsPrivate()
+  @IsPublic(false)
   @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(AccessGuard)
   @HttpCode(201)

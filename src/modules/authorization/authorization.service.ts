@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { FirestoreService } from '../shared/firestore/firestore.service';
+import { FirestoreService } from '@src/services/firestore/firestore.service';
 import { FilterType, UserRoles } from './types/authorization.types';
-import { FIRESTORE_COLLECTIONS } from '../shared/firestore/constants';
+import { FIRESTORE_COLLECTIONS } from '@src/configs/types/Firestore.types';
 import { RoleDto, UserDto } from './dto/authorization.dto';
 import { FieldValue } from '@google-cloud/firestore';
 import { CreateUpdateRoleDto } from './dto/create-role.dto';
@@ -17,7 +17,7 @@ export class AuthorizationService {
 
   async getAllRoles(filter: FilterType): Promise<Role[]> {
     try {
-      const roles = await this.firestoreService.getAllDocuments(FIRESTORE_COLLECTIONS.roles, filter);
+      const roles = await this.firestoreService.getAllDocuments(FIRESTORE_COLLECTIONS.ROLES, filter);
 
       return roles as Role[];
     } catch (error) {
@@ -28,7 +28,7 @@ export class AuthorizationService {
 
   async getRoleById(roleId: string): Promise<Role> {
     try {
-      const role = await this.firestoreService.getDocument(FIRESTORE_COLLECTIONS.roles, roleId);
+      const role = await this.firestoreService.getDocument(FIRESTORE_COLLECTIONS.ROLES, roleId);
       return role as Role;
     } catch (error) {
       this.logger.error(error);
@@ -41,7 +41,7 @@ export class AuthorizationService {
       const now = FieldValue.serverTimestamp();
       const dataToSave = { ...payload, createdAt: now, updatedAt: now };
 
-      return await this.firestoreService.saveDocument(FIRESTORE_COLLECTIONS.roles, dataToSave);
+      return await this.firestoreService.saveDocument(FIRESTORE_COLLECTIONS.ROLES, dataToSave);
     } catch (error) {
       this.logger.error(error);
       throw error;
@@ -53,7 +53,7 @@ export class AuthorizationService {
       const now = FieldValue.serverTimestamp();
       const dataToUpdate = { ...roleDto, updatedAt: now };
 
-      return await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.roles, id, dataToUpdate);
+      return await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.ROLES, id, dataToUpdate);
     } catch (error) {
       this.logger.error(error);
       throw error;
@@ -62,14 +62,14 @@ export class AuthorizationService {
 
   async deleteRole(id: string): Promise<void> {
     try {
-      const role = await this.firestoreService.getDocument(FIRESTORE_COLLECTIONS.roles, id);
+      const role = await this.firestoreService.getDocument(FIRESTORE_COLLECTIONS.ROLES, id);
 
       if (!role) {
         throw new HttpException('Role not found', HttpStatus.NOT_FOUND);
       }
 
       await this.updateUsersWithRole(role as RoleDto);
-      await this.firestoreService.deleteDocument(FIRESTORE_COLLECTIONS.roles, id);
+      await this.firestoreService.deleteDocument(FIRESTORE_COLLECTIONS.ROLES, id);
     } catch (error) {
       this.logger.error(error);
       throw error;
@@ -81,7 +81,7 @@ export class AuthorizationService {
       const updateQuery = { [role.app]: role.name };
       const updateData = { [role.app]: UserRoles.Collaborateur };
 
-      await this.firestoreService.updateManyDocuments(FIRESTORE_COLLECTIONS.authorizedUsers, updateQuery, updateData);
+      await this.firestoreService.updateManyDocuments(FIRESTORE_COLLECTIONS.AUTHORIZED_USERS, updateQuery, updateData);
     } catch (error) {
       this.logger.error(error);
       throw error;
@@ -90,7 +90,7 @@ export class AuthorizationService {
 
   async getAllUsers(): Promise<User[]> {
     try {
-      const authUsers = await this.firestoreService.getAllDocuments(FIRESTORE_COLLECTIONS.authorizedUsers);
+      const authUsers = await this.firestoreService.getAllDocuments(FIRESTORE_COLLECTIONS.AUTHORIZED_USERS);
 
       const users = authUsers;
 
@@ -103,7 +103,7 @@ export class AuthorizationService {
 
   async getUserById(id: string): Promise<User> {
     try {
-      const authUser = await this.firestoreService.getDocument(FIRESTORE_COLLECTIONS.authorizedUsers, id);
+      const authUser = await this.firestoreService.getDocument(FIRESTORE_COLLECTIONS.AUTHORIZED_USERS, id);
 
       return authUser as User;
     } catch (error) {
@@ -117,7 +117,7 @@ export class AuthorizationService {
       const now = FieldValue.serverTimestamp();
       const dataToUpdate = { ...data, updatedAt: now };
 
-      return await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.authorizedUsers, id, dataToUpdate);
+      await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.AUTHORIZED_USERS, id, dataToUpdate);
     } catch (error) {
       this.logger.error(error);
       throw error;

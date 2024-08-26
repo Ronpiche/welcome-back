@@ -10,8 +10,7 @@
   },
   "scripts": {
     "build": "nest build",
-    "start:dev": "nest start --watch",
-    "start:local": "cross-env NODE_ENV=local nest start --watch",
+    "start:dev": "cross-env NODE_ENV=dev nest start --watch",
     "start": "nest start",
     "start:prod": "node dist/src/main",
     "start:debug": "nest start --debug --watch",
@@ -46,6 +45,8 @@
     "cookie-parser": "^1.4.6",
     "cross-env": "^7.0.3",
     "date-holidays": "^3.23.11",
+    "firebase": "^10.12.2",
+    "firebase-admin": "^12.2.0",
     "msw": "^2.2.13",
     "nestjs-session": "^3.0.1",
     "node-cache": "^5.1.2",

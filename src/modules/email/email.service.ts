@@ -3,8 +3,8 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { STEP_EMAIL_SUBJECT, WELCOME_EMAIL_SUBJECT } from './constants';
 import { stepTemplate, welcomeTemplate } from './templates';
 import { Filter, Timestamp } from '@google-cloud/firestore';
-import { FirestoreService } from '@modules/shared/firestore/firestore.service';
-import { FIRESTORE_COLLECTIONS } from '@modules/shared/firestore/constants';
+import { FirestoreService } from '@src/services/firestore/firestore.service';
+import { FIRESTORE_COLLECTIONS } from '@src/configs/types/Firestore.types';
 import { WelcomeUser } from '@modules/welcome/entities/user.entity';
 
 const FIRST_STEP_ID = 0;
@@ -41,7 +41,7 @@ export class EmailService {
    */
   async getNewcomers(now: Date) {
     return await this.firestoreService.getAllDocuments<WelcomeUser>(
-      FIRESTORE_COLLECTIONS.welcomeUsers,
+      FIRESTORE_COLLECTIONS.WELCOME_USERS,
       Filter.where('arrivalDate', '>', now.toISOString()),
     );
   }
@@ -54,7 +54,7 @@ export class EmailService {
    */
   async updateSteps(user: WelcomeUser, unlockedSteps: number[]) {
     const emailSentAt = Timestamp.now();
-    return await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.welcomeUsers, user._id, {
+    return await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.WELCOME_USERS, user._id, {
       steps: user.steps.map((step) => (unlockedSteps.includes(step._id) ? Object.assign(step, { emailSentAt }) : step)),
     });
   }

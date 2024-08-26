@@ -1,22 +1,22 @@
 import { WelcomeController } from '@modules/welcome/welcome.controller';
 import { WelcomeService } from '@modules/welcome/welcome.service';
 import { Test, TestingModule } from '@nestjs/testing';
-import { WelcomeServiceMock } from '../../../unit/__mocks__/welcome/welcome.service.mock';
+import { WelcomeServiceMock } from '@test/unit/__mocks__/welcome/welcome.service.mock';
 import {
   outputWelcomeMock,
   inputUpdateWelcomeMock,
   outputUpdateWelcomeMock,
   inputWelcomeMock,
-} from '../../../unit/__mocks__/welcome/User.entity.mock';
-import { AccessGuard } from '../../../../src/middleware/AuthGuard';
+} from '@test/unit/__mocks__/welcome/User.entity.mock';
+import { AccessGuard } from '@src/middleware/AuthGuard';
 import { FindAllUsersPipe } from '@modules/welcome/pipes/find-all-users.pipe';
 import { JwtService } from '@nestjs/jwt';
 import { ArgumentsHost, BadRequestException, HttpException, Logger } from '@nestjs/common';
 import { CreateUserExceptionFilter } from '@modules/welcome/filters/create-user.filter';
-import { JwtCognito } from '../../../../src/modules/cognito/jwtCognito.service';
+import { JwtCognito } from '@src/modules/cognito/jwtCognito.service';
 import { ConfigService } from '@nestjs/config';
-import { CognitoServiceMock } from '../../../unit/__mocks__/cognito/cognito.service.mock';
-import { LoggerMock } from '../../../unit/__mocks__/logger.mock';
+import { CognitoServiceMock } from '@test/unit/__mocks__/cognito/cognito.service.mock';
+import { LoggerMock } from '@test/unit/__mocks__/logger.mock';
 
 describe('Welcome controller', () => {
   let controller: WelcomeController;
@@ -40,9 +40,8 @@ describe('Welcome controller', () => {
   describe('create', () => {
     it('should create an user, and return on object', async () => {
       const data = await controller.create(inputWelcomeMock);
-      expect(data.status).toBeDefined();
-      expect(data.id).toBeDefined();
-      expect(data).toEqual({ status: 'ok', id: '789QSD123' });
+      expect(data).toBeDefined();
+      expect(data).toEqual(outputWelcomeMock);
     });
   });
 

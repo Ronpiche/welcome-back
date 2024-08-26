@@ -3,7 +3,7 @@ import { WelcomeService } from '@modules/welcome/welcome.service';
 import { WelcomeController } from '@modules/welcome/welcome.controller';
 import { APP_FILTER } from '@nestjs/core';
 import { CreateUserExceptionFilter } from '@modules/welcome/filters/create-user.filter';
-import { FirestoreModule } from '../shared/firestore/firestore.module';
+import { FirestoreModule } from '@src/services/firestore/firestore.module';
 import { CacheService } from '../shared/cache/cache.service';
 import { JwtCognito } from '../cognito/jwtCognito.service';
 

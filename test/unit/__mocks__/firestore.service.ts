@@ -4,19 +4,29 @@ import { RoleDto } from '@modules/authorization/dto/authorization.dto';
 
 export class FirestoreServiceMock {
   getAllDocuments = jest.fn(async (collection: string, filter?: Filter) => {
-    return [];
+    return [
+      {
+        _id: 'mockedId',
+      },
+    ];
   });
 
   getDocument = jest.fn(async (collection: string, documentId: string) => {
-    return null;
+    return {
+      _id: 'mockedId',
+    };
   });
 
   saveDocument = jest.fn(async (collection: string, data: Record<string, unknown> | RoleDto) => {
-    return { status: 'OK', id: 'mockedId' };
+    return {
+      _id: 'mockedId',
+    };
   });
 
   updateDocument = jest.fn(async (collection: string, documentId: string, data: RoleDto | Record<string, unknown>) => {
-    return;
+    return {
+      _id: 'mockedId',
+    };
   });
 
   deleteDocument = jest.fn(async (collection: string, documentId: string) => {

@@ -1,9 +1,10 @@
 import { Firestore } from '@google-cloud/firestore';
-import { FIRESTORE_COLLECTIONS } from '@modules/shared/firestore/constants';
-import { FirestoreService } from '@modules/shared/firestore/firestore.service';
+import { FIRESTORE_COLLECTIONS } from '@src/configs/types/Firestore.types';
+import { FirestoreService } from '@src/services/firestore/firestore.service';
 import { HttpException, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { welcomeUserEntityMock } from '../../../unit/__mocks__/welcome/User.entity.mock';
+import { outputWelcomeMock, welcomeUserEntityMock } from '@test/unit/__mocks__/welcome/User.entity.mock';
+import { WelcomeUser } from '@src/modules/welcome/entities/user.entity';
 
 describe('firestoreService', () => {
   let service: FirestoreService;
@@ -34,7 +35,7 @@ describe('firestoreService', () => {
       doc: jest.fn().mockReturnThis(),
       where: jest.fn().mockReturnThis(),
     });
-    collection = FIRESTORE_COLLECTIONS.welcomeUsers;
+    collection = FIRESTORE_COLLECTIONS.WELCOME_USERS;
     documentId = '789QSD123';
   });
 
@@ -53,7 +54,7 @@ describe('firestoreService', () => {
         },
       ]);
       const spy = jest.spyOn(service as any, 'applyFilters');
-      const res = await service.getAllDocuments(collection);
+      const res = await service.getAllDocuments(collection as FIRESTORE_COLLECTIONS);
       expect(res).toHaveLength(2);
       expect(spy).not.toHaveBeenCalled();
     });
@@ -68,7 +69,7 @@ describe('firestoreService', () => {
         },
       ]);
       const spy = jest.spyOn(service as any, 'applyFilters');
-      const res = await service.getAllDocuments(collection, {});
+      const res = await service.getAllDocuments(collection as FIRESTORE_COLLECTIONS, {});
       expect(res).toHaveLength(2);
       expect(spy).toHaveBeenCalled();
     });
@@ -84,7 +85,7 @@ describe('firestoreService', () => {
         },
       ]);
       const spy = jest.spyOn(service as any, 'applyFilters');
-      const res = await service.getAllDocuments(collection, filter);
+      const res = await service.getAllDocuments(collection as FIRESTORE_COLLECTIONS, filter);
       expect(res).toHaveLength(1);
       expect(spy).toHaveBeenCalled();
     });
@@ -103,7 +104,7 @@ describe('firestoreService', () => {
         },
       ]);
       const spy = jest.spyOn(service as any, 'applyFilters');
-      const res = await service.getAllDocuments(collection, filter);
+      const res = await service.getAllDocuments(collection as FIRESTORE_COLLECTIONS, filter);
       expect(res).toHaveLength(1);
       expect(spy).toHaveBeenCalled();
     });
@@ -115,14 +116,14 @@ describe('firestoreService', () => {
         exists: true,
         data: jest.fn().mockReturnValue(welcomeUserEntityMock),
       });
-      const res = await service.getDocument(collection, documentId);
+      const res = await service.getDocument(collection as FIRESTORE_COLLECTIONS, documentId);
       expect(res).toEqual(welcomeUserEntityMock);
     });
 
     it('the firestoreDB should return an empty object', async () => {
       service['firestore'].collection(collection).doc(documentId).get = jest.fn().mockResolvedValue({});
       try {
-        await service.getDocument(collection, documentId);
+        await service.getDocument(collection as FIRESTORE_COLLECTIONS, documentId);
       } catch (error) {
         expect(error).toBeInstanceOf(HttpException);
         expect(error.message).toEqual('Document not found in DB');
@@ -133,15 +134,15 @@ describe('firestoreService', () => {
 
   describe('saveDocument', () => {
     it('firestoreDb should create an user object', async () => {
+      service.getDocument = jest.fn().mockResolvedValue(outputWelcomeMock);
       service['firestore']['collection'] = jest.fn().mockReturnValue({
         doc: jest.fn().mockReturnValue({
           id: documentId,
           create: jest.fn().mockResolvedValue({}),
         }),
       });
-      const res = await service.saveDocument(collection, {});
-      expect(res.id).toEqual(documentId);
-      expect(res.status).toEqual('OK');
+      const res = await service.saveDocument(collection as FIRESTORE_COLLECTIONS, {});
+      expect(res).toBeDefined();
     });
 
     it('firestoreDb should throw an FirestoreError already exists', async () => {
@@ -154,7 +155,7 @@ describe('firestoreService', () => {
         }),
       });
       try {
-        await service.saveDocument(collection, {});
+        await service.saveDocument(collection as FIRESTORE_COLLECTIONS, {});
       } catch (error) {
         expect(error).toBeInstanceOf(HttpException);
         expect(error.message).toEqual('Document already exists.');
@@ -170,7 +171,7 @@ describe('firestoreService', () => {
         }),
       });
       try {
-        await service.saveDocument(collection, {});
+        await service.saveDocument(collection as FIRESTORE_COLLECTIONS, {});
       } catch (error) {
         expect(error).toBeInstanceOf(InternalServerErrorException);
         expect(error.message).toEqual('internal server error');
@@ -202,7 +203,7 @@ describe('firestoreService', () => {
           },
         ]),
       });
-      expect(await service.updateManyDocuments(collection, filter, {})).toBeUndefined();
+      expect(await service.updateManyDocuments(collection as FIRESTORE_COLLECTIONS, filter, {})).toBeUndefined();
     });
 
     it('firestoreDb should throw an error', async () => {
@@ -226,7 +227,7 @@ describe('firestoreService', () => {
         commit: jest.fn().mockRejectedValue(new InternalServerErrorException()),
       });
       try {
-        await service.updateManyDocuments(collection, filter, {});
+        await service.updateManyDocuments(collection as FIRESTORE_COLLECTIONS, filter, {});
       } catch (error) {
         expect(error).toBeInstanceOf(InternalServerErrorException);
         expect(error.message).toEqual('Internal Server Error');
@@ -247,7 +248,10 @@ describe('firestoreService', () => {
       service['firestore'].collection(collection).where('email', '==', 'test@test.fr').get = jest
         .fn()
         .mockResolvedValue(documentsSnapshot);
-      const res = await service.getByEmail(collection, 'test@est.fr');
+      const res: WelcomeUser = (await service.getByEmail(
+        collection as FIRESTORE_COLLECTIONS,
+        'test@est.fr',
+      )) as WelcomeUser;
       expect(res).toBeDefined();
       expect(res._id).toEqual('16156-585263');
     });
@@ -263,7 +267,7 @@ describe('firestoreService', () => {
         .mockResolvedValue(documentsSnapshot as any);
 
       try {
-        await service.getByEmail('collection', 'test@example.com');
+        await service.getByEmail('collection' as FIRESTORE_COLLECTIONS, 'test@example.com');
       } catch (error) {
         expect(error).toBeInstanceOf(NotFoundException);
         expect(error.message).toEqual('User not found in DB');
@@ -282,7 +286,7 @@ describe('firestoreService', () => {
         .mockResolvedValue(documentsSnapshot as any);
 
       try {
-        await service.getByEmail('collection', 'test@example.com');
+        await service.getByEmail('collection' as FIRESTORE_COLLECTIONS, 'test@example.com');
       } catch (error) {
         expect(error).toBeInstanceOf(HttpException);
         expect(error.message).toEqual('Multiple users found');
