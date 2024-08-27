@@ -1,10 +1,9 @@
-import cookieParser from 'cookie-parser';
-
-import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { Logger, ValidationPipe } from '@nestjs/common';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
+import { accessAllSecrets } from './utils/accessSecret';
 
 const DEFAULT_HTTP_PORT = 3337;
 
