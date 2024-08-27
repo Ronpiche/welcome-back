@@ -1,0 +1,107 @@
+name: Build and push Hub Backend to GCP
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - ci-cd
+      - main
+
+env:
+  IMAGE_NAME: hub-backend
+  PROJECT_ID: daveo-gcp-welcome-sbx-1745
+  PROJECT_ZONE: 'europe-west9'
+  REGISTRY_URL: 'europe-west9-docker.pkg.dev/daveo-gcp-welcome-sbx-1745/welcome'
+  SERVICE_ACCOUNT: 'github-actions-service-account@daveo-gcp-welcome-sbx-1745.iam.gserviceaccount.com'
+  WORKLOAD_IDENTITY_PROVIDER: 'projects/222796272532/locations/global/workloadIdentityPools/github-action-wip/providers/github-actions-provider'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm run test:unit
+
+  build:
+    needs: test
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get Sha
+        run: echo "GITHUB_SHA_SHORT=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
+      - name: Google Auth
+        id: auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          token_format: 'access_token'
+          project_id: ${{ env.PROJECT_ID }}
+          service_account: ${{ env.SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
+
+      - name: Docker Auth
+        id: docker-auth
+        uses: 'docker/login-action@v3'
+        with:
+          username: 'oauth2accesstoken'
+          password: '${{ steps.auth.outputs.access_token }}'
+          registry: '${{ env.PROJECT_ZONE }}-docker.pkg.dev'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: Build and Push Container
+        run: |-
+          docker build -t "${{ env.REGISTRY_URL }}/${{ env.IMAGE_NAME }}:${{ env.GITHUB_SHA_SHORT }}" ./
+          docker push "${{ env.REGISTRY_URL }}/${{ env.IMAGE_NAME }}:${{ env.GITHUB_SHA_SHORT }}"
+
+  deploy:
+    needs: build
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Google Auth
+        id: auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          service_account: ${{ env.SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
+
+      - name: Get Sha For deployment
+        run: echo "GITHUB_SHA_SHORT=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
+      - name: Deploy on Cloud Run
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          image: ${{ env.REGISTRY_URL }}/hub-backend:${{ env.GITHUB_SHA_SHORT }}
+          service: daveo-gcp-welcome-sbx-cr-back-hub
+          region: ${{ env.PROJECT_ZONE }}
+          env_vars: |
+            NODE_ENV=production
+            NAME_PROJECT=projects/222796272532
+            COGNITO_BY_PASS=true
