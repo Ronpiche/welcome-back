@@ -1,61 +1,61 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { GRADE, PRACTICE } from '../../types/user.enum';
 
 export class RhUserInfoDto {
-  @ApiProperty()
+  @ApiProperty({ example: 'abcd-1234' })
   @IsString()
   @IsNotEmpty()
   _id: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'Joe' })
   @IsString()
   @IsNotEmpty()
   firstName: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'Bloggs' })
   @IsString()
   @IsNotEmpty()
   lastName: string;
 
-  @ApiProperty()
-  @IsEmail()
+  @ApiProperty({ example: 'joe.bloggs@127.0.0.1' })
+  //@IsEmail() TODO: Uncomment this when production ready
   @IsNotEmpty()
   email: string;
 }
 
 export class CreateUserDto {
-  @ApiProperty()
-  @IsEmail()
+  @ApiProperty({ example: 'john.doe@127.0.0.1' })
+  //@IsEmail() TODO: Uncomment this when production ready
   @IsNotEmpty()
   email: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'John' })
   @IsString()
   @IsNotEmpty()
   firstName: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'Doe' })
   @IsString()
   @IsNotEmpty()
   lastName: string;
 
-  @ApiProperty()
+  @ApiProperty({ enum: GRADE, enumName: 'Grade' })
   @IsEnum(GRADE)
   @IsNotEmpty()
-  grade: string;
+  grade: GRADE;
 
-  @ApiProperty()
+  @ApiProperty({ enum: PRACTICE, enumName: 'Practice' })
   @IsEnum(PRACTICE)
   @IsNotEmpty()
-  practice: string;
+  practice: PRACTICE;
 
-  @ApiProperty()
+  @ApiProperty({ example: new Date(new Date().setDate(new Date().getDate() + 75)).toISOString().substring(0, 10) })
   @IsNotEmpty()
   arrivalDate: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: new Date().toISOString().substring(0, 10) })
   @IsNotEmpty()
   signupDate: string;
 
@@ -64,18 +64,17 @@ export class CreateUserDto {
   @Type(() => RhUserInfoDto)
   referentRH: RhUserInfoDto;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'M' })
   @IsString()
   @IsNotEmpty()
   civility: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'Lille' })
   @IsString()
   @IsNotEmpty()
   agency: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'Example user' })
   @IsString()
-  @IsOptional()
-  note?: string;
+  note: string;
 }

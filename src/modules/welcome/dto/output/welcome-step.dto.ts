@@ -1,35 +1,30 @@
 import { Timestamp } from '@google-cloud/firestore';
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose, Transform, Type } from 'class-transformer';
+import { Expose, Transform } from 'class-transformer';
 
 export class WelcomeStepDto {
   @ApiProperty()
   @Expose()
-  _id: number;
+  _id: string;
 
   @ApiProperty()
   @Expose()
-  @Type(() => String)
-  @Transform((value: any) => {
-    return value.obj.unlockDate instanceof Timestamp
-      ? value.obj.unlockDate.toDate().toISOString()
-      : value.obj.unlockDate;
-  })
-  unlockDate: string;
-
-  @ApiProperty()
-  @Expose()
-  @Type(() => String)
-  @Transform((value: any) =>
-    value.obj.emailSentAt instanceof Timestamp ? value.obj.emailSentAt.toDate().toISOString() : value.obj.emailSentAt,
+  @Transform(({ value }) =>
+    value && value._seconds ? new Timestamp(value._seconds, value._nanoseconds).toDate() : value,
   )
-  emailSentAt?: string;
+  unlockDate: Date;
 
   @ApiProperty()
   @Expose()
-  @Type(() => String)
-  @Transform((value: any) =>
-    value.obj.completedAt instanceof Timestamp ? value.obj.completedAt.toDate().toISOString() : value.obj.completedAt,
+  @Transform(({ value }) =>
+    value && value._seconds ? new Timestamp(value._seconds, value._nanoseconds).toDate() : value,
   )
-  completedAt?: string;
+  emailSentAt?: Date;
+
+  @ApiProperty()
+  @Expose()
+  @Transform(({ value }) =>
+    value && value._seconds ? new Timestamp(value._seconds, value._nanoseconds).toDate() : value,
+  )
+  completedAt?: Date;
 }

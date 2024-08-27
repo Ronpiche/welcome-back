@@ -58,7 +58,10 @@ export class FirestoreService {
     }
   }
 
-  async getDocument(collection: FIRESTORE_COLLECTIONS, documentId: string): Promise<FirestoreDocumentType> {
+  async getDocument<T extends FirestoreDocumentType>(
+    collection: FIRESTORE_COLLECTIONS,
+    documentId: string,
+  ): Promise<T> {
     let documentSnapshot: FirebaseFirestore.DocumentSnapshot<
       FirebaseFirestore.DocumentData,
       FirebaseFirestore.DocumentData
@@ -73,7 +76,7 @@ export class FirestoreService {
       throw new NotFoundException('Document not found in DB');
     }
 
-    return documentSnapshot.data();
+    return documentSnapshot.data() as T;
   }
 
   async getByEmail(collection: FIRESTORE_COLLECTIONS, email: string): Promise<FirestoreDocumentType> {

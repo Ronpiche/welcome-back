@@ -6,16 +6,12 @@ import { GRADE, PRACTICE } from '@modules/welcome/types/user.enum';
 
 export const welcomeUserEntityMock: WelcomeUser = {
   _id: '16156-585263',
-  appGames: { scoreTetris: 3000, scoreDemineur: 8050, scoreTrexGame: 777 },
   note: '',
   email: 'test@test.fr',
   signupDate: '2022-04-24 22:00:00',
   lastName: 'COBIGO',
   civility: 'M',
   agency: 'Lille',
-  personnalProject:
-    "Ayant un attrait pour la logique en général je me suis orienté vers le développement informatique.\nLors de mes différents projets, j'ai pu faire évoluer mes compétences .Net et sur différent framework Front tel que Angular ou VueJs. J'ai eu l'occasion de travaillé sur des TMA comme sur des projets naissants, les deux aspects m'ont permis de me donner une vision plus globale du cycle de vie d'une application.\nDu à mon attrait pour la logique, j'ai une tendance à m'occuper plus du back que du front mais les deux restent intéressant et pouvoir créer l'affichage a un coté assez satisfaisant\n",
-  hiringProcessEvaluation: '4.0',
   creationDate: Timestamp.fromDate(new Date('2022-04-25 13:24:06.627')),
   referentRH: {
     _id: '114522855744701640690',
@@ -31,15 +27,14 @@ export const welcomeUserEntityMock: WelcomeUser = {
   satisfactionQuestions: {},
   communitiesQuestions: {},
   steps: [
-    { _id: 0, unlockDate: Timestamp.fromDate(new Date(2022, 4, 25, 13, 24, 6)) },
-    { _id: 1, unlockDate: Timestamp.fromDate(new Date(2022, 4, 25, 13, 24, 6)) },
-    { _id: 2, unlockDate: Timestamp.fromDate(new Date(2022, 4, 25, 13, 24, 6)) },
+    { _id: '0', unlockDate: Timestamp.fromDate(new Date(2022, 4, 25, 13, 24, 6)) },
+    { _id: '1', unlockDate: Timestamp.fromDate(new Date(2022, 4, 25, 13, 24, 6)) },
+    { _id: '2', unlockDate: Timestamp.fromDate(new Date(2022, 4, 25, 13, 24, 6)) },
   ],
 };
 
 export const outputWelcomeMock: WelcomeUserDto = {
   _id: '561651-1561',
-  appGames: { scoreTetris: 3000, scoreDemineur: 8050, scoreTrexGame: 777 },
   note: '',
   signupDate: '2022-04-24 22:00:00',
   lastName: 'COBIGO',
@@ -48,10 +43,7 @@ export const outputWelcomeMock: WelcomeUserDto = {
   civility: 'M',
   email: 'john.doe@daveo.fr',
   agency: 'Lille',
-  personnalProject:
-    "Ayant un attrait pour la logique en général je me suis orienté vers le développement informatique.\nLors de mes différents projets, j'ai pu faire évoluer mes compétences .Net et sur différent framework Front tel que Angular ou VueJs. J'ai eu l'occasion de travaillé sur des TMA comme sur des projets naissants, les deux aspects m'ont permis de me donner une vision plus globale du cycle de vie d'une application.\nDu à mon attrait pour la logique, j'ai une tendance à m'occuper plus du back que du front mais les deux restent intéressant et pouvoir créer l'affichage a un coté assez satisfaisant\n",
-  hiringProcessEvaluation: '4.0',
-  creationDate: '2022-04-25 13:24:06.627',
+  creationDate: new Date('2022-04-25T13:24:06.627Z'),
   referentRH: {
     _id: '114522855744701640690',
     firstName: 'Alisson',
@@ -62,18 +54,17 @@ export const outputWelcomeMock: WelcomeUserDto = {
   firstName: 'Xavier',
   satisfactionQuestions:
     "{'generalFeedback': 'oui', 'pastExperience': 'non', 'feedback': \"Non mais c'était bien, pas d'idée\", 'discoverDaveo': 'oui', 'generalAccessibility': 'oui', 'videoAccessibility': 'oui', 'displayCorrectly': 'oui', 'commentary': 'nop', 'stepDuration': 'non', 'gameUtility': 'oui', 'clearInformation': 'oui', 'knowMore': 'non', 'moreSubject': '', 'stillWantDaveo': 'oui', 'rgpdRead': True, 'rgpdAgreement': True}",
-  lastUpdate: '2022-05-16 08:40:24.420',
+  lastUpdate: new Date('2022-05-16T08:40:24.420Z'),
   communitiesQuestions: "{'communities': ['dax'], 'answer':{'dax': 'AccompagnementEquipe'}}",
-  currentPage: '7',
-  steps: {
-    _id: 1,
-    unlockDate: '2022-04-25 13:24:06.627',
-  },
+  steps: [
+    { _id: '0', unlockDate: new Date(2022, 4, 25, 13, 24, 6) },
+    { _id: '1', unlockDate: new Date(2022, 4, 25, 13, 24, 6) },
+    { _id: '2', unlockDate: new Date(2022, 4, 25, 13, 24, 6) },
+  ],
 };
 
 export const outputUpdateWelcomeMock: WelcomeUserDto = {
   _id: '561651-1561',
-  appGames: { scoreTetris: 3000, scoreDemineur: 8050, scoreTrexGame: 777 },
   note: '',
   signupDate: '2022-04-24 22:00:00',
   lastName: 'testtest',
@@ -82,10 +73,7 @@ export const outputUpdateWelcomeMock: WelcomeUserDto = {
   civility: 'M',
   email: 'john.doe@daveo.fr',
   agency: 'Lille',
-  personnalProject:
-    "Ayant un attrait pour la logique en général je me suis orienté vers le développement informatique.\nLors de mes différents projets, j'ai pu faire évoluer mes compétences .Net et sur différent framework Front tel que Angular ou VueJs. J'ai eu l'occasion de travaillé sur des TMA comme sur des projets naissants, les deux aspects m'ont permis de me donner une vision plus globale du cycle de vie d'une application.\nDu à mon attrait pour la logique, j'ai une tendance à m'occuper plus du back que du front mais les deux restent intéressant et pouvoir créer l'affichage a un coté assez satisfaisant\n",
-  hiringProcessEvaluation: '4.0',
-  creationDate: '2022-04-25 13:24:06.627',
+  creationDate: new Date('2022-04-25T13:24:06.627Z'),
   referentRH: {
     _id: '114522855744701640690',
     firstName: 'Alisson',
@@ -96,13 +84,13 @@ export const outputUpdateWelcomeMock: WelcomeUserDto = {
   firstName: 'test',
   satisfactionQuestions:
     "{'generalFeedback': 'oui', 'pastExperience': 'non', 'feedback': \"Non mais c'était bien, pas d'idée\", 'discoverDaveo': 'oui', 'generalAccessibility': 'oui', 'videoAccessibility': 'oui', 'displayCorrectly': 'oui', 'commentary': 'nop', 'stepDuration': 'non', 'gameUtility': 'oui', 'clearInformation': 'oui', 'knowMore': 'non', 'moreSubject': '', 'stillWantDaveo': 'oui', 'rgpdRead': True, 'rgpdAgreement': True}",
-  lastUpdate: '2022-05-16 08:40:24.420',
+  lastUpdate: new Date('2022-05-16T08:40:24.420Z'),
   communitiesQuestions: "{'communities': ['dax'], 'answer':{'dax': 'AccompagnementEquipe'}}",
-  currentPage: '7',
-  steps: {
-    _id: 1,
-    unlockDate: '2022-04-25 13:24:06.627',
-  },
+  steps: [
+    { _id: '0', unlockDate: new Date(2022, 4, 25, 13, 24, 6) },
+    { _id: '1', unlockDate: new Date(2022, 4, 25, 13, 24, 6) },
+    { _id: '2', unlockDate: new Date(2022, 4, 25, 13, 24, 6) },
+  ],
 };
 
 export const inputUpdateWelcomeMock: CreateUserDto = {
@@ -121,6 +109,7 @@ export const inputUpdateWelcomeMock: CreateUserDto = {
   },
   civility: 'M',
   agency: 'Lille',
+  note: '',
 };
 
 export const inputWelcomeMock: CreateUserDto = {
@@ -139,4 +128,5 @@ export const inputWelcomeMock: CreateUserDto = {
   },
   civility: 'M',
   agency: 'Lille',
+  note: '',
 };

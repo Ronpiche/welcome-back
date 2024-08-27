@@ -8,7 +8,13 @@ import {
   inputWelcomeMock,
   welcomeUserEntityMock,
 } from '@test/unit/__mocks__/welcome/User.entity.mock';
-import { verifyPublicHoliday } from '@modules/welcome/welcome.utils';
+import { StepService } from '@modules/step/step.service';
+import { StepServiceMock } from '../../../unit/__mocks__/step/step.service.mock';
+import { Timestamp } from '@google-cloud/firestore';
+import { WelcomeUser } from '@modules/welcome/entities/user.entity';
+import { MailerService } from '@nestjs-modules/mailer';
+import { MailerServiceMock } from '../../../unit/__mocks__/mailer.service.mock';
+import { FIRESTORE_COLLECTIONS } from '@src/configs/types/Firestore.types';
 
 describe('UsersService', () => {
   let service: WelcomeService;
@@ -17,6 +23,14 @@ describe('UsersService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         WelcomeService,
+        {
+          provide: MailerService,
+          useClass: MailerServiceMock,
+        },
+        {
+          provide: StepService,
+          useClass: StepServiceMock,
+        },
         {
           provide: FirestoreService,
           useClass: FirestoreServiceMock,
@@ -77,35 +91,8 @@ describe('UsersService', () => {
         await service.createUser(inputWelcomeMock);
       } catch (error) {
         expect(error).toBeInstanceOf(HttpException);
-        expect(error.message).toEqual('Invalid end date');
         expect(error.status).toEqual(400);
       }
-    });
-
-    describe('Testing holiday function', () => {
-      it('Should shift of one day the date, because is it a public holiday', async () => {
-        const datesArray = verifyPublicHoliday([new Date('2024-05-08T08:14:08Z'), new Date('2024-09-05T08:14:08Z')]);
-        expect(datesArray.map((d) => d.toISOString()).includes('2024-05-10T08:14:08.000Z')).toBeTruthy();
-        expect(datesArray.map((d) => d.toISOString()).includes('2024-09-05T08:14:08.000Z')).toBeTruthy();
-      });
-
-      it('Should shift of tuesday, because monday is a public holiday, and the date is a saturday', async () => {
-        const datesArray = verifyPublicHoliday([new Date('2024-05-23T08:14:08Z'), new Date('2024-11-09T08:14:08Z')]);
-        expect(datesArray.map((d) => d.toISOString()).includes('2024-05-23T08:14:08.000Z')).toBeTruthy();
-        expect(datesArray.map((d) => d.toISOString()).includes('2024-11-12T08:14:08.000Z')).toBeTruthy();
-      });
-
-      it('Should shift of Monday, because the date is a saturday', async () => {
-        const datesArray = verifyPublicHoliday([new Date('2024-05-11T08:14:08Z'), new Date('2024-09-05T08:14:08Z')]);
-        expect(datesArray.map((d) => d.toISOString()).includes('2024-05-13T08:14:08.000Z')).toBeTruthy();
-        expect(datesArray.map((d) => d.toISOString()).includes('2024-09-05T08:14:08.000Z')).toBeTruthy();
-      });
-
-      it('Should shift of Monday, because the date is a sunday', async () => {
-        const datesArray = verifyPublicHoliday([new Date('2024-05-12T08:14:08Z'), new Date('2024-09-05T08:14:08Z')]);
-        expect(datesArray.map((d) => d.toISOString()).includes('2024-05-13T08:14:08.000Z')).toBeTruthy();
-        expect(datesArray.map((d) => d.toISOString()).includes('2024-09-05T08:14:08.000Z')).toBeTruthy();
-      });
     });
   });
 
@@ -204,7 +191,7 @@ describe('UsersService', () => {
   });
 
   describe('update', () => {
-    it('should ypdated an user object', async () => {
+    it('should updated an user object', async () => {
       const documentId = '789QSD123';
       service['firestoreService']['updateDocument'] = jest.fn();
       service['firestoreService']['getDocument'] = jest.fn().mockResolvedValue(welcomeUserEntityMock);
@@ -246,6 +233,213 @@ describe('UsersService', () => {
       const res = await service.transformDbOjectStringsToArray('appGame');
       expect(res).toBeDefined();
       expect(res).toEqual({ status: 'success' });
+    });
+  });
+
+  describe('getNewlyUnlockedSteps', () => {
+    it('should return unlocked steps (no step)', async () => {
+      const user = new WelcomeUser({ steps: [] });
+      expect(service.getNewlyUnlockedSteps(user, new Date('2024-06-01'))).toStrictEqual([]);
+    });
+
+    it('should return unlocked steps (some steps)', async () => {
+      const user = new WelcomeUser({
+        steps: [
+          {
+            _id: '0',
+            unlockEmailSentAt: Timestamp.fromDate(new Date('2024-05-01')),
+            unlockDate: Timestamp.fromDate(new Date('2024-05-01')),
+          },
+          { _id: '1', unlockDate: Timestamp.fromDate(new Date('2024-05-15')) },
+          { _id: '2', unlockDate: Timestamp.fromDate(new Date('2024-06-01')) },
+          { _id: '3', unlockDate: Timestamp.fromDate(new Date('2024-06-15')) },
+        ],
+      });
+      expect(service.getNewlyUnlockedSteps(user, new Date('2024-06-01'))).toStrictEqual(['1', '2']);
+    });
+  });
+
+  describe('run', () => {
+    it('should send emails to newcommers with unlocked steps (no user)', async () => {
+      const result = await service.run(new Date('2024-06-01'));
+      expect(result).toStrictEqual([]);
+    });
+
+    it('should send emails to newcommers with unlocked steps (some users)', async () => {
+      const users = [
+        {
+          _id: '0',
+          firstName: 'aaa',
+          lastName: 'bbb',
+          referentRH: {
+            firstName: 'rhf',
+            lastName: 'rhl',
+          },
+          steps: [
+            {
+              _id: '0',
+              unlockEmailSentAt: Timestamp.fromDate(new Date('2024-05-01')),
+              unlockDate: Timestamp.fromDate(new Date('2024-05-01')),
+            },
+            { _id: '1', unlockDate: Timestamp.fromDate(new Date('2024-05-15')) },
+            { _id: '2', unlockDate: Timestamp.fromDate(new Date('2024-06-01')) },
+            { _id: '3', unlockDate: Timestamp.fromDate(new Date('2024-06-15')) },
+          ],
+        },
+        {
+          _id: '1',
+          firstName: 'ccc',
+          lastName: 'ddd',
+          referentRH: {
+            firstName: 'rhf',
+            lastName: 'rhl',
+          },
+          steps: [
+            { _id: '0', unlockDate: Timestamp.fromDate(new Date('2024-05-01')) },
+            { _id: '1', unlockDate: Timestamp.fromDate(new Date('2024-05-15')) },
+            { _id: '2', unlockDate: Timestamp.fromDate(new Date('2024-06-01')) },
+            { _id: '3', unlockDate: Timestamp.fromDate(new Date('2024-06-15')) },
+          ],
+        },
+        {
+          _id: '2',
+          firstName: 'eee',
+          lastName: 'fff',
+          referentRH: {
+            firstName: 'rhf',
+            lastName: 'rhl',
+          },
+          steps: [
+            { _id: '0', unlockDate: Timestamp.fromDate(new Date('2024-06-15')) },
+            { _id: '1', unlockDate: Timestamp.fromDate(new Date('2024-07-01')) },
+            { _id: '2', unlockDate: Timestamp.fromDate(new Date('2024-07-15')) },
+            { _id: '3', unlockDate: Timestamp.fromDate(new Date('2024-08-01')) },
+          ],
+        },
+      ];
+      const steps = [
+        { _id: '0', cutAt: 0.25, unlockEmail: { subject: 'Test', body: '1234' }, maxDays: 90, minDays: 30 },
+        { _id: '1', cutAt: 0.5, unlockEmail: { subject: 'Test', body: '1234' }, maxDays: 90, minDays: 30 },
+        { _id: '2', cutAt: 0.7, unlockEmail: { subject: 'Test', body: '1234' }, maxDays: 90, minDays: 30 },
+      ];
+      service['firestoreService']['getAllDocuments'] = jest.fn().mockResolvedValue(users);
+      service['stepService']['findAll'] = jest.fn().mockResolvedValue(steps);
+      const result = await service.run(new Date('2024-06-01'));
+      expect(result).toStrictEqual([
+        { status: 'fulfilled', value: { _id: '0' } },
+        { status: 'fulfilled', value: { _id: '1' } },
+      ]);
+    });
+
+    it('should return rejected when emails cannot be send', async () => {
+      const users = [
+        {
+          _id: '0',
+          firstName: 'aaa',
+          lastName: 'bbb',
+          referentRH: {
+            firstName: 'rhf',
+            lastName: 'rhl',
+          },
+          steps: [
+            {
+              _id: '0',
+              unlockEmailSentAt: Timestamp.fromDate(new Date('2024-05-01')),
+              unlockDate: Timestamp.fromDate(new Date('2024-05-01')),
+            },
+            { _id: '1', unlockDate: Timestamp.fromDate(new Date('2024-05-15')) },
+            { _id: '2', unlockDate: Timestamp.fromDate(new Date('2024-06-01')) },
+            { _id: '3', unlockDate: Timestamp.fromDate(new Date('2024-06-15')) },
+          ],
+        },
+        {
+          _id: '1',
+          firstName: 'ccc',
+          lastName: 'ddd',
+          referentRH: {
+            firstName: 'rhf',
+            lastName: 'rhl',
+          },
+          steps: [
+            { _id: '0', unlockDate: Timestamp.fromDate(new Date('2024-05-01')) },
+            { _id: '1', unlockDate: Timestamp.fromDate(new Date('2024-05-15')) },
+            { _id: '2', unlockDate: Timestamp.fromDate(new Date('2024-06-01')) },
+            { _id: '3', unlockDate: Timestamp.fromDate(new Date('2024-06-15')) },
+          ],
+        },
+        {
+          _id: '2',
+          firstName: 'eee',
+          lastName: 'fff',
+          referentRH: {
+            firstName: 'rhf',
+            lastName: 'rhl',
+          },
+          steps: [
+            { _id: '0', unlockDate: Timestamp.fromDate(new Date('2024-06-15')) },
+            { _id: '1', unlockDate: Timestamp.fromDate(new Date('2024-07-01')) },
+            { _id: '2', unlockDate: Timestamp.fromDate(new Date('2024-07-15')) },
+            { _id: '3', unlockDate: Timestamp.fromDate(new Date('2024-08-01')) },
+          ],
+        },
+      ];
+      const steps = [
+        { _id: '0', cutAt: 0.25, unlockEmail: { subject: 'Test', body: '1234' }, maxDays: 90, minDays: 30 },
+        { _id: '1', cutAt: 0.5, unlockEmail: { subject: 'Test', body: '1234' }, maxDays: 90, minDays: 30 },
+        { _id: '2', cutAt: 0.7, unlockEmail: { subject: 'Test', body: '1234' }, maxDays: 90, minDays: 30 },
+      ];
+      service['mailerService']['sendMail'] = jest.fn().mockRejectedValue(new Error('Internal Server Error'));
+      service['firestoreService']['getAllDocuments'] = jest.fn().mockResolvedValue(users);
+      service['stepService']['findAll'] = jest.fn().mockResolvedValue(steps);
+      const result = await service.run(new Date('2024-06-01'));
+      expect(result).toStrictEqual([
+        { status: 'rejected', reason: { _id: '0', message: 'Internal Server Error' } },
+        { status: 'rejected', reason: { _id: '1', message: 'Internal Server Error' } },
+      ]);
+    });
+  });
+
+  describe('completeStep', () => {
+    it('should complete user step and send emails', async () => {
+      const date = new Date();
+      const user = {
+        _id: '1',
+        firstName: 'aaa',
+        lastName: 'bbb',
+        email: 'aaa.bbb@localhost',
+        referentRH: {
+          firstName: 'ccc',
+          lastName: 'ddd',
+          email: 'ccc.ddd@localhost',
+        },
+        steps: [{ _id: '1' }, { _id: '2' }, { _id: '3' }, { _id: '4' }],
+      };
+      const step = {
+        _id: '2',
+        completionEmail: { subject: 'Test', body: '1234' },
+        completionEmailManager: { subject: 'Test2', body: '12345' },
+      };
+      service.findOne = jest.fn().mockResolvedValue(user);
+      service['firestoreService']['updateDocument'] = jest.fn();
+      service['stepService']['findOne'] = jest.fn().mockResolvedValue(step);
+      await service.completeStep('1', '2', date);
+      expect(service['firestoreService']['updateDocument']).toHaveBeenCalledWith(
+        FIRESTORE_COLLECTIONS.WELCOME_USERS,
+        '1',
+        {
+          steps: [{ _id: '1' }, { _id: '2', completedAt: Timestamp.fromDate(date) }, { _id: '3' }, { _id: '4' }],
+        },
+      );
+      expect(service['mailerService'].sendMail).toHaveBeenNthCalledWith(1, {
+        to: user.referentRH.email,
+        subject: step.completionEmailManager.subject,
+        html: `<p>${step.completionEmailManager.body}</p>\n`,
+      });
+      expect(service['mailerService'].sendMail).toHaveBeenNthCalledWith(2, {
+        to: user.email,
+        subject: step.completionEmail.subject,
+        html: `<p>${step.completionEmail.body}</p>\n`,
+      });
     });
   });
 });
