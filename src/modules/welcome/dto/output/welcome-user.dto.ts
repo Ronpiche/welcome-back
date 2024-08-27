@@ -10,9 +10,6 @@ export class WelcomeUserDto {
   _id: string;
   @ApiProperty()
   @Expose()
-  appGames: object;
-  @ApiProperty()
-  @Expose()
   note: string;
   @ApiProperty()
   @Expose()
@@ -28,19 +25,10 @@ export class WelcomeUserDto {
   agency: string;
   @ApiProperty()
   @Expose()
-  personnalProject: string;
-  @ApiProperty()
-  @Expose()
-  hiringProcessEvaluation: string;
-  @ApiProperty()
-  @Expose()
-  @Type(() => String)
-  @Transform((value: any) =>
-    value.obj.creationDate instanceof Timestamp
-      ? value.obj.creationDate.toDate().toISOString()
-      : value.obj.creationDate,
+  @Transform(({ value }) =>
+    value && value._seconds ? new Timestamp(value._seconds, value._nanoseconds).toDate() : value,
   )
-  creationDate: string;
+  creationDate: Date;
   @ApiProperty()
   @Expose()
   referentRH: RhUserInfoDto;
@@ -55,17 +43,13 @@ export class WelcomeUserDto {
   satisfactionQuestions: string;
   @ApiProperty()
   @Expose()
-  @Type(() => String)
-  @Transform((value: any) =>
-    value.obj.lastUpdate instanceof Timestamp ? value.obj.lastUpdate.toDate().toISOString() : value.obj.lastUpdate,
+  @Transform(({ value }) =>
+    value && value._seconds ? new Timestamp(value._seconds, value._nanoseconds).toDate() : value,
   )
-  lastUpdate: string;
+  lastUpdate: Date;
   @ApiProperty()
   @Expose()
   communitiesQuestions: string;
-  @ApiProperty()
-  @Expose()
-  currentPage: string;
   @ApiProperty()
   @Expose()
   email: string;
@@ -78,5 +62,5 @@ export class WelcomeUserDto {
   @ApiProperty()
   @Expose()
   @Type(() => WelcomeStepDto)
-  steps: WelcomeStepDto;
+  steps: WelcomeStepDto[];
 }

@@ -6,6 +6,7 @@ import { CreateUserExceptionFilter } from '@modules/welcome/filters/create-user.
 import { FirestoreModule } from '@src/services/firestore/firestore.module';
 import { CacheService } from '../shared/cache/cache.service';
 import { JwtCognito } from '../cognito/jwtCognito.service';
+import { StepService } from '../step/step.service';
 
 @Module({
   imports: [FirestoreModule],
@@ -17,6 +18,7 @@ import { JwtCognito } from '../cognito/jwtCognito.service';
       useClass: CreateUserExceptionFilter,
     },
     WelcomeService,
+    StepService,
     CacheService,
     JwtCognito,
   ],

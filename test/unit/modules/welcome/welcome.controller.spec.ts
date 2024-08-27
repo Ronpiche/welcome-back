@@ -17,9 +17,21 @@ import { JwtCognito } from '@src/modules/cognito/jwtCognito.service';
 import { ConfigService } from '@nestjs/config';
 import { CognitoServiceMock } from '@test/unit/__mocks__/cognito/cognito.service.mock';
 import { LoggerMock } from '@test/unit/__mocks__/logger.mock';
+import { Response } from 'express';
 
 describe('Welcome controller', () => {
   let controller: WelcomeController;
+  const response = {
+    get statusCode() {
+      return this._status;
+    },
+    status(s: number) {
+      this._status = s;
+      return this;
+    },
+    _status: 201,
+  } as unknown as Response;
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [WelcomeController],
@@ -146,6 +158,36 @@ describe('Welcome controller', () => {
       const res = await controller.transformAppGames('appGames');
       expect(res).toBeDefined();
       expect(res).toEqual({ status: 'success' });
+    });
+  });
+
+  describe('run', () => {
+    it('should launch the task and return the result (OK)', async () => {
+      const data = await controller.run(response);
+      expect(response.statusCode).toBe(201);
+      expect(data).toEqual([{ status: 'fulfilled', value: { _id: '1' } }]);
+    });
+
+    it('should launch the task and return the result (KO)', async () => {
+      controller['welcomeService']['run'] = jest
+        .fn()
+        .mockResolvedValue([{ status: 'rejected', reason: { _id: '1', error: 'unknown' } }]);
+      const data = await controller.run(response);
+      expect(response.statusCode).toBe(500);
+      expect(data).toEqual([{ status: 'rejected', reason: { _id: '1', error: 'unknown' } }]);
+    });
+  });
+
+  describe('completeStep', () => {
+    it('should complete the user step', async () => {
+      expect(controller.completeStep('1', '1')).resolves.toBeDefined();
+    });
+
+    it('should not complete the user step and throw', async () => {
+      controller['welcomeService']['completeStep'] = jest.fn(() => {
+        throw new Error();
+      });
+      expect(controller.completeStep('1', '1')).rejects.toThrow();
     });
   });
 });

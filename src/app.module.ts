@@ -8,9 +8,9 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { AccessGuard } from './middleware/AuthGuard';
 import { WelcomeModule } from '@modules/welcome/welcome.module';
 import { JwtCognito } from './modules/cognito/jwtCognito.service';
-import { EmailModule } from './modules/email/email.module';
 import { AuthentificationModule } from './modules/authentification/authentification.module';
 import { ContentModule } from './modules/content/content.module';
+import { StepModule } from '@modules/step/step.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -42,9 +42,9 @@ import { AppService } from './app.service';
     FirestoreModule,
     AuthorizationModule,
     WelcomeModule,
-    EmailModule,
     AuthentificationModule,
     ContentModule,
+    StepModule,
   ],
   controllers: [AppController],
   providers: [

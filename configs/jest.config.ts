@@ -11,7 +11,13 @@ const config: Config.InitialOptions = {
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest',
   },
-  collectCoverageFrom: ['src/**/*.service.ts', 'src/**/*.controller.ts', 'src/**/*.pipe.ts', 'src/**/*.filter.ts'],
+  collectCoverageFrom: [
+    'src/**/*.service.ts',
+    'src/**/*.controller.ts',
+    'src/**/*.pipe.ts',
+    'src/**/*.filter.ts',
+    'src/**/*.utils.ts',
+  ],
   coveragePathIgnorePatterns: ['/dist/', '/mocks/', '/coverage/', '/node_modules/'],
   coverageDirectory: '<rootDir>/coverage',
   testEnvironment: 'node',
