@@ -94,30 +94,15 @@ jobs:
       - name: Get Sha For deployment
         run: echo "GITHUB_SHA_SHORT=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
-      - name: Get secrets from Secret Manager
-        uses: google-github-actions/get-secretmanager-secrets@v2
-        with:
-          secrets: |-
-            PROJECT_ID:projects/222796272532/secrets/PROJECT_ID/versions/latest
-            SERVICE_ACCOUNT_BASE64:projects/222796272532/secrets/SERVICE_ACCOUNT_BASE64/versions/latest
-            API_KEY:projects/222796272532/secrets/API_KEY/versions/latest
-            USER_POOL_ID:projects/222796272532/secrets/USER_POOL_ID/versions/latest
-            CLIENT_ID:projects/222796272532/secrets/CLIENT_ID/versions/latest
-
       - name: Deploy on Cloud Run
         id: deploy
         uses: google-github-actions/deploy-cloudrun@v2
         with:
           image: ${{ env.REGISTRY_URL }}/hub-backend:${{ env.GITHUB_SHA_SHORT }}
-          service: welcome-hub-back-dev
+          service: daveo-gcp-welcome-sbx-cr-back-hub
           region: ${{ env.PROJECT_ZONE }}
           env_vars: |
             NODE_ENV=production
             NAME_PROJECT=projects/222796272532
             COGNITO_BY_PASS=true
-            HUB_FRONT_URL=https://welcome-hub-front-dev-s5fhodvgxa-od.a.run.app
-            PROJECT_ID: ${{ steps.secrets.outputs.PROJECT_ID }}
-            SERVICE_ACCOUNT_BASE64: ${{ steps.secrets.outputs.SERVICE_ACCOUNT_BASE64 }}
-            API_KEY: ${{ steps.secrets.outputs.API_KEY }}
-            USER_POOL_ID: ${{ steps.secrets.outputs.USER_POOL_ID }}
-            CLIENT_ID: ${{ steps.secrets.outputs.CLIENT_ID }}
+            HUB_FRONT_URL=https://daveo-gcp-welcome-sbx-cr-front-hub-s5fhodvgxa-od.a.run.app
