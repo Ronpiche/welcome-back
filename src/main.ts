@@ -3,7 +3,6 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
-import { accessAllSecrets } from './utils/accessSecret';
 
 const DEFAULT_HTTP_PORT = 3337;
 
