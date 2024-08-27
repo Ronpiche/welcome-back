@@ -105,4 +105,3 @@ jobs:
             NODE_ENV=production
             NAME_PROJECT=projects/222796272532
             COGNITO_BY_PASS=true
-            HUB_FRONT_URL=https://daveo-gcp-welcome-sbx-cr-front-hub-s5fhodvgxa-od.a.run.app
