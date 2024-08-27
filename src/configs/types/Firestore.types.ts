@@ -1,6 +1,8 @@
-import { WelcomeUser } from '@/modules/welcome/entities/user.entity';
-import { User } from '@/modules/authorization/entities/User.entity';
-import { Role } from '@/modules/authorization/entities/Role.entity';
+import { WelcomeUser } from '@modules/welcome/entities/user.entity';
+import { User } from '@modules/authorization/entities/User.entity';
+import { Role } from '@modules/authorization/entities/Role.entity';
+import { ContentEntity } from '@modules/content/entities/content.entity';
+import { DocumentData } from '@google-cloud/firestore';
 
 export enum UserRoles {
   Admin = 'Admin',
@@ -13,7 +15,19 @@ export enum UserRoles {
   FinancesEtOpérations = 'Finances et Opérations',
 }
 
-export type FirestoreDocumentType = WelcomeUser | User | Role;
+export enum FIRESTORE_COLLECTIONS {
+  ROLES = 'AuthorizationDatabase_roles',
+  AUTHORIZED_USERS = 'AuthorizationDatabase_users',
+  WELCOME_USERS = 'WelcomeDatabase_users',
+  WELCOME_CONTENT = 'WelcomeDatabase_content',
+}
+
+export interface FirebaseConfig {
+  apiKey: string;
+  authDomain: string;
+}
+
+export type FirestoreDocumentType = WelcomeUser | User | Role | ContentEntity | DocumentData;
 
 export enum FirestoreErrorCode {
   OK = 0,

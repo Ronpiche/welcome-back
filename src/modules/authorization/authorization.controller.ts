@@ -18,8 +18,8 @@ import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiQuery, ApiTags } from '@nestj
 import { FilterType } from './types/authorization.types';
 import { RoleDto, UserDto } from './dto/authorization.dto';
 import { CreateUpdateRoleDto } from './dto/create-role.dto';
-import { IsPrivate } from '@/decorators/isPrivate';
-import { AccessGuard } from '@/middleware/AuthGuard';
+import { IsPublic } from '@src/decorators/isPublic';
+import { AccessGuard } from '@src/middleware/AuthGuard';
 import { plainToInstance } from 'class-transformer';
 import { OutputRoleDto } from './dto/outputRole.dto';
 import { OutputUserDto } from './dto/OutputUser.dto';
@@ -31,7 +31,7 @@ import { User } from './entities/User.entity';
 export class AuthorizationController {
   constructor(private readonly authorizationService: AuthorizationService) {}
 
-  @IsPrivate()
+  @IsPublic(false)
   @UseGuards(AccessGuard)
   @HttpCode(HttpStatus.OK)
   @ApiQuery({
@@ -65,7 +65,7 @@ export class AuthorizationController {
     });
   }
 
-  @IsPrivate()
+  @IsPublic(false)
   @UseGuards(AccessGuard)
   @ApiOkResponse({
     status: 200,
@@ -78,7 +78,7 @@ export class AuthorizationController {
     });
   }
 
-  @IsPrivate()
+  @IsPublic(false)
   @UseGuards(AccessGuard)
   @ApiBody({
     description: 'Creates a new role in database',
@@ -91,7 +91,7 @@ export class AuthorizationController {
     return await this.authorizationService.createRole(role);
   }
 
-  @IsPrivate()
+  @IsPublic(false)
   @UseGuards(AccessGuard)
   @Put('roles/:id')
   @HttpCode(HttpStatus.OK)
@@ -103,7 +103,7 @@ export class AuthorizationController {
     return await this.authorizationService.updateRole(id, roleDto);
   }
 
-  @IsPrivate()
+  @IsPublic(false)
   @UseGuards(AccessGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
@@ -115,7 +115,7 @@ export class AuthorizationController {
     return await this.authorizationService.deleteRole(id);
   }
 
-  @IsPrivate()
+  @IsPublic(false)
   @UseGuards(AccessGuard)
   @Get('users')
   async getUsers(): Promise<OutputUserDto[]> {
@@ -124,7 +124,7 @@ export class AuthorizationController {
     });
   }
 
-  @IsPrivate()
+  @IsPublic(false)
   @UseGuards(AccessGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @Get('users/:id')
@@ -133,7 +133,7 @@ export class AuthorizationController {
     return plainToInstance(OutputUserDto, user, { excludeExtraneousValues: true });
   }
 
-  @IsPrivate()
+  @IsPublic(false)
   @UseGuards(AccessGuard)
   @Put('users/:id')
   async updateUser(@Param('id') id: string, @Body() userData: UserDto) {

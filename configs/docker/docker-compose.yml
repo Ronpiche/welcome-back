@@ -1,15 +1,69 @@
+name: welcome
 services:
-  hub-back:
+  back:
       build: 
         context: ../..
         dockerfile: ./configs/docker/Dockerfile
-      container_name: hub-back
+      container_name: back
       environment:
-        - NAME_PROJECT=projects/222796272532
-        - PROJECT_ID=daveo-gcp-welcome-sbx-1745
-        - NODE_ENV=docker
+        - NAME_PROJECT=key
+        - PROJECT_ID=key
+        - NODE_ENV=dev
+        - SERVICE_ACCOUNT_BASE64=key
+        - API_KEY=key
+        - USER_POOL_ID=key
+        - CLIENT_ID=key
+        - COGNITO_BY_PASS=true
+        - HUB_FRONT_URL=http://127.0.0.1:3000
       ports:
         - '3337:3337'
+      networks:
+        welcome:
+          aliases:
+            - welcome-back
       volumes:
-        - /app
-        - /app/node_modules
+        - /back
+        - /back/node_modules
+  hub-front: 
+      build: 
+        context: ../../../welcome-hub-front
+        dockerfile: ./configs/docker/Dockerfile
+      container_name: hub-front
+      depends_on: 
+        - back
+      environment:
+        - REACT_APP_APP_NAME=hub
+        - REACT_APP_DEV_MODE=true
+        - REACT_APP_HUB_BACK_URL=http://127.0.0.1:3337/api
+        - REACT_APP_COGNITO_BY_PASS=true
+      ports: 
+        - '3000:3000'
+      networks:
+        welcome:
+          aliases:
+            - welcome-hub-front
+      volumes: 
+        - /hub_front
+        - /hub_front/node_modules
+  app-front: 
+      build: 
+        context: ../../../welcome-front
+        dockerfile: ./configs/docker/Dockerfile
+      container_name: app-front
+      depends_on: 
+        - back
+      environment:
+        - REACT_APP_BASE_URL_BACK_WELCOME=http://127.0.0.1:3337/api
+        - PORT=4000
+      ports: 
+        - '4000:4000'
+      networks:
+        welcome:
+          aliases:
+            - welcome-app-front
+      volumes: 
+        - /app_front
+        - /app_front/node_modules
+
+networks:
+  welcome:

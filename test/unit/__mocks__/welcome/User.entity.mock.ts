@@ -65,6 +65,10 @@ export const outputWelcomeMock: WelcomeUserDto = {
   lastUpdate: '2022-05-16 08:40:24.420',
   communitiesQuestions: "{'communities': ['dax'], 'answer':{'dax': 'AccompagnementEquipe'}}",
   currentPage: '7',
+  steps: {
+    _id: 1,
+    unlockDate: '2022-04-25 13:24:06.627',
+  },
 };
 
 export const outputUpdateWelcomeMock: WelcomeUserDto = {
@@ -95,6 +99,10 @@ export const outputUpdateWelcomeMock: WelcomeUserDto = {
   lastUpdate: '2022-05-16 08:40:24.420',
   communitiesQuestions: "{'communities': ['dax'], 'answer':{'dax': 'AccompagnementEquipe'}}",
   currentPage: '7',
+  steps: {
+    _id: 1,
+    unlockDate: '2022-04-25 13:24:06.627',
+  },
 };
 
 export const inputUpdateWelcomeMock: CreateUserDto = {

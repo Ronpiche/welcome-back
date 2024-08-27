@@ -4,12 +4,12 @@ import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import { EmailController } from '@modules/email/email.controller';
 import { EmailService } from '@modules/email/email.service';
-import { EmailServiceMock } from '../../../unit/__mocks__/email/email.service.mock';
-import { AccessGuard } from '../../../../src/middleware/AuthGuard';
-import { JwtCognito } from '../../../../src/modules/cognito/jwtCognito.service';
+import { EmailServiceMock } from '@test/unit/__mocks__/email/email.service.mock';
+import { AccessGuard } from '@src/middleware/AuthGuard';
+import { JwtCognito } from '@modules/cognito/jwtCognito.service';
 import { ConfigService } from '@nestjs/config';
-import { CognitoServiceMock } from '../../../unit/__mocks__/cognito/cognito.service.mock';
-import { LoggerMock } from '../../../unit/__mocks__/logger.mock';
+import { CognitoServiceMock } from '@test/unit/__mocks__/cognito/cognito.service.mock';
+import { LoggerMock } from '@test/unit/__mocks__/logger.mock';
 
 describe('Email controller', () => {
   let controller: EmailController;

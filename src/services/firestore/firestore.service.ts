@@ -1,8 +1,14 @@
-import { HttpException, HttpStatus, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { Filter, Firestore, Query } from '@google-cloud/firestore';
-import { RoleDto } from '@/modules/authorization/dto/authorization.dto';
-import { FirestoreDocumentType, FirestoreErrorCode } from '../types/Firestore.types';
-import { WelcomeUser } from '@/modules/welcome/entities/user.entity';
+import { FIRESTORE_COLLECTIONS, FirestoreDocumentType, FirestoreErrorCode } from '@src/configs/types/Firestore.types';
+import { WelcomeUser } from '@modules/welcome/entities/user.entity';
 
 @Injectable()
 export class FirestoreService {
@@ -12,52 +18,81 @@ export class FirestoreService {
   ) {}
 
   private applyFilters(query: FirebaseFirestore.Query, filter: Filter): FirebaseFirestore.Query {
-    return query.where(filter);
-  }
-
-  async getAllDocuments<T extends FirestoreDocumentType>(collection: string, filter?: Filter): Promise<T[]> {
-    const documents: T[] = [];
-    const query = this.firestore.collection(collection);
-    const filteredQuery = filter ? this.applyFilters(query, filter) : query;
-    const querySnapshot = await filteredQuery.get();
-
-    querySnapshot.forEach((doc) => {
-      documents.push({
-        ...(doc.data() as T),
-      });
+    let filteredQuery = query;
+    Object.entries(filter).forEach(([field, value]) => {
+      if (field === 'arrivalDate') {
+        Object.entries(value).forEach(([index, val]) => {
+          if (index === '$gte') {
+            filteredQuery = filteredQuery.where(field, '>=', val);
+          } else if (index === '$lte') {
+            filteredQuery = filteredQuery.where(field, '<=', val);
+          }
+        });
+      } else {
+        filteredQuery = filteredQuery.where(field, '==', value);
+      }
     });
 
-    return documents;
+    return filteredQuery;
   }
 
-  async getDocument(collection: string, documentId: string): Promise<FirestoreDocumentType> {
-    const documentSnapshot = await this.firestore.collection(collection).doc(documentId).get();
-    if (documentSnapshot.exists) {
-      return documentSnapshot.data() as FirestoreDocumentType;
-    } else {
-      throw new HttpException('Document not found in DB', HttpStatus.NOT_FOUND);
+  async getAllDocuments<T extends FirestoreDocumentType>(
+    collection: FIRESTORE_COLLECTIONS,
+    filter?: Filter,
+  ): Promise<T[]> {
+    const documents: T[] = [];
+    try {
+      const query = this.firestore.collection(collection);
+      const filteredQuery = filter ? this.applyFilters(query, filter) : query;
+      const querySnapshot = await filteredQuery.get();
+
+      querySnapshot.forEach((doc) => {
+        documents.push({
+          ...(doc.data() as T),
+        });
+      });
+
+      return documents;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
     }
   }
 
-  async getByEmail(collection: string, email: string): Promise<WelcomeUser> {
-    const documents: WelcomeUser[] = [];
+  async getDocument(collection: FIRESTORE_COLLECTIONS, documentId: string): Promise<FirestoreDocumentType> {
+    let documentSnapshot: FirebaseFirestore.DocumentSnapshot<
+      FirebaseFirestore.DocumentData,
+      FirebaseFirestore.DocumentData
+    >;
+    try {
+      documentSnapshot = await this.firestore.collection(collection).doc(documentId).get();
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+
+    if (!documentSnapshot.exists) {
+      throw new NotFoundException('Document not found in DB');
+    }
+
+    return documentSnapshot.data();
+  }
+
+  async getByEmail(collection: FIRESTORE_COLLECTIONS, email: string): Promise<FirestoreDocumentType> {
+    let document: FirestoreDocumentType;
     const documentsSnapshot = await this.firestore.collection(collection).where('email', '==', email).get();
     if (documentsSnapshot.size > 1) {
       throw new HttpException('Multiple users found', 400);
     } else if (documentsSnapshot.size === 1) {
       documentsSnapshot.forEach((doc) => {
-        documents.push({
-          ...(doc.data() as WelcomeUser),
-        });
+        document = doc.data() as WelcomeUser;
       });
     } else {
       throw new NotFoundException('User not found in DB');
     }
 
-    return documents[0];
+    return document;
   }
 
-  async saveDocument(collection: string, data: Record<string, any>): Promise<{ id: string; status: string }> {
+  async saveDocument(collection: FIRESTORE_COLLECTIONS, data: Record<string, any>): Promise<FirestoreDocumentType> {
     try {
       const documentRef = this.firestore.collection(collection).doc(data._id);
 
@@ -67,7 +102,7 @@ export class FirestoreService {
 
       this.logger.log(`[saveDocument] - data saved to database, id:${id}`);
 
-      return { status: 'OK', id };
+      return await this.getDocument(collection, id);
     } catch (error) {
       if (error.code === FirestoreErrorCode.ALREADY_EXISTS) {
         throw new HttpException('Document already exists.', HttpStatus.CONFLICT);
@@ -77,26 +112,32 @@ export class FirestoreService {
     }
   }
 
-  async updateDocument(collection: string, documentId: string, data: RoleDto | Record<string, unknown>): Promise<void> {
+  async updateDocument(
+    collection: FIRESTORE_COLLECTIONS,
+    documentId: string,
+    data: Record<string, unknown>,
+  ): Promise<FirestoreDocumentType> {
     try {
       await this.firestore
         .collection(collection)
         .doc(documentId)
-        .update({ ...data });
+        .set({ ...data }, { merge: true });
+      return await this.getDocument(collection, documentId);
     } catch (error) {
-      if (error.code === FirestoreErrorCode.NOT_FOUND) {
-        throw new HttpException('Document not found in DB', HttpStatus.NOT_FOUND);
-      }
       this.logger.error(error);
-      throw error;
+      throw new InternalServerErrorException(error);
     }
   }
 
-  async deleteDocument(collection: string, documentId: string): Promise<void> {
+  async deleteDocument(collection: FIRESTORE_COLLECTIONS, documentId: string): Promise<void> {
     await this.firestore.collection(collection).doc(documentId).delete();
   }
 
-  async updateManyDocuments(collection: string, filter: Filter, data: Record<string, unknown>): Promise<void> {
+  async updateManyDocuments(
+    collection: FIRESTORE_COLLECTIONS,
+    filter: Filter,
+    data: Record<string, unknown>,
+  ): Promise<void> {
     try {
       const collectionRef = this.firestore.collection(collection);
 
@@ -129,7 +170,7 @@ export class FirestoreService {
    * @param {string} collection the name of the targetted collection
    * @param  {string} property the property that needs to be transformed to an object
    */
-  async transformToObjectAndSaveProperty(collection: string, property: string): Promise<void> {
+  async transformToObjectAndSaveProperty(collection: FIRESTORE_COLLECTIONS, property: string): Promise<void> {
     try {
       const documents = (await this.getAllDocuments(collection)) as WelcomeUser[];
 

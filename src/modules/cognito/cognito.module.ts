@@ -1,5 +1,5 @@
 import { Logger, Module } from '@nestjs/common';
-import { FirestoreModule } from '../shared/firestore/firestore.module';
+import { FirestoreModule } from '@src/services/firestore/firestore.module';
 import { JwtCognito } from './jwtCognito.service';
 
 @Module({

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
-import { FirestoreModule } from '@modules/shared/firestore/firestore.module';
+import { FirestoreModule } from '@src/services/firestore/firestore.module';
 import { AuthorizationModule } from '@modules/authorization/authorization.module';
 import { APP_GUARD } from '@nestjs/core';
 import { MailerModule } from '@nestjs-modules/mailer';
@@ -9,6 +9,10 @@ import { AccessGuard } from './middleware/AuthGuard';
 import { WelcomeModule } from '@modules/welcome/welcome.module';
 import { JwtCognito } from './modules/cognito/jwtCognito.service';
 import { EmailModule } from './modules/email/email.module';
+import { AuthentificationModule } from './modules/authentification/authentification.module';
+import { ContentModule } from './modules/content/content.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -39,13 +43,17 @@ import { EmailModule } from './modules/email/email.module';
     AuthorizationModule,
     WelcomeModule,
     EmailModule,
+    AuthentificationModule,
+    ContentModule,
   ],
+  controllers: [AppController],
   providers: [
     {
       provide: APP_GUARD,
       useClass: AccessGuard,
     },
     JwtCognito,
+    AppService,
   ],
 })
 export class AppModule {}

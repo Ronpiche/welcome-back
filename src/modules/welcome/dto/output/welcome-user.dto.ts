@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import { RhUserInfoDto } from '../input/create-user.dto';
+import { Timestamp } from '@google-cloud/firestore';
+import { WelcomeStepDto } from './welcome-step.dto';
 
 export class WelcomeUserDto {
   @ApiProperty()
@@ -32,6 +34,12 @@ export class WelcomeUserDto {
   hiringProcessEvaluation: string;
   @ApiProperty()
   @Expose()
+  @Type(() => String)
+  @Transform((value: any) =>
+    value.obj.creationDate instanceof Timestamp
+      ? value.obj.creationDate.toDate().toISOString()
+      : value.obj.creationDate,
+  )
   creationDate: string;
   @ApiProperty()
   @Expose()
@@ -47,6 +55,10 @@ export class WelcomeUserDto {
   satisfactionQuestions: string;
   @ApiProperty()
   @Expose()
+  @Type(() => String)
+  @Transform((value: any) =>
+    value.obj.lastUpdate instanceof Timestamp ? value.obj.lastUpdate.toDate().toISOString() : value.obj.lastUpdate,
+  )
   lastUpdate: string;
   @ApiProperty()
   @Expose()
@@ -63,4 +75,8 @@ export class WelcomeUserDto {
   @ApiProperty()
   @Expose()
   practice: string;
+  @ApiProperty()
+  @Expose()
+  @Type(() => WelcomeStepDto)
+  steps: WelcomeStepDto;
 }

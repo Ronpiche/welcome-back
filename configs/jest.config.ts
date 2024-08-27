@@ -7,12 +7,7 @@ const config: Config.InitialOptions = {
   coverageReporters: ['json', 'clover', 'text', 'lcov'],
   collectCoverage: true,
   rootDir: '../',
-  testMatch: [
-    '**/test/unit/modules/welcome/*.spec.ts',
-    '**/test/unit/modules/shared/*.spec.ts',
-    '**/test/unit/modules/cognito/*.spec.ts',
-    '**/test/unit/modules/email/*.spec.ts',
-  ],
+  testMatch: ['**/test/unit/**/*.spec.ts'],
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest',
   },
@@ -21,8 +16,8 @@ const config: Config.InitialOptions = {
   coverageDirectory: '<rootDir>/coverage',
   testEnvironment: 'node',
   moduleNameMapper: {
-    '@/(.*)$': '<rootDir>/src/$1',
-    '@mocks/(.*)$': '<rootDir>/mocks/$1',
+    '@src/(.*)$': '<rootDir>/src/$1',
+    '@test/(.*)$': '<rootDir>/test/$1',
     '@modules/(.*)$': '<rootDir>/src/modules/$1',
   },
 };

@@ -3,11 +3,11 @@ import { Logger } from '@nestjs/common';
 import { Timestamp } from '@google-cloud/firestore';
 import { EmailService } from '@modules/email/email.service';
 import { MailerService } from '@nestjs-modules/mailer';
-import { FirestoreService } from '@modules/shared/firestore/firestore.service';
+import { FirestoreService } from '@src/services/firestore/firestore.service';
 import { WelcomeUser } from '@modules/welcome/entities/user.entity';
-import { LoggerMock } from '../../../unit/__mocks__/logger.mock';
-import { MailerServiceMock } from '../../../unit/__mocks__/mailer.service.mock';
-import { FirestoreServiceMock } from '../../../unit/__mocks__/firestore.service';
+import { LoggerMock } from '@test/unit/__mocks__/logger.mock';
+import { MailerServiceMock } from '@test/unit/__mocks__/mailer.service.mock';
+import { FirestoreServiceMock } from '@test/unit/__mocks__/firestore.service';
 
 describe('EmailService', () => {
   let service: EmailService;

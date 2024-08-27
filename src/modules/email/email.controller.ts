@@ -1,8 +1,8 @@
 import { Response } from 'express';
 import { Controller, HttpStatus, Post, Res, UseGuards } from '@nestjs/common';
 import { ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { AccessGuard } from '@/middleware/AuthGuard';
-import { IsPrivate } from '@/decorators/isPrivate';
+import { AccessGuard } from '@src/middleware/AuthGuard';
+import { IsPublic } from '@src/decorators/isPublic';
 import { EmailService } from './email.service';
 import { EmailRunKO, EmailRunOK } from './dto/output/email-run.dto';
 
@@ -12,7 +12,7 @@ export class EmailController {
   constructor(private readonly emailService: EmailService) {}
 
   @Post('run')
-  @IsPrivate()
+  @IsPublic(false)
   @UseGuards(AccessGuard)
   @ApiOperation({
     summary: 'Notify users',

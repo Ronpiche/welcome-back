@@ -18,7 +18,7 @@ export class JwtCognito {
     try {
       return await this.verifier.verify(token);
     } catch (error) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException(error);
     }
   }
 
@@ -30,7 +30,7 @@ export class JwtCognito {
         clientId: this.configService.get('CLIENT_ID'),
       });
     } catch (error) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException(error);
     }
   }
 }
