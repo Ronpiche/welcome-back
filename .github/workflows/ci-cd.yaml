@@ -101,7 +101,6 @@ jobs:
           image: ${{ env.REGISTRY_URL }}/hub-backend:${{ env.GITHUB_SHA_SHORT }}
           service: welcome-hub-back-dev
           region: ${{ env.PROJECT_ZONE }}
-          flags: --vpc-connector=welcome-connector
           env_vars: |
             NODE_ENV=production
             NAME_PROJECT=projects/222796272532
