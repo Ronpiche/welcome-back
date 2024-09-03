@@ -79,14 +79,14 @@ export class FirestoreService {
     return documentSnapshot.data() as T;
   }
 
-  async getByEmail(collection: FIRESTORE_COLLECTIONS, email: string): Promise<FirestoreDocumentType> {
-    let document: FirestoreDocumentType;
+  async getByEmail<T extends FirestoreDocumentType>(collection: FIRESTORE_COLLECTIONS, email: string): Promise<T> {
+    let document: T;
     const documentsSnapshot = await this.firestore.collection(collection).where('email', '==', email).get();
     if (documentsSnapshot.size > 1) {
       throw new HttpException('Multiple users found', 400);
     } else if (documentsSnapshot.size === 1) {
       documentsSnapshot.forEach((doc) => {
-        document = doc.data() as WelcomeUser;
+        document = doc.data() as T;
       });
     } else {
       throw new NotFoundException('User not found in DB');
@@ -95,7 +95,10 @@ export class FirestoreService {
     return document;
   }
 
-  async saveDocument(collection: FIRESTORE_COLLECTIONS, data: Record<string, any>): Promise<FirestoreDocumentType> {
+  async saveDocument<T extends FirestoreDocumentType>(
+    collection: FIRESTORE_COLLECTIONS,
+    data: Record<string, any>,
+  ): Promise<T> {
     try {
       const documentRef = this.firestore.collection(collection).doc(data._id);
 
@@ -115,11 +118,11 @@ export class FirestoreService {
     }
   }
 
-  async updateDocument(
+  async updateDocument<T extends FirestoreDocumentType>(
     collection: FIRESTORE_COLLECTIONS,
     documentId: string,
     data: Record<string, unknown>,
-  ): Promise<FirestoreDocumentType> {
+  ): Promise<T> {
     try {
       await this.firestore
         .collection(collection)

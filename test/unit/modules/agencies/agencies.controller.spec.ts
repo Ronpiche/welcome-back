@@ -1,0 +1,59 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { AgenciesController } from '@src/modules/agencies/agencies.controller';
+import { AgenciesService } from '@src/modules/agencies/agencies.service';
+import { OutputAgencyDto } from '@src/modules/agencies/dto/output-agency.dto';
+import { createAgencyMock, outputAgencyMock } from '@test/unit/__mocks__/agencies/agencies.entity.mock';
+import { AgenciesServiceMock } from '@test/unit/__mocks__/agencies/agencies.service.mock';
+
+describe('agencyController', () => {
+  let controller: AgenciesController;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [AgenciesController],
+      providers: [{ provide: AgenciesService, useClass: AgenciesServiceMock }],
+    }).compile();
+
+    controller = module.get<AgenciesController>(AgenciesController);
+  });
+
+  describe('create', () => {
+    it('should create an agency, and return an OutputAgency', () => {
+      const data = controller.create(createAgencyMock);
+      expect(data).toBeDefined();
+      expect(data).toEqual(outputAgencyMock);
+    });
+  });
+
+  describe('createMany', () => {
+    it('should create many agencies', async () => {
+      const res = await controller.createMany([createAgencyMock]);
+      expect(res).toBeUndefined();
+    });
+  });
+
+  describe('findAll', () => {
+    it('should return an array of Outputagencies', async () => {
+      const outputUsers: OutputAgencyDto[] = await controller.findAll();
+      expect(outputUsers).toBeDefined();
+      expect(outputUsers).toEqual([outputAgencyMock]);
+    });
+  });
+
+  describe('remove', () => {
+    it('should delete 1 agency', () => {
+      const documentId = '789QSD123';
+      const res = controller.remove(documentId);
+      expect(res).toBeUndefined();
+    });
+  });
+
+  describe('update', () => {
+    it('should update 1 agency', () => {
+      const documentId = '789QSD123';
+      const res = controller.update(documentId, createAgencyMock);
+      expect(res).toBeDefined();
+      expect(res).toEqual(outputAgencyMock);
+    });
+  });
+});

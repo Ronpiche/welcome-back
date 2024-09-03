@@ -13,6 +13,8 @@ import { ContentModule } from './modules/content/content.module';
 import { StepModule } from '@modules/step/step.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AgenciesModule } from './modules/agencies/agencies.module';
+import { MembersModule } from './modules/members/members.module';
 
 @Module({
   imports: [
@@ -45,6 +47,8 @@ import { AppService } from './app.service';
     AuthentificationModule,
     ContentModule,
     StepModule,
+    AgenciesModule,
+    MembersModule,
   ],
   controllers: [AppController],
   providers: [

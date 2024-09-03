@@ -4,6 +4,8 @@ import { Role } from '@modules/authorization/entities/Role.entity';
 import { ContentEntity } from '@modules/content/entities/content.entity';
 import { DocumentData } from '@google-cloud/firestore';
 import { Step } from '@modules/step/entities/step.entity';
+import { Agency } from '@src/modules/agencies/entities/agency.entity';
+import { Member } from '@src/modules/members/entities/member.entity';
 
 export enum UserRoles {
   Admin = 'Admin',
@@ -22,6 +24,8 @@ export enum FIRESTORE_COLLECTIONS {
   STEPS = 'WelcomeDatabase_steps',
   WELCOME_USERS = 'WelcomeDatabase_users',
   WELCOME_CONTENT = 'WelcomeDatabase_content',
+  WELCOME_AGENCIES = 'WelcomeDatabase_agencies',
+  WELCOME_MEMBERS = 'WelcomeDatabase_members',
 }
 
 export interface FirebaseConfig {
@@ -29,7 +33,7 @@ export interface FirebaseConfig {
   authDomain: string;
 }
 
-export type FirestoreDocumentType = WelcomeUser | User | Role | ContentEntity | DocumentData | Step;
+export type FirestoreDocumentType = WelcomeUser | User | Role | ContentEntity | DocumentData | Step | Agency | Member;
 
 export enum FirestoreErrorCode {
   OK = 0,
