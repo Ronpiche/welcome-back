@@ -60,6 +60,7 @@ services:
       environment:
         - REACT_APP_BASE_URL_BACK_WELCOME=http://127.0.0.1:3337/api
         - PORT=4000
+        - REACT_APP_BYPASS_LOGIN=false
       ports: 
         - '4000:4000'
       networks:

@@ -2,24 +2,22 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { SignInDto } from './dto/input/signIn.dto';
 import { GipService } from '../../services/gip/gip.service';
 import { SignupDto } from './dto/input/signup.dto';
-import { UserCredential, User } from 'firebase/auth';
+import { AuthentificationUserOutputDto } from './dto/output/authentificationUserOutput.dto';
 
 @Injectable()
 export class AuthentificationService {
   constructor(private readonly gipService: GipService) {}
 
-  async signIn(signInDto: SignInDto): Promise<User> {
+  async signIn(signInDto: SignInDto): Promise<AuthentificationUserOutputDto> {
     const { email, password } = signInDto;
-    const userCredential: UserCredential = await this.gipService.signInGIP(email, password);
-    return userCredential.user;
+    return await this.gipService.signInGIP(email, password);
   }
 
-  async signUp(signUpDto: SignupDto): Promise<User> {
+  async signUp(signUpDto: SignupDto): Promise<void> {
     const { email, password, copy_password } = signUpDto;
     if (copy_password !== password) {
       throw new BadRequestException('These passwords are not the same');
     }
-    const userCredential: UserCredential = await this.gipService.signUpGIP(email, password);
-    return userCredential.user;
+    await this.gipService.signUpGIP(email, password);
   }
 }

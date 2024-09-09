@@ -1,8 +1,8 @@
-import { UserCredential } from '@test/unit/__mocks__/authentification/authentification.entities.mock';
+import { GipUserMock } from '@test/unit/__mocks__/authentification/authentification.entities.mock';
 
 export const firebaseAuth = {
-  signInWithEmailAndPassword: jest.fn().mockResolvedValue(UserCredential),
-  createUserWithEmailAndPassword: jest.fn().mockResolvedValue(UserCredential),
+  signInWithEmailAndPassword: jest.fn().mockResolvedValue({ user: GipUserMock }),
+  createUserWithEmailAndPassword: jest.fn().mockResolvedValue({ user: GipUserMock }),
   getAuth: jest.fn().mockReturnValue({
     authStateReady: jest.fn().mockResolvedValue(undefined),
   }),

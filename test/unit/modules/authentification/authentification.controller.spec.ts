@@ -3,12 +3,11 @@ import { AuthentificationController } from '@modules/authentification/authentifi
 import { AuthentificationService } from '@modules/authentification/authentification.service';
 import { AuthentificationServiceMock } from '@test/unit/__mocks__/authentification/autentification.service.mock';
 import {
-  UserCredential,
   signUpMock,
   signInMock,
-  userOutputDtoMock,
+  authentificationUserOutput,
 } from '@test/unit/__mocks__/authentification/authentification.entities.mock';
-import { UserOutputDto } from '@modules/authentification/dto/output/userOutput.dto';
+import { AuthentificationUserOutputDto } from '@src/modules/authentification/dto/output/authentificationUserOutput.dto';
 
 describe('AuthentificationController', () => {
   let controller: AuthentificationController;
@@ -29,15 +28,15 @@ describe('AuthentificationController', () => {
 
   describe('authentificationController', () => {
     it('should be return an user from firebase', async () => {
-      controller['authentificationService'].signIn = jest.fn().mockResolvedValue(UserCredential);
-      const res: UserOutputDto = await controller.signIn(signInMock);
-      expect(res).toEqual(userOutputDtoMock);
+      controller['authentificationService'].signIn = jest.fn().mockResolvedValue(authentificationUserOutput);
+      const res: AuthentificationUserOutputDto = await controller.signIn(signInMock);
+      expect(res).toEqual(authentificationUserOutput);
     });
 
     it('must return a newly created user from firebase', async () => {
-      controller['authentificationService'].signUp = jest.fn().mockResolvedValue(UserCredential);
-      const res: UserOutputDto = await controller.signUp(signUpMock);
-      expect(res).toEqual(userOutputDtoMock);
+      controller['authentificationService'].signUp = jest.fn().mockResolvedValue(undefined);
+      const res = await controller.signUp(signUpMock);
+      expect(res).toBeUndefined();
     });
   });
 });
