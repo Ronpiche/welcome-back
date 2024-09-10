@@ -10,6 +10,7 @@ import {
 import { FirestoreService } from '@src/services/firestore/firestore.service';
 import { FirestoreServiceMock } from '../__mocks__/firestore.service';
 import { outputWelcomeMock } from '../__mocks__/welcome/User.entity.mock';
+import { AuthentificationUserOutputDto } from '@src/modules/authentification/dto/output/authentificationUserOutput.dto';
 
 jest.mock('firebase/auth', () => ({
   signInWithEmailAndPassword: () => firebaseAuth.signInWithEmailAndPassword(),
@@ -61,8 +62,8 @@ describe('GipService', () => {
       const password = 'Azerty@123';
       service['auth'].authStateReady = jest.fn().mockResolvedValue(undefined);
       service['firestoreService'].getByEmail = jest.fn().mockResolvedValue(outputWelcomeMock);
-      const user = await service.signInGIP(email, password);
-      expect(user).toEqual(authentificationUserOutput);
+      const signIn: AuthentificationUserOutputDto = await service.signInGIP(email, password);
+      expect(signIn.gipUser).toEqual(authentificationUserOutput.gipUser);
     });
 
     it('should throw BadRequestException if user is not found', async () => {

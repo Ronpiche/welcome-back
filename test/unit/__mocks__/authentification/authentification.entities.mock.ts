@@ -48,9 +48,9 @@ export const authentificationUserOutput: AuthentificationUserOutputDto = {
     lastUpdate: new Date('2022-05-16T08:40:24.420Z'),
     communitiesQuestions: "{'communities': ['dax'], 'answer':{'dax': 'AccompagnementEquipe'}}",
     steps: [
-      { _id: '0', unlockDate: new Date(2022, 4, 25, 13, 24, 6) },
-      { _id: '1', unlockDate: new Date(2022, 4, 25, 13, 24, 6) },
-      { _id: '2', unlockDate: new Date(2022, 4, 25, 13, 24, 6) },
+      { _id: '0', unlockDate: new Date(2022, 4, 25, 13, 24, 6), subStep: [{ _id: '1', isCompleted: false }] },
+      { _id: '1', unlockDate: new Date(2022, 4, 25, 13, 24, 6), subStep: [{ _id: '2', isCompleted: false }] },
+      { _id: '2', unlockDate: new Date(2022, 4, 25, 13, 24, 6), subStep: [{ _id: '3', isCompleted: false }] },
     ],
   },
 };

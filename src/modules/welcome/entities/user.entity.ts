@@ -7,11 +7,17 @@ export class RhUserInfo {
   email: string;
 }
 
+export class UserSubStep {
+  _id: string;
+  isCompleted: boolean;
+}
+
 export class UserStep {
   _id: string;
   unlockDate: Timestamp;
   unlockEmailSentAt?: Timestamp;
   completedAt?: Timestamp;
+  subStep: UserSubStep[];
 }
 
 export class WelcomeUser {
