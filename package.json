@@ -20,7 +20,8 @@
     "test:unit": "jest --config ./configs/jest.config.ts",
     "test:integration": "cross-env NODE_ENV=test jest --config ./configs/jest-e2e.config.ts",
     "docker:run:env": "docker-compose -f ./configs/docker/docker-compose.yml up",
-    "prepare": "husky"
+    "prepare": "husky",
+    "create-git-branch": "scripts/create-git-branch.sh"
   },
   "dependencies": {
     "@azure/msal-node": "^2.6.5",

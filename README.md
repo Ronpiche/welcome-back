@@ -88,3 +88,10 @@ gantt
         Step 3   :c3, after mc1, until mc2
         Arrival  :milestone, mc2, 2024-06-01, 0
 ```
+
+## <a name="misc-commands">✨ Misc commands</a>
+
+### 🔀 Create git branch with a conventional name
+```shell
+npm run script:create-git-branch
+```
