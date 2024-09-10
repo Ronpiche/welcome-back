@@ -3,6 +3,7 @@ import { CreateUserDto } from '@modules/welcome/dto/input/create-user.dto';
 import { WelcomeUserDto } from '../../../../src/modules/welcome/dto/output/welcome-user.dto';
 import { WelcomeUser } from '../../../../src/modules/welcome/entities/user.entity';
 import { GRADE, PRACTICE } from '@modules/welcome/types/user.enum';
+import { UpdateUserDto } from '@src/modules/welcome/dto/input/update-user.dto';
 
 export const welcomeUserEntityMock: WelcomeUser = {
   _id: '16156-585263',
@@ -27,9 +28,21 @@ export const welcomeUserEntityMock: WelcomeUser = {
   satisfactionQuestions: {},
   communitiesQuestions: {},
   steps: [
-    { _id: '0', unlockDate: Timestamp.fromDate(new Date(2022, 4, 25, 13, 24, 6)) },
-    { _id: '1', unlockDate: Timestamp.fromDate(new Date(2022, 4, 25, 13, 24, 6)) },
-    { _id: '2', unlockDate: Timestamp.fromDate(new Date(2022, 4, 25, 13, 24, 6)) },
+    {
+      _id: '0',
+      unlockDate: Timestamp.fromDate(new Date(2022, 4, 25, 13, 24, 6)),
+      subStep: [{ _id: '1', isCompleted: false }],
+    },
+    {
+      _id: '1',
+      unlockDate: Timestamp.fromDate(new Date(2022, 4, 25, 13, 24, 6)),
+      subStep: [{ _id: '1', isCompleted: false }],
+    },
+    {
+      _id: '2',
+      unlockDate: Timestamp.fromDate(new Date(2022, 4, 25, 13, 24, 6)),
+      subStep: [{ _id: '1', isCompleted: false }],
+    },
   ],
 };
 
@@ -57,9 +70,9 @@ export const outputWelcomeMock: WelcomeUserDto = {
   lastUpdate: new Date('2022-05-16T08:40:24.420Z'),
   communitiesQuestions: "{'communities': ['dax'], 'answer':{'dax': 'AccompagnementEquipe'}}",
   steps: [
-    { _id: '0', unlockDate: new Date(2022, 4, 25, 13, 24, 6) },
-    { _id: '1', unlockDate: new Date(2022, 4, 25, 13, 24, 6) },
-    { _id: '2', unlockDate: new Date(2022, 4, 25, 13, 24, 6) },
+    { _id: '0', unlockDate: new Date(2022, 4, 25, 13, 24, 6), subStep: [{ _id: '1', isCompleted: false }] },
+    { _id: '1', unlockDate: new Date(2022, 4, 25, 13, 24, 6), subStep: [{ _id: '1', isCompleted: false }] },
+    { _id: '2', unlockDate: new Date(2022, 4, 25, 13, 24, 6), subStep: [{ _id: '1', isCompleted: false }] },
   ],
 };
 
@@ -87,13 +100,13 @@ export const outputUpdateWelcomeMock: WelcomeUserDto = {
   lastUpdate: new Date('2022-05-16T08:40:24.420Z'),
   communitiesQuestions: "{'communities': ['dax'], 'answer':{'dax': 'AccompagnementEquipe'}}",
   steps: [
-    { _id: '0', unlockDate: new Date(2022, 4, 25, 13, 24, 6) },
-    { _id: '1', unlockDate: new Date(2022, 4, 25, 13, 24, 6) },
-    { _id: '2', unlockDate: new Date(2022, 4, 25, 13, 24, 6) },
+    { _id: '0', unlockDate: new Date(2022, 4, 25, 13, 24, 6), subStep: [{ _id: '1', isCompleted: false }] },
+    { _id: '1', unlockDate: new Date(2022, 4, 25, 13, 24, 6), subStep: [{ _id: '1', isCompleted: false }] },
+    { _id: '2', unlockDate: new Date(2022, 4, 25, 13, 24, 6), subStep: [{ _id: '1', isCompleted: false }] },
   ],
 };
 
-export const inputUpdateWelcomeMock: CreateUserDto = {
+export const inputUpdateWelcomeMock: UpdateUserDto = {
   email: 'test@test.fr',
   firstName: 'test',
   lastName: 'testtest',

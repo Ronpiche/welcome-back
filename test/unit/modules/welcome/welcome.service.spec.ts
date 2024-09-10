@@ -249,10 +249,23 @@ describe('UsersService', () => {
             _id: '0',
             unlockEmailSentAt: Timestamp.fromDate(new Date('2024-05-01')),
             unlockDate: Timestamp.fromDate(new Date('2024-05-01')),
+            subStep: [{ _id: '1', isCompleted: false }],
           },
-          { _id: '1', unlockDate: Timestamp.fromDate(new Date('2024-05-15')) },
-          { _id: '2', unlockDate: Timestamp.fromDate(new Date('2024-06-01')) },
-          { _id: '3', unlockDate: Timestamp.fromDate(new Date('2024-06-15')) },
+          {
+            _id: '1',
+            unlockDate: Timestamp.fromDate(new Date('2024-05-15')),
+            subStep: [{ _id: '1', isCompleted: false }],
+          },
+          {
+            _id: '2',
+            unlockDate: Timestamp.fromDate(new Date('2024-06-01')),
+            subStep: [{ _id: '1', isCompleted: false }],
+          },
+          {
+            _id: '3',
+            unlockDate: Timestamp.fromDate(new Date('2024-06-15')),
+            subStep: [{ _id: '1', isCompleted: false }],
+          },
         ],
       });
       expect(service.getNewlyUnlockedSteps(user, new Date('2024-06-01'))).toStrictEqual(['1', '2']);

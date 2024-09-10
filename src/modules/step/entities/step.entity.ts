@@ -3,6 +3,11 @@ class StepEmail {
   body: string;
 }
 
+class SubStep {
+  _id: string;
+  isCompleted: boolean;
+}
+
 export class Step {
   _id: string;
   cutAt: number;
@@ -11,4 +16,5 @@ export class Step {
   unlockEmail?: StepEmail;
   completionEmail?: StepEmail;
   completionEmailManager?: StepEmail;
+  subStep: SubStep[];
 }

@@ -52,7 +52,7 @@ export class WelcomeController {
   @ApiOkResponse({ description: 'User created', type: WelcomeUserDto })
   async create(@Body() createUserDto: CreateUserDto): Promise<WelcomeUserDto> {
     const user: WelcomeUser = await this.welcomeService.createUser(createUserDto);
-    return plainToInstance(WelcomeUserDto, user, { excludeExtraneousValues: true });
+    return plainToInstance(WelcomeUserDto, instanceToPlain(user), { excludeExtraneousValues: true });
   }
 
   @Get('users')
@@ -117,7 +117,8 @@ export class WelcomeController {
   @ApiOperation({ summary: 'Update One User', description: 'Update user' })
   @ApiOkResponse({ description: 'OK', type: WelcomeUserDto })
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto): Promise<WelcomeUserDto> {
-    return plainToInstance(WelcomeUserDto, instanceToPlain(await this.welcomeService.update(id, updateUserDto)), {
+    const user = await this.welcomeService.update(id, updateUserDto);
+    return plainToInstance(WelcomeUserDto, instanceToPlain(user), {
       excludeExtraneousValues: true,
     });
   }
