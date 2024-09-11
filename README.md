@@ -89,6 +89,28 @@ gantt
         Arrival  :milestone, mc2, 2024-06-01, 0
 ```
 
+## <a name="how-to-contribute">🚀 How to contribute</a>
+
+### 🔄 Pull requests
+
+1. Create a new branch from `develop` with the following command :
+
+```shell
+npm run script:create-git-branch
+```
+
+2. Make your changes, commit them and push them to your branch.
+
+3. Create a pull request from your branch to `develop` with the following command :
+
+```shell
+npm run script:create-pull-request
+```
+
+4. Wait for the review and approval of your pull request.
+
+5. Once your pull request is approved, it will be merged into `develop` and deployed to the staging environment.
+
 ## <a name="misc-commands">✨ Misc commands</a>
 
 ### 🔀 Create git branch with a conventional name
