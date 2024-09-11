@@ -21,8 +21,8 @@
     "test:integration": "cross-env NODE_ENV=test jest --config ./configs/jest-e2e.config.ts",
     "docker:run:env": "docker-compose -f ./configs/docker/docker-compose.yml up",
     "prepare": "husky",
-    "script:create-git-branch": "scripts/create-git-branch.sh",
-    "script:create-pull-request": "scripts/create-pull-request.sh"
+    "script:create-git-branch": "bash scripts/create-git-branch.sh",
+    "script:create-pull-request": "bash scripts/create-pull-request.sh"
   },
   "dependencies": {
     "@azure/msal-node": "^2.6.5",
