@@ -95,3 +95,8 @@ gantt
 ```shell
 npm run script:create-git-branch
 ```
+
+### ⤴️ Create pull request against the `develop` branch from current branch
+```shell
+npm run script:create-pull-request
+```
