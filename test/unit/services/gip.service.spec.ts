@@ -1,9 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GipService } from '@src/services/gip/gip.service';
 import { ConfigService } from '@nestjs/config';
-import { BadRequestException, Logger, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { firebaseAuth, firebaseApp } from '@test/unit/__mocks__/firebase.mock';
-import { UserCredential } from '@test/unit/__mocks__/authentification/authentification.entities.mock';
+import {
+  authentificationUserOutput,
+  GipUserMock,
+} from '@test/unit/__mocks__/authentification/authentification.entities.mock';
+import { FirestoreService } from '@src/services/firestore/firestore.service';
+import { FirestoreServiceMock } from '../__mocks__/firestore.service';
+import { outputWelcomeMock } from '../__mocks__/welcome/User.entity.mock';
+import { AuthentificationUserOutputDto } from '@src/modules/authentification/dto/output/authentificationUserOutput.dto';
 
 jest.mock('firebase/auth', () => ({
   signInWithEmailAndPassword: () => firebaseAuth.signInWithEmailAndPassword(),
@@ -21,6 +28,7 @@ describe('GipService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         GipService,
+        { provide: FirestoreService, useClass: FirestoreServiceMock },
         {
           provide: ConfigService,
           useValue: {
@@ -39,7 +47,7 @@ describe('GipService', () => {
     service = module.get<GipService>(GipService);
   });
   describe('signinGIP', () => {
-    it('testing the properties for initialize firebase app', () => {
+    it('should initialize Firebase configuration correctly', () => {
       expect(service['firebaseConfig']).toHaveProperty('apiKey', service['configService'].get('API_KEY'));
       expect(service['firebaseConfig']).toHaveProperty('authDomain', service['configService'].get('AUTH_DOMAIN'));
       expect(service['firebaseConfig']).not.toStrictEqual({});
@@ -49,56 +57,73 @@ describe('GipService', () => {
       });
     });
 
-    it('should be return an user credential from firebase', async () => {
+    it('should return user authentication information', async () => {
       const email = 'test@test.fr';
       const password = 'Azerty@123';
       service['auth'].authStateReady = jest.fn().mockResolvedValue(undefined);
-      const user = await service.signInGIP(email, password);
-      expect(user).toEqual(UserCredential);
+      service['firestoreService'].getByEmail = jest.fn().mockResolvedValue(outputWelcomeMock);
+      const signIn: AuthentificationUserOutputDto = await service.signInGIP(email, password);
+      expect(signIn.gipUser).toEqual(authentificationUserOutput.gipUser);
     });
 
-    it('should be throw an error', async () => {
+    it('should throw BadRequestException if user is not found', async () => {
       const email = 'test@test.fr';
       const password = 'Azerty@123';
-      firebaseAuth.signInWithEmailAndPassword = jest
-        .fn()
-        .mockRejectedValue(new Error('Error signInWithEmailAndPassword'));
+      firebaseAuth.signInWithEmailAndPassword = jest.fn().mockRejectedValue(new BadRequestException('User not found'));
       try {
         await service.signInGIP(email, password);
         expect(true).toBe(false);
       } catch (error) {
-        expect(error).toBeInstanceOf(UnauthorizedException);
-        expect(error.message).toEqual('Error signInWithEmailAndPassword');
+        expect(error).toBeInstanceOf(BadRequestException);
+        expect(error.message).toEqual('User not found');
       }
     });
 
-    it('should be throw an error', async () => {
+    it('should throw InternalServerErrorException if authStateReady fails', async () => {
       const email = 'test@test.fr';
       const password = 'Azerty@123';
-      firebaseAuth.signInWithEmailAndPassword = jest.fn().mockRejectedValue(UserCredential);
-      service['auth'].authStateReady = jest.fn().mockRejectedValue(new Error('Error authStateReady'));
+      firebaseAuth.signInWithEmailAndPassword = jest.fn().mockResolvedValue(GipUserMock);
+      service['auth'].authStateReady = jest
+        .fn()
+        .mockRejectedValue(new InternalServerErrorException('Error authStateReady'));
       try {
         await service.signInGIP(email, password);
         expect(true).toBe(false);
       } catch (error) {
-        expect(error).toBeInstanceOf(UnauthorizedException);
+        expect(error).toBeInstanceOf(InternalServerErrorException);
         expect(error.message).toEqual('Error authStateReady');
+      }
+    });
+
+    it('should throw NotFoundException if user is not found in Firestore', async () => {
+      const email = 'test@test.fr';
+      const password = 'Azerty@123';
+      firebaseAuth.signInWithEmailAndPassword = jest.fn().mockResolvedValue(GipUserMock);
+      service['auth'].authStateReady = jest.fn().mockResolvedValue(undefined);
+      service['firestoreService'].getByEmail = jest.fn().mockRejectedValue(new NotFoundException('User not found'));
+      try {
+        await service.signInGIP(email, password);
+        expect(true).toBe(false);
+      } catch (error) {
+        expect(error).toBeInstanceOf(NotFoundException);
+        expect(error.message).toEqual('User not found');
       }
     });
   });
   describe('signupGIP', () => {
-    it('should be return an user credential from firebase', async () => {
+    it('should return authentication information for newly created user', async () => {
       const email = 'test@test.fr';
       const password = 'Azerty@123';
       service['auth'].authStateReady = jest.fn().mockResolvedValue(undefined);
+      service['firestoreService'].getByEmail = jest.fn().mockResolvedValue(outputWelcomeMock);
       const user = await service.signUpGIP(email, password);
-      expect(user).toEqual(UserCredential);
+      expect(user).toBeUndefined();
     });
 
-    it('should be throw an error', async () => {
+    it('should throw BadRequestException if user creation fails', async () => {
       const email = 'test@test.fr';
       const password = 'Azerty@123';
-      firebaseAuth.createUserWithEmailAndPassword = jest.fn().mockRejectedValue(new Error('error'));
+      firebaseAuth.createUserWithEmailAndPassword = jest.fn().mockRejectedValue(new BadRequestException('error'));
       try {
         await service.signUpGIP(email, password);
         expect(true).toBe(false);
@@ -108,17 +133,34 @@ describe('GipService', () => {
       }
     });
 
-    it('should be throw an error', async () => {
+    it('should throw InternalServerErrorException if authStateReady fails', async () => {
       const email = 'test@test.fr';
       const password = 'Azerty@123';
-      firebaseAuth.createUserWithEmailAndPassword = jest.fn().mockResolvedValue(UserCredential);
-      service['auth'].authStateReady = jest.fn().mockRejectedValue(new Error('Error authStateReady'));
+      firebaseAuth.createUserWithEmailAndPassword = jest.fn().mockResolvedValue(GipUserMock);
+      service['auth'].authStateReady = jest
+        .fn()
+        .mockRejectedValue(new InternalServerErrorException('Error authStateReady'));
       try {
         await service.signUpGIP(email, password);
         expect(true).toBe(false);
       } catch (error) {
-        expect(error).toBeInstanceOf(BadRequestException);
+        expect(error).toBeInstanceOf(InternalServerErrorException);
         expect(error.message).toEqual('Error authStateReady');
+      }
+    });
+
+    it('should throw NotFoundException if user is not found in Firestore', async () => {
+      const email = 'test@test.fr';
+      const password = 'Azerty@123';
+      firebaseAuth.createUserWithEmailAndPassword = jest.fn().mockResolvedValue(GipUserMock);
+      service['auth'].authStateReady = jest.fn().mockResolvedValue(undefined);
+      service['firestoreService'].getByEmail = jest.fn().mockRejectedValue(new NotFoundException('User not found'));
+      try {
+        await service.signUpGIP(email, password);
+        expect(true).toBe(false);
+      } catch (error) {
+        expect(error).toBeInstanceOf(NotFoundException);
+        expect(error.message).toEqual('User not found');
       }
     });
   });

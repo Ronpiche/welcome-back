@@ -9,4 +9,10 @@ export const stepEntityMock: Step = {
     subject: 'Test',
     body: '1234',
   },
+  subStep: [
+    {
+      _id: '1',
+      isCompleted: false,
+    },
+  ],
 };

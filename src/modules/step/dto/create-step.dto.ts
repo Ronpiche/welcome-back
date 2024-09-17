@@ -1,6 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsString, Max, Min, ValidateNested } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min, ValidateNested } from 'class-validator';
+
+class SubStepDto {
+  @ApiProperty({ example: '1' })
+  @IsString()
+  @IsOptional()
+  _id: string;
+
+  @ApiProperty({ example: false })
+  @IsBoolean()
+  @IsOptional()
+  isCompleted: boolean;
+}
 
 class EmailDto {
   @ApiProperty({ example: 'New step available' })
@@ -61,4 +73,9 @@ export class CreateStepDto {
   @ValidateNested()
   @Type(() => EmailDto)
   completionEmailManager?: EmailDto;
+
+  @ApiProperty()
+  @ValidateNested()
+  @Type(() => SubStepDto)
+  subStep: SubStepDto[];
 }

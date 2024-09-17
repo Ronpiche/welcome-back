@@ -52,6 +52,7 @@ export class WelcomeService {
         ...(await this.stepService.generateSteps(dbUser)).map((s) => ({
           _id: s.step._id,
           unlockDate: Timestamp.fromDate(s.dt),
+          subStep: s.step.subStep,
         })),
       );
 

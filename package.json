@@ -14,13 +14,16 @@
     "start": "nest start",
     "start:prod": "node dist/src/main",
     "start:debug": "nest start --debug --watch",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
+    "lint:fix": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
     "test:unit": "jest --config ./configs/jest.config.ts",
     "test:integration": "cross-env NODE_ENV=test jest --config ./configs/jest-e2e.config.ts",
     "docker:run:env": "docker-compose -f ./configs/docker/docker-compose.yml up",
-    "prepare": "husky"
+    "prepare": "husky",
+    "script:create-git-branch": "bash scripts/create-git-branch.sh",
+    "script:create-pull-request": "bash scripts/create-pull-request.sh"
   },
   "dependencies": {
     "@azure/msal-node": "^2.6.5",
@@ -80,7 +83,8 @@
     "ts-loader": "^9.4.3",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.1.3"
+    "typescript": "^5.1.3",
+    "validate-branch-name": "^1.3.1"
   },
   "commitlint": {
     "extends": [

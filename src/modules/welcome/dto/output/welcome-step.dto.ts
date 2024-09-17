@@ -1,6 +1,16 @@
 import { Timestamp } from '@google-cloud/firestore';
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose, Transform } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
+
+export class WelcomeSubStep {
+  @ApiProperty()
+  @Expose()
+  _id: string;
+
+  @ApiProperty()
+  @Expose()
+  isCompleted: boolean;
+}
 
 export class WelcomeStepDto {
   @ApiProperty()
@@ -27,4 +37,9 @@ export class WelcomeStepDto {
     value && value._seconds ? new Timestamp(value._seconds, value._nanoseconds).toDate() : value,
   )
   completedAt?: Date;
+
+  @ApiProperty()
+  @Expose()
+  @Type(() => WelcomeSubStep)
+  subStep: WelcomeSubStep[];
 }

@@ -38,6 +38,8 @@ export class FirestoreServiceMock {
   });
 
   transformToObjectAndSaveProperty = jest.fn().mockResolvedValue([]);
+
+  getByEmail = jest.fn().mockResolvedValue({});
 }
 
 export const mockMicrosoftService = {
