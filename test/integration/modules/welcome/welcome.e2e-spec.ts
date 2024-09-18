@@ -1,10 +1,10 @@
-import { FirestoreService } from '@modules/shared/firestore/firestore.service';
+import { GRADE } from '@modules/welcome/types/user.enum';
 import { HttpException, INestApplication, InternalServerErrorException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { FirestoreService } from '@src/services/firestore/firestore.service';
 import { AppModule } from '../../../../src/app.module';
 import { accessAllSecrets } from '../../../../src/utils/accessSecret';
 import request from 'supertest';
-import { GRADE } from '@/modules/welcome/types/user.type';
 
 let moduleFixture: TestingModule;
 let app: INestApplication;

@@ -6,7 +6,7 @@ const config: Config.InitialOptions = {
   moduleFileExtensions: ['js', 'json', 'ts'],
   coverageReporters: ['json', 'clover', 'text', 'lcov'],
   collectCoverage: true,
-  rootDir: '../',
+  rootDir: '../../',
   testMatch: ['**/test/unit/**/*.spec.ts'],
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest',
