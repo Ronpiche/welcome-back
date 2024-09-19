@@ -40,16 +40,10 @@ export class WelcomeUserDto {
   firstName: string;
   @ApiProperty()
   @Expose()
-  satisfactionQuestions: string;
-  @ApiProperty()
-  @Expose()
   @Transform(({ value }) =>
     value && value._seconds ? new Timestamp(value._seconds, value._nanoseconds).toDate() : value,
   )
   lastUpdate: Date;
-  @ApiProperty()
-  @Expose()
-  communitiesQuestions: string;
   @ApiProperty()
   @Expose()
   email: string;
@@ -59,6 +53,9 @@ export class WelcomeUserDto {
   @ApiProperty()
   @Expose()
   practice: string;
+  @ApiProperty()
+  @Expose()
+  smileyQuestion: string;
   @ApiProperty()
   @Expose()
   @Type(() => WelcomeStepDto)

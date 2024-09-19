@@ -43,15 +43,13 @@ export const authentificationUserOutput: AuthentificationUserOutputDto = {
     },
     arrivalDate: '2023-02-01 22:00:00',
     firstName: 'Xavier',
-    satisfactionQuestions:
-      "{'generalFeedback': 'oui', 'pastExperience': 'non', 'feedback': \"Non mais c'était bien, pas d'idée\", 'discoverDaveo': 'oui', 'generalAccessibility': 'oui', 'videoAccessibility': 'oui', 'displayCorrectly': 'oui', 'commentary': 'nop', 'stepDuration': 'non', 'gameUtility': 'oui', 'clearInformation': 'oui', 'knowMore': 'non', 'moreSubject': '', 'stillWantDaveo': 'oui', 'rgpdRead': True, 'rgpdAgreement': True}",
     lastUpdate: new Date('2022-05-16T08:40:24.420Z'),
-    communitiesQuestions: "{'communities': ['dax'], 'answer':{'dax': 'AccompagnementEquipe'}}",
     steps: [
       { _id: '0', unlockDate: new Date(2022, 4, 25, 13, 24, 6), subStep: [{ _id: '1', isCompleted: false }] },
       { _id: '1', unlockDate: new Date(2022, 4, 25, 13, 24, 6), subStep: [{ _id: '2', isCompleted: false }] },
       { _id: '2', unlockDate: new Date(2022, 4, 25, 13, 24, 6), subStep: [{ _id: '3', isCompleted: false }] },
     ],
+    smileyQuestion: '1',
   },
 };
 

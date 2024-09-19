@@ -41,8 +41,6 @@ export class WelcomeService {
       const now = Timestamp.now();
       const dbUser: WelcomeUser = Object.assign(instanceToPlain(createUserDto) as CreateUserDto, {
         _id: id,
-        communitiesQuestions: {},
-        satisfactionQuestions: {},
         steps: [],
         creationDate: now,
         lastUpdate: now,

@@ -48,4 +48,8 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @Type(() => WelcomeStepInputDto)
   @IsOptional()
   steps?: WelcomeStepInputDto[];
+
+  @ApiProperty()
+  @IsOptional()
+  smileyQuestion?: string;
 }

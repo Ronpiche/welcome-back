@@ -38,7 +38,6 @@ export class WelcomeUser {
   lastUpdate: Timestamp;
   grade: string;
   practice: string;
-  satisfactionQuestions: Record<string, string>;
-  communitiesQuestions: Record<string, string>;
+  smileyQuestion?: string;
   steps: UserStep[];
 }

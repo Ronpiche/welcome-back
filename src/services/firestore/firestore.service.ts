@@ -127,7 +127,7 @@ export class FirestoreService {
       await this.firestore
         .collection(collection)
         .doc(documentId)
-        .set({ ...data }, { merge: true });
+        .update({ ...data });
       return await this.getDocument(collection, documentId);
     } catch (error) {
       this.logger.error(error);
