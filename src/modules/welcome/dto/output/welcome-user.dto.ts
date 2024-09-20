@@ -1,6 +1,6 @@
+import { RhUserInfoDto } from '@modules/welcome/dto/input/create-user.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Transform, Type } from 'class-transformer';
-import { RhUserInfoDto } from '../input/create-user.dto';
 import { Timestamp } from '@google-cloud/firestore';
 import { WelcomeStepDto } from './welcome-step.dto';
 

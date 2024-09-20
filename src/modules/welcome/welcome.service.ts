@@ -1,3 +1,4 @@
+import { Step } from '@modules/step/entities/step.entity';
 import { HttpException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { CreateUserDto } from '@modules/welcome/dto/input/create-user.dto';
 import { UpdateUserDto } from '@modules/welcome/dto/input/update-user.dto';
@@ -10,7 +11,6 @@ import { instanceToPlain } from 'class-transformer';
 import { StepService } from '@modules/step/step.service';
 import { MailerService } from '@nestjs-modules/mailer';
 import markdownit, { StateCore } from 'markdown-it';
-import { Step } from '../step/entities/step.entity';
 
 const APP_NAME = 'Welcome';
 const APP_URL = 'http://localhost:3000';

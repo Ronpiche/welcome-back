@@ -1,8 +1,8 @@
+import { JwtCognito } from '@modules/cognito/jwtCognito.service';
+import { StepController } from '@modules/step/step.controller';
+import { StepService } from '@modules/step/step.service';
 import { Logger, Module } from '@nestjs/common';
-import { StepService } from './step.service';
-import { StepController } from './step.controller';
 import { FirestoreModule } from '@src/services/firestore/firestore.module';
-import { JwtCognito } from '../cognito/jwtCognito.service';
 
 @Module({
   imports: [FirestoreModule],

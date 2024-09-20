@@ -7,7 +7,7 @@ import { FIRESTORE_COLLECTIONS } from '@src/configs/types/Firestore.types';
 import { Step } from './entities/step.entity';
 import { instanceToPlain } from 'class-transformer';
 import { generateStepDates } from './step.utils';
-import { HOLIDAY_COUNTRY } from './constants';
+import { HOLIDAY_COUNTRY } from './step.constants';
 
 @Injectable()
 export class StepService {

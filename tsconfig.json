@@ -16,7 +16,7 @@
     "paths": {
       "@src/*": ["src/*"],
       "@modules/*": ["src/modules/*"],
-      "@test/*": ["test/*"]
+      "@tests/*": ["tests/*"]
     },
     "lib": ["ES2023", "DOM"]
   },

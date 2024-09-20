@@ -1,11 +1,11 @@
+import { CreatedDto } from '@modules/shared/dto/created.dto';
+import { CreateStepDto } from '@modules/step/dto/create-step.dto';
+import { UpdateStepDto } from '@modules/step/dto/update-step.dto';
+import { StepService } from '@modules/step/step.service';
 import { Controller, Get, Post, Body, Param, Delete, UseGuards, HttpStatus, Put, HttpCode } from '@nestjs/common';
-import { StepService } from './step.service';
-import { CreateStepDto } from './dto/create-step.dto';
-import { UpdateStepDto } from './dto/update-step.dto';
 import { IsPublic } from '@src/decorators/isPublic';
 import { AccessGuard } from '@src/middleware/AuthGuard';
 import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { CreatedDto } from '../shared/dto/created.dto';
 
 @ApiTags('step')
 @Controller('steps')

@@ -1,7 +1,7 @@
+import { GRADE, PRACTICE } from '@modules/welcome/types/user.enum';
 import { IsEnum, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { GRADE, PRACTICE } from '../../types/user.enum';
 
 export class RhUserInfoDto {
   @ApiProperty({ example: 'abcd-1234' })

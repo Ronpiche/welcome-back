@@ -113,7 +113,13 @@ jobs:
           key: ${{ runner.os }}-npm-v3-${{ hashFiles('package-lock.json') }}
 
       - name: Unit tests 🧪
-        run: npm run test:unit
+        run: npm run test:unit:cov
+
+      - name: Save unit tests coverage report as artifact 💎
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-tests-coverage-report
+          path: tests/unit/coverage
 
   mutant-tests:
     name: Mutant Tests 👽
@@ -144,4 +150,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: stryker-html-report
-          path: test/stryker/coverage/index.html
+          path: tests/stryker/coverage/index.html

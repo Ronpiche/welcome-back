@@ -6,10 +6,10 @@ import {
   GipUser,
 } from '@src/modules/authentification/dto/output/authentificationUserOutput.dto';
 import { WelcomeUserDto } from '@src/modules/welcome/dto/output/welcome-user.dto';
+import { FirestoreService } from '@src/services/firestore/firestore.service';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { FirebaseApp, initializeApp } from 'firebase/app';
 import { Auth, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { FirestoreService } from '../firestore/firestore.service';
 
 @Injectable()
 export class GipService {

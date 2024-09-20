@@ -1,8 +1,8 @@
+import { SignInDto } from '@modules/authentification/dto/input/signIn.dto';
+import { SignupDto } from '@modules/authentification/dto/input/signup.dto';
+import { AuthentificationUserOutputDto } from '@modules/authentification/dto/output/authentificationUserOutput.dto';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { SignInDto } from './dto/input/signIn.dto';
-import { GipService } from '../../services/gip/gip.service';
-import { SignupDto } from './dto/input/signup.dto';
-import { AuthentificationUserOutputDto } from './dto/output/authentificationUserOutput.dto';
+import { GipService } from '@src/services/gip/gip.service';
 
 @Injectable()
 export class AuthentificationService {

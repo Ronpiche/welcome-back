@@ -59,6 +59,9 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 # Docker
 /configs/docker/docker-compose.yml
 
+# Tests
+/tests/unit/coverage
+
 # Stryker
 .stryker-tmp/
-test/stryker/coverage
+tests/stryker/coverage
