@@ -15,6 +15,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AgenciesModule } from './modules/agencies/agencies.module';
 import { MembersModule } from './modules/members/members.module';
+import { CloudStorageModule } from './modules/cloud-storage/cloud-storage.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { MembersModule } from './modules/members/members.module';
     StepModule,
     AgenciesModule,
     MembersModule,
+    CloudStorageModule,
   ],
   controllers: [AppController],
   providers: [

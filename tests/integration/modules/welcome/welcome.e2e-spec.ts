@@ -3,7 +3,6 @@ import { HttpException, INestApplication, InternalServerErrorException } from '@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '@src/app.module';
 import { FirestoreService } from '@src/services/firestore/firestore.service';
-import { accessAllSecrets } from '@src/utils/accessSecret';
 import request from 'supertest';
 
 let moduleFixture: TestingModule;
@@ -29,7 +28,6 @@ const user: Record<string, any> = {
 };
 describe('testing welcome', () => {
   beforeAll(async () => {
-    await accessAllSecrets();
     moduleFixture = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
