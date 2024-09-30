@@ -1,6 +1,6 @@
-import { Timestamp } from '@google-cloud/firestore';
-import { ApiProperty } from '@nestjs/swagger';
-import { Expose } from 'class-transformer';
+import { Timestamp } from "@google-cloud/firestore";
+import { ApiProperty } from "@nestjs/swagger";
+import { Expose } from "class-transformer";
 
 export class OutputRoleDto {
   @ApiProperty()

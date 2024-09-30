@@ -1,34 +1,34 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsIn, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { ApiProperty } from "@nestjs/swagger";
+import { Type } from "class-transformer";
+import { IsArray, IsBoolean, IsIn, IsOptional, IsString, ValidateNested } from "class-validator";
 
 class RoleMember {
-  @ApiProperty({ example: 'Lille' })
+  @ApiProperty({ example: "Lille" })
   @IsString()
   scope: string;
 
-  @ApiProperty({ example: 'agency' })
+  @ApiProperty({ example: "agency" })
   @IsString()
   @IsOptional()
   subscope?: string;
 
-  @ApiProperty({ example: 'BusinessOwner' })
+  @ApiProperty({ example: "BusinessOwner" })
   @IsString()
   role: string;
 }
 
 export class CreateMemberDto {
-  @ApiProperty({ example: 'John' })
+  @ApiProperty({ example: "John" })
   @IsString()
   firstname: string;
 
-  @ApiProperty({ example: 'Doe' })
+  @ApiProperty({ example: "Doe" })
   @IsString()
   lastname: string;
 
-  @ApiProperty({ example: 'male' })
-  @IsIn(['male', 'female'], { message: 'Gender must be either male or female' })
-  gender: 'male' | 'female';
+  @ApiProperty({ example: "male" })
+  @IsIn(["male", "female"], { message: "Gender must be either male or female" })
+  gender: "male" | "female";
 
   @ApiProperty({ required: false })
   @IsBoolean()

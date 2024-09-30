@@ -1,17 +1,18 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { CloudStorageService } from '@src/modules/cloud-storage/cloud-storage.service';
-import { Storage } from '@google-cloud/storage';
-import { getImageFullExtension } from '@src/modules/cloud-storage/cloud-storage.helper';
-import { ConfigService } from '@nestjs/config';
-import { BadRequestException } from '@nestjs/common';
+import type { TestingModule } from "@nestjs/testing";
+import { Test } from "@nestjs/testing";
+import { CloudStorageService } from "@src/modules/cloud-storage/cloud-storage.service";
+import type { Storage } from "@google-cloud/storage";
+import { getImageFullExtension } from "@src/modules/cloud-storage/cloud-storage.helper";
+import { ConfigService } from "@nestjs/config";
+import { BadRequestException } from "@nestjs/common";
 
-jest.mock('@google-cloud/storage');
+jest.mock("@google-cloud/storage");
 
-describe('CloudStorageService', () => {
+describe("CloudStorageService", () => {
   let service: CloudStorageService;
   let mockStorage: jest.Mocked<Storage>;
 
-  beforeEach(async () => {
+  beforeEach(async() => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CloudStorageService,
@@ -19,8 +20,8 @@ describe('CloudStorageService', () => {
           provide: ConfigService,
           useValue: {
             get: (key: string) => {
-              if (key === 'NAME_BUCKET_STATIC_CONTENT') {
-                return 'name-bucket';
+              if (key === "NAME_BUCKET_STATIC_CONTENT") {
+                return "name-bucket";
               }
               return null;
             },
@@ -30,13 +31,13 @@ describe('CloudStorageService', () => {
     }).compile();
 
     service = module.get<CloudStorageService>(CloudStorageService);
-    mockStorage = service['storage'] as jest.Mocked<Storage>;
+    mockStorage = service["storage"] as jest.Mocked<Storage>;
   });
 
-  describe('getContent', () => {
-    it('should return file content', async () => {
-      const filename = 'test.jpg';
-      const mockFileContent = Buffer.from('mock file content');
+  describe("getContent", () => {
+    it("should return file content", async() => {
+      const filename = "test.jpg";
+      const mockFileContent = Buffer.from("mock file content");
       const mockFile = {
         download: jest.fn().mockResolvedValue([mockFileContent]),
       };
@@ -48,14 +49,14 @@ describe('CloudStorageService', () => {
       const result = await service.getContent(filename);
 
       expect(result).toEqual(mockFileContent);
-      expect(mockStorage.bucket).toHaveBeenCalledWith('name-bucket');
+      expect(mockStorage.bucket).toHaveBeenCalledWith("name-bucket");
       expect(mockBucket.file).toHaveBeenCalledWith(filename);
       expect(mockFile.download).toHaveBeenCalled();
     });
-    it('should return an error', async () => {
-      const filename = 'test.jpg';
+    it("should return an error", async() => {
+      const filename = "test.jpg";
       const mockFile = {
-        download: jest.fn().mockRejectedValue(new Error('error')),
+        download: jest.fn().mockRejectedValue(new Error("error")),
       };
       const mockBucket = {
         file: jest.fn().mockReturnValue(mockFile),
@@ -65,31 +66,31 @@ describe('CloudStorageService', () => {
         await service.getContent(filename);
       } catch (error) {
         expect(error).toBeInstanceOf(BadRequestException);
-        expect(error.message).toEqual('error');
+        expect(error.message).toBe("error");
       }
     });
   });
 
-  describe('getExtension', () => {
-    it('should return correct content type for jpg', () => {
-      const result = service.getExtension('test.jpg');
-      expect(result).toBe('image/jpg');
+  describe("getExtension", () => {
+    it("should return correct content type for jpg", () => {
+      const result = service.getExtension("test.jpg");
+      expect(result).toBe("image/jpg");
     });
 
-    it('should return correct content type for svg', () => {
-      const result = service.getExtension('test.svg');
-      expect(result).toBe('image/svg+xml');
+    it("should return correct content type for svg", () => {
+      const result = service.getExtension("test.svg");
+      expect(result).toBe("image/svg+xml");
     });
   });
 
-  describe('getImageFullExtension', () => {
-    it('should return correct format for svg', () => {
-      expect(getImageFullExtension('svg')).toBe('image/svg+xml');
+  describe("getImageFullExtension", () => {
+    it("should return correct format for svg", () => {
+      expect(getImageFullExtension("svg")).toBe("image/svg+xml");
     });
 
-    it('should return correct format for other extensions', () => {
-      expect(getImageFullExtension('jpg')).toBe('image/jpg');
-      expect(getImageFullExtension('png')).toBe('image/png');
+    it("should return correct format for other extensions", () => {
+      expect(getImageFullExtension("jpg")).toBe("image/jpg");
+      expect(getImageFullExtension("png")).toBe("image/png");
     });
   });
 });

@@ -1,14 +1,15 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { CloudStorageController } from '@src/modules/cloud-storage/cloud-storage.controller';
-import { CloudStorageService } from '@src/modules/cloud-storage/cloud-storage.service';
-import { StreamableFile } from '@nestjs/common';
-import { Response } from 'express';
+import type { TestingModule } from "@nestjs/testing";
+import { Test } from "@nestjs/testing";
+import { CloudStorageController } from "@src/modules/cloud-storage/cloud-storage.controller";
+import { CloudStorageService } from "@src/modules/cloud-storage/cloud-storage.service";
+import { StreamableFile } from "@nestjs/common";
+import type { Response } from "express";
 
-describe('CloudStorageController', () => {
+describe("CloudStorageController", () => {
   let controller: CloudStorageController;
   let service: CloudStorageService;
 
-  beforeEach(async () => {
+  beforeEach(async() => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CloudStorageController],
       providers: [
@@ -26,14 +27,14 @@ describe('CloudStorageController', () => {
     service = module.get<CloudStorageService>(CloudStorageService);
   });
 
-  describe('getFile', () => {
-    it('should return a StreamableFile', async () => {
-      const filename = 'test.jpg';
-      const mockFile = Buffer.from('mock file content');
-      const mockContentType = 'image/jpeg';
+  describe("getFile", () => {
+    it("should return a StreamableFile", async() => {
+      const filename = "test.jpg";
+      const mockFile = Buffer.from("mock file content");
+      const mockContentType = "image/jpeg";
 
-      jest.spyOn(service, 'getContent').mockResolvedValue(mockFile);
-      jest.spyOn(service, 'getExtension').mockReturnValue(mockContentType);
+      jest.spyOn(service, "getContent").mockResolvedValue(mockFile);
+      jest.spyOn(service, "getExtension").mockReturnValue(mockContentType);
 
       const mockResponse = {
         set: jest.fn(),
@@ -44,7 +45,7 @@ describe('CloudStorageController', () => {
       expect(result).toBeInstanceOf(StreamableFile);
       expect(service.getContent).toHaveBeenCalledWith(filename);
       expect(service.getExtension).toHaveBeenCalledWith(filename);
-      expect(mockResponse.set).toHaveBeenCalledWith('Content-Type', mockContentType);
+      expect(mockResponse.set).toHaveBeenCalledWith("Content-Type", mockContentType);
     });
   });
 });

@@ -1,11 +1,11 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
-import Holidays from 'date-holidays';
-import { Step } from './entities/step.entity';
+import { HttpException, HttpStatus } from "@nestjs/common";
+import Holidays from "date-holidays";
+import type { Step } from "./entities/step.entity";
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
 /**
- * Get the difference between 2 dates (date1 - date2) in days.
+ * get the difference between 2 dates (date1 - date2) in days.
  * @param date1 - The first date
  * @return date2 - The second date
  */
@@ -14,7 +14,7 @@ function dayDiff(date1: Date, date2: Date) {
 }
 
 /**
- * Calculate the first business day from the date. It can be the same day if the date is also a business day.
+ * calculate the first business day from the date. It can be the same day if the date is also a business day.
  * @param date - Start date
  * @param holidays - Instance of Holidays
  * @returns The date of the first business day
@@ -22,8 +22,8 @@ function dayDiff(date1: Date, date2: Date) {
 function getFirstBusinessDayFrom(date: Date, holidays: Holidays) {
   const businessDay = new Date(date);
   while (
-    [0, 6].includes(businessDay.getDay()) || // Week-end
-    holidays.isHoliday(businessDay) // Holiday
+    [0, 6].includes(businessDay.getDay()) || // week-end
+    holidays.isHoliday(businessDay) // holiday
   ) {
     businessDay.setUTCDate(businessDay.getUTCDate() + 1);
   }
@@ -31,7 +31,7 @@ function getFirstBusinessDayFrom(date: Date, holidays: Holidays) {
 }
 
 /**
- * Calculate the date at which step should start.
+ * calculate the date at which step should start.
  * @param startDate - Start date
  * @param endDate - End date
  * @param steps - List of steps
@@ -41,11 +41,11 @@ function getFirstBusinessDayFrom(date: Date, holidays: Holidays) {
 export function generateStepDates(startDate: Date, endDate: Date, steps: Step[], country: string) {
   const diff = dayDiff(endDate, startDate);
   if (diff < 0) {
-    throw new HttpException('Invalid parameter: startDate > endDate', HttpStatus.BAD_REQUEST);
+    throw new HttpException("Invalid parameter: startDate > endDate", HttpStatus.BAD_REQUEST);
   }
-  const holidays = new Holidays(country, { types: ['public'] });
+  const holidays = new Holidays(country, { types: ["public"] });
 
-  return steps.map((step) => {
+  return steps.map(step => {
     const stepStartDate = new Date(startDate);
     const stepEndDate = new Date(endDate);
     if (step.minDays && diff < step.minDays) {
@@ -56,6 +56,7 @@ export function generateStepDates(startDate: Date, endDate: Date, steps: Step[],
     }
 
     stepStartDate.setUTCDate(stepStartDate.getUTCDate() + Math.floor(dayDiff(stepEndDate, stepStartDate) * step.cutAt));
+
     return { step, dt: getFirstBusinessDayFrom(stepStartDate, holidays) };
   });
 }

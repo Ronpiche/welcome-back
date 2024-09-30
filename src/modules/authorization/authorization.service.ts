@@ -1,12 +1,12 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { FirestoreService } from '@src/services/firestore/firestore.service';
-import { FilterType, UserRoles } from './types/authorization.types';
-import { FIRESTORE_COLLECTIONS } from '@src/configs/types/Firestore.types';
-import { RoleDto, UserDto } from './dto/authorization.dto';
-import { FieldValue } from '@google-cloud/firestore';
-import { CreateUpdateRoleDto } from './dto/create-role.dto';
-import { User } from './entities/User.entity';
-import { Role } from './entities/Role.entity';
+import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
+import { FirestoreService } from "@src/services/firestore/firestore.service";
+import { FilterType, UserRoles } from "./types/authorization.types";
+import { FIRESTORE_COLLECTIONS } from "@src/configs/types/Firestore.types";
+import { RoleDto, UserDto } from "./dto/authorization.dto";
+import { FieldValue } from "@google-cloud/firestore";
+import { CreateUpdateRoleDto } from "./dto/create-role.dto";
+import { User } from "./entities/User.entity";
+import { Role } from "./entities/Role.entity";
 
 @Injectable()
 export class AuthorizationService {
@@ -29,6 +29,7 @@ export class AuthorizationService {
   async getRoleById(roleId: string): Promise<Role> {
     try {
       const role = await this.firestoreService.getDocument(FIRESTORE_COLLECTIONS.ROLES, roleId);
+
       return role as Role;
     } catch (error) {
       this.logger.error(error);
@@ -65,7 +66,7 @@ export class AuthorizationService {
       const role = await this.firestoreService.getDocument(FIRESTORE_COLLECTIONS.ROLES, id);
 
       if (!role) {
-        throw new HttpException('Role not found', HttpStatus.NOT_FOUND);
+        throw new HttpException("Role not found", HttpStatus.NOT_FOUND);
       }
 
       await this.updateUsersWithRole(role as RoleDto);

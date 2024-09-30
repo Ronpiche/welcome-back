@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Expose } from 'class-transformer';
+import { ApiProperty } from "@nestjs/swagger";
+import { Expose } from "class-transformer";
 
 class OutputRoleMembersDto {
   @ApiProperty()
@@ -30,7 +30,7 @@ export class OutputMembersDto {
 
   @ApiProperty()
   @Expose()
-  gender: 'male' | 'female';
+  gender: "male" | "female";
 
   @ApiProperty()
   @Expose()

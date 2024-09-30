@@ -1,6 +1,6 @@
-import { Logger, Module } from '@nestjs/common';
-import { FirestoreService } from './firestore.service';
-import { Firestore } from '@google-cloud/firestore';
+import { Logger, Module } from "@nestjs/common";
+import { FirestoreService } from "./firestore.service";
+import { Firestore } from "@google-cloud/firestore";
 @Module({
   providers: [
     FirestoreService,
@@ -9,7 +9,7 @@ import { Firestore } from '@google-cloud/firestore';
       provide: Firestore,
       useFactory: () => {
         const base64EncodedServiceAccount = process.env.SERVICE_ACCOUNT_BASE64;
-        const decodedServiceAccount = Buffer.from(base64EncodedServiceAccount, 'base64').toString('utf-8');
+        const decodedServiceAccount = Buffer.from(base64EncodedServiceAccount, "base64").toString("utf-8");
         const credentials: any = JSON.parse(decodedServiceAccount);
 
         const { project_id, private_key, client_email } = credentials;

@@ -1,37 +1,37 @@
-import { WelcomeUser } from '@modules/welcome/entities/user.entity';
-import { User } from '@modules/authorization/entities/User.entity';
-import { Role } from '@modules/authorization/entities/Role.entity';
-import { ContentEntity } from '@modules/content/entities/content.entity';
-import { DocumentData } from '@google-cloud/firestore';
-import { Step } from '@modules/step/entities/step.entity';
-import { Agency } from '@src/modules/agencies/entities/agency.entity';
-import { Member } from '@src/modules/members/entities/member.entity';
+import type { WelcomeUser } from "@modules/welcome/entities/user.entity";
+import type { User } from "@modules/authorization/entities/User.entity";
+import type { Role } from "@modules/authorization/entities/Role.entity";
+import type { ContentEntity } from "@modules/content/entities/content.entity";
+import type { DocumentData } from "@google-cloud/firestore";
+import type { Step } from "@modules/step/entities/step.entity";
+import type { Agency } from "@src/modules/agencies/entities/agency.entity";
+import type { Member } from "@src/modules/members/entities/member.entity";
 
 export enum UserRoles {
-  Admin = 'Admin',
-  Collaborateur = 'Collaborateur',
-  TalentManager = 'Talent Manager',
-  BusinessManager = 'Business Manager',
-  DirecteurAgence = 'Directeur Agence',
-  Consultant = 'Consultant',
-  LeaderCommunauté = 'Leader Communauté',
-  FinancesEtOpérations = 'Finances et Opérations',
+  Admin = "Admin",
+  Collaborateur = "Collaborateur",
+  TalentManager = "Talent Manager",
+  BusinessManager = "Business Manager",
+  DirecteurAgence = "Directeur Agence",
+  Consultant = "Consultant",
+  LeaderCommunauté = "Leader Communauté",
+  FinancesEtOpérations = "Finances et Opérations",
 }
 
 export enum FIRESTORE_COLLECTIONS {
-  ROLES = 'AuthorizationDatabase_roles',
-  AUTHORIZED_USERS = 'AuthorizationDatabase_users',
-  STEPS = 'WelcomeDatabase_steps',
-  WELCOME_USERS = 'WelcomeDatabase_users',
-  WELCOME_CONTENT = 'WelcomeDatabase_content',
-  WELCOME_AGENCIES = 'WelcomeDatabase_agencies',
-  WELCOME_MEMBERS = 'WelcomeDatabase_members',
+  ROLES = "AuthorizationDatabase_roles",
+  AUTHORIZED_USERS = "AuthorizationDatabase_users",
+  STEPS = "WelcomeDatabase_steps",
+  WELCOME_USERS = "WelcomeDatabase_users",
+  WELCOME_CONTENT = "WelcomeDatabase_content",
+  WELCOME_AGENCIES = "WelcomeDatabase_agencies",
+  WELCOME_MEMBERS = "WelcomeDatabase_members",
 }
 
-export interface FirebaseConfig {
+export type FirebaseConfig = {
   apiKey: string;
   authDomain: string;
-}
+};
 
 export type FirestoreDocumentType = WelcomeUser | User | Role | ContentEntity | DocumentData | Step | Agency | Member;
 

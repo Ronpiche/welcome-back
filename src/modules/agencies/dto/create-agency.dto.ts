@@ -1,16 +1,16 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNumber, IsString } from 'class-validator';
+import { ApiProperty } from "@nestjs/swagger";
+import { IsArray, IsNumber, IsString } from "class-validator";
 
 export class CreateAgencyDto {
-  @ApiProperty({ example: 'Lille' })
+  @ApiProperty({ example: "Lille" })
   @IsString()
   name: string;
 
   @ApiProperty({ example: [2.34, 48.88] })
   @IsArray()
-  coordinates: Array<number>;
+  coordinates: number[];
 
-  @ApiProperty({ example: '1 rue de Lille' })
+  @ApiProperty({ example: "1 rue de Lille" })
   @IsString()
   address: string;
 
@@ -18,15 +18,15 @@ export class CreateAgencyDto {
   @IsNumber()
   creationYear: number;
 
-  @ApiProperty({ example: ['kitchen'] })
+  @ApiProperty({ example: ["kitchen"] })
   @IsArray()
-  services: Array<string>;
+  services: string[];
 
-  @ApiProperty({ example: ['Daveo'] })
+  @ApiProperty({ example: ["Daveo"] })
   @IsArray()
-  customers: Array<string>;
+  customers: string[];
 
-  @ApiProperty({ example: ['McDo'] })
+  @ApiProperty({ example: ["McDo"] })
   @IsArray()
-  goodPlaces: Array<string>;
+  goodPlaces: string[];
 }

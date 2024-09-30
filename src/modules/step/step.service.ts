@@ -1,13 +1,13 @@
-import { HttpException, Injectable, InternalServerErrorException } from '@nestjs/common';
-import { CreateStepDto } from './dto/create-step.dto';
-import { UpdateStepDto } from './dto/update-step.dto';
-import { FirestoreService } from '@src/services/firestore/firestore.service';
-import { WelcomeUser } from '@modules/welcome/entities/user.entity';
-import { FIRESTORE_COLLECTIONS } from '@src/configs/types/Firestore.types';
-import { Step } from './entities/step.entity';
-import { instanceToPlain } from 'class-transformer';
-import { generateStepDates } from './step.utils';
-import { HOLIDAY_COUNTRY } from './step.constants';
+import { HttpException, Injectable, InternalServerErrorException } from "@nestjs/common";
+import { CreateStepDto } from "./dto/create-step.dto";
+import { UpdateStepDto } from "./dto/update-step.dto";
+import { FirestoreService } from "@src/services/firestore/firestore.service";
+import { WelcomeUser } from "@modules/welcome/entities/user.entity";
+import { FIRESTORE_COLLECTIONS } from "@src/configs/types/Firestore.types";
+import { Step } from "./entities/step.entity";
+import { instanceToPlain } from "class-transformer";
+import { generateStepDates } from "./step.utils";
+import { HOLIDAY_COUNTRY } from "./step.constants";
 
 @Injectable()
 export class StepService {
@@ -15,15 +15,15 @@ export class StepService {
 
   async create(createStepDto: CreateStepDto): Promise<Step> {
     try {
-      return (await this.firestoreService.saveDocument(
+      return await this.firestoreService.saveDocument(
         FIRESTORE_COLLECTIONS.STEPS,
         instanceToPlain(createStepDto),
-      )) as Step;
+      );
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
       } else {
-        throw new InternalServerErrorException('Internal Server Error');
+        throw new InternalServerErrorException("Internal Server Error");
       }
     }
   }
@@ -45,9 +45,9 @@ export class StepService {
       return await this.firestoreService.getDocument<Step>(FIRESTORE_COLLECTIONS.STEPS, id);
     } catch (error) {
       if (error instanceof HttpException) {
-        throw new HttpException('Step does not exists', error.getStatus());
+        throw new HttpException("Step does not exists", error.getStatus());
       } else {
-        throw new InternalServerErrorException('Internal Server Error');
+        throw new InternalServerErrorException("Internal Server Error");
       }
     }
   }
@@ -61,10 +61,10 @@ export class StepService {
       if (error instanceof HttpException) {
         throw error;
       } else {
-        throw new InternalServerErrorException('Internal Server Error');
+        throw new InternalServerErrorException("Internal Server Error");
       }
     }
-    return await this.findOne(id);
+    return this.findOne(id);
   }
 
   async remove(id: string): Promise<void> {
@@ -72,21 +72,22 @@ export class StepService {
     try {
       await this.firestoreService.deleteDocument(FIRESTORE_COLLECTIONS.STEPS, id);
     } catch (error) {
-      throw new InternalServerErrorException('Internal Server Error');
+      throw new InternalServerErrorException("Internal Server Error");
     }
   }
 
   /**
-   * Generate steps for an user.
+   * generate steps for an user.
    * @param user - The receiver
    * @returns An array of step with date associated
    */
-  async generateSteps(user: WelcomeUser): Promise<Array<{ step: Step; dt: Date }>> {
+  async generateSteps(user: WelcomeUser): Promise<{ step: Step; dt: Date }[]> {
     try {
       const steps = await this.findAll();
+
       return generateStepDates(new Date(user.signupDate), new Date(user.arrivalDate), steps, HOLIDAY_COUNTRY);
     } catch (error) {
-      throw new InternalServerErrorException('Internal Server Error');
+      throw new InternalServerErrorException("Internal Server Error");
     }
   }
 }

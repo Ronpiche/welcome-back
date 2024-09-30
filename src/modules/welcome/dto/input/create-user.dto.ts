@@ -1,52 +1,52 @@
-import { GRADE, PRACTICE } from '@modules/welcome/types/user.enum';
-import { IsEnum, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { GRADE, PRACTICE } from "@modules/welcome/types/user.enum";
+import { IsEnum, IsNotEmpty, IsString, ValidateNested } from "class-validator";
+import { ApiProperty } from "@nestjs/swagger";
+import { Type } from "class-transformer";
 
 export class RhUserInfoDto {
-  @ApiProperty({ example: 'abcd-1234' })
+  @ApiProperty({ example: "abcd-1234" })
   @IsString()
   @IsNotEmpty()
   _id: string;
 
-  @ApiProperty({ example: 'Joe' })
+  @ApiProperty({ example: "Joe" })
   @IsString()
   @IsNotEmpty()
   firstName: string;
 
-  @ApiProperty({ example: 'Bloggs' })
+  @ApiProperty({ example: "Bloggs" })
   @IsString()
   @IsNotEmpty()
   lastName: string;
 
-  @ApiProperty({ example: 'joe.bloggs@127.0.0.1' })
-  //@IsEmail() TODO: Uncomment this when production ready
+  @ApiProperty({ example: "joe.bloggs@127.0.0.1" })
+  // @IsEmail() TODO: Uncomment this when production ready
   @IsNotEmpty()
   email: string;
 }
 
 export class CreateUserDto {
-  @ApiProperty({ example: 'john.doe@127.0.0.1' })
-  //@IsEmail() TODO: Uncomment this when production ready
+  @ApiProperty({ example: "john.doe@127.0.0.1" })
+  // @IsEmail() TODO: Uncomment this when production ready
   @IsNotEmpty()
   email: string;
 
-  @ApiProperty({ example: 'John' })
+  @ApiProperty({ example: "John" })
   @IsString()
   @IsNotEmpty()
   firstName: string;
 
-  @ApiProperty({ example: 'Doe' })
+  @ApiProperty({ example: "Doe" })
   @IsString()
   @IsNotEmpty()
   lastName: string;
 
-  @ApiProperty({ enum: GRADE, enumName: 'Grade' })
+  @ApiProperty({ enum: GRADE, enumName: "Grade" })
   @IsEnum(GRADE)
   @IsNotEmpty()
   grade: GRADE;
 
-  @ApiProperty({ enum: PRACTICE, enumName: 'Practice' })
+  @ApiProperty({ enum: PRACTICE, enumName: "Practice" })
   @IsEnum(PRACTICE)
   @IsNotEmpty()
   practice: PRACTICE;
@@ -64,17 +64,17 @@ export class CreateUserDto {
   @Type(() => RhUserInfoDto)
   referentRH: RhUserInfoDto;
 
-  @ApiProperty({ example: 'M' })
+  @ApiProperty({ example: "M" })
   @IsString()
   @IsNotEmpty()
   civility: string;
 
-  @ApiProperty({ example: 'Lille' })
+  @ApiProperty({ example: "Lille" })
   @IsString()
   @IsNotEmpty()
   agency: string;
 
-  @ApiProperty({ example: 'Example user' })
+  @ApiProperty({ example: "Example user" })
   @IsString()
   note: string;
 }

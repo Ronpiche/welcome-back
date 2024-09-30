@@ -1,6 +1,6 @@
-import { FieldValue } from '@google-cloud/firestore';
-import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { FieldValue } from "@google-cloud/firestore";
+import { ApiProperty } from "@nestjs/swagger";
+import { IsArray, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class RoleDto {
   @ApiProperty()

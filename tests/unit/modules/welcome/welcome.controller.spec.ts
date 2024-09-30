@@ -1,25 +1,27 @@
-import { WelcomeController } from '@modules/welcome/welcome.controller';
-import { WelcomeService } from '@modules/welcome/welcome.service';
-import { Test, TestingModule } from '@nestjs/testing';
-import { WelcomeServiceMock } from '@tests/unit/__mocks__/welcome/welcome.service.mock';
+import { WelcomeController } from "@modules/welcome/welcome.controller";
+import { WelcomeService } from "@modules/welcome/welcome.service";
+import type { TestingModule } from "@nestjs/testing";
+import { Test } from "@nestjs/testing";
+import { WelcomeServiceMock } from "@tests/unit/__mocks__/welcome/welcome.service.mock";
 import {
   outputWelcomeMock,
   inputUpdateWelcomeMock,
   outputUpdateWelcomeMock,
   inputWelcomeMock,
-} from '@tests/unit/__mocks__/welcome/User.entity.mock';
-import { AccessGuard } from '@src/middleware/AuthGuard';
-import { FindAllUsersPipe } from '@modules/welcome/pipes/find-all-users.pipe';
-import { JwtService } from '@nestjs/jwt';
-import { ArgumentsHost, BadRequestException, HttpException, Logger } from '@nestjs/common';
-import { CreateUserExceptionFilter } from '@modules/welcome/filters/create-user.filter';
-import { JwtCognito } from '@src/modules/cognito/jwtCognito.service';
-import { ConfigService } from '@nestjs/config';
-import { CognitoServiceMock } from '@tests/unit/__mocks__/cognito/cognito.service.mock';
-import { LoggerMock } from '@tests/unit/__mocks__/logger.mock';
-import { Response } from 'express';
+} from "@tests/unit/__mocks__/welcome/User.entity.mock";
+import { AccessGuard } from "@src/middleware/AuthGuard";
+import { FindAllUsersPipe } from "@modules/welcome/pipes/find-all-users.pipe";
+import { JwtService } from "@nestjs/jwt";
+import type { ArgumentsHost } from "@nestjs/common";
+import { BadRequestException, HttpException, Logger } from "@nestjs/common";
+import { CreateUserExceptionFilter } from "@modules/welcome/filters/create-user.filter";
+import { JwtCognito } from "@src/modules/cognito/jwtCognito.service";
+import { ConfigService } from "@nestjs/config";
+import { CognitoServiceMock } from "@tests/unit/__mocks__/cognito/cognito.service.mock";
+import { LoggerMock } from "@tests/unit/__mocks__/logger.mock";
+import type { Response } from "express";
 
-describe('Welcome controller', () => {
+describe("Welcome controller", () => {
   let controller: WelcomeController;
   const response = {
     get statusCode() {
@@ -27,12 +29,13 @@ describe('Welcome controller', () => {
     },
     status(s: number) {
       this._status = s;
+
       return this;
     },
     _status: 201,
   } as unknown as Response;
 
-  beforeEach(async () => {
+  beforeEach(async() => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [WelcomeController],
       providers: [
@@ -49,22 +52,22 @@ describe('Welcome controller', () => {
     controller = module.get<WelcomeController>(WelcomeController);
   });
 
-  describe('create', () => {
-    it('should create an user, and return on object', async () => {
+  describe("create", () => {
+    it("should create an user, and return on object", async() => {
       const data = await controller.create(inputWelcomeMock);
       expect(data).toBeDefined();
       expect(data).toEqual(outputWelcomeMock);
     });
   });
 
-  describe('findAll', () => {
-    it('should return a array object with no filters', async () => {
+  describe("findAll", () => {
+    it("should return a array object with no filters", async() => {
       const users = await controller.findAll({});
       expect(users).toBeDefined();
       expect(users).toEqual([outputWelcomeMock]);
     });
 
-    it('should testing the create-user filter', async () => {
+    it("should testing the create-user filter", async() => {
       const response = {
         status: jest.fn().mockReturnThis(),
         json: jest.fn(),
@@ -74,18 +77,18 @@ describe('Welcome controller', () => {
           getResponse: jest.fn().mockReturnValue(response),
         }),
       };
-      const spyJson = jest.spyOn(response, 'json');
-      const spyStatus = jest.spyOn(response, 'status');
+      const spyJson = jest.spyOn(response, "json");
+      const spyStatus = jest.spyOn(response, "status");
       const filter = new CreateUserExceptionFilter();
-      filter.catch(new HttpException('error', 400), argumentsHost as unknown as ArgumentsHost);
+      filter.catch(new HttpException("error", 400), argumentsHost as unknown as ArgumentsHost);
       expect(spyJson).toHaveBeenCalled();
       expect(spyStatus).toHaveBeenCalled();
     });
 
-    it('should return a array object with filters', async () => {
+    it("should return a array object with filters", async() => {
       const arrivalDate = {
-        startDate: '14/05/2024',
-        endDate: '14/05/2024',
+        startDate: "14/05/2024",
+        endDate: "14/05/2024",
       };
       const pipe = new FindAllUsersPipe();
       const filter = pipe.transform(arrivalDate);
@@ -94,58 +97,58 @@ describe('Welcome controller', () => {
       expect(users).toEqual([outputWelcomeMock]);
     });
 
-    it("should throw a BadRequestException error 'Invalid arrivalDate startDate'", async () => {
+    it("should throw a BadRequestException error 'Invalid arrivalDate startDate'", async() => {
       const arrivalDate = {
-        startDate: '14/05/202',
-        endDate: '14/05/2024',
+        startDate: "14/05/202",
+        endDate: "14/05/2024",
       };
       const pipe = new FindAllUsersPipe();
       try {
         pipe.transform(arrivalDate);
       } catch (error) {
         expect(error).toBeInstanceOf(BadRequestException);
-        expect(error.message).toEqual('Invalid arrivalDate startDate');
-        expect(error.status).toEqual(400);
+        expect(error.message).toBe("Invalid arrivalDate startDate");
+        expect(error.status).toBe(400);
       }
     });
 
-    it("should throw a BadRequestException error 'Invalid arrivalDate endDate'", async () => {
+    it("should throw a BadRequestException error 'Invalid arrivalDate endDate'", async() => {
       const arrivalDate = {
-        startDate: '14/05/2024',
-        endDate: '14/05/202',
+        startDate: "14/05/2024",
+        endDate: "14/05/202",
       };
       const pipe = new FindAllUsersPipe();
       try {
         pipe.transform(arrivalDate);
       } catch (error) {
         expect(error).toBeInstanceOf(BadRequestException);
-        expect(error.message).toEqual('Invalid arrivalDate endDate');
-        expect(error.status).toEqual(400);
+        expect(error.message).toBe("Invalid arrivalDate endDate");
+        expect(error.status).toBe(400);
       }
     });
   });
 
-  describe('FindOne', () => {
-    it('should return an user object', async () => {
-      const documentId = '789QSD123';
+  describe("FindOne", () => {
+    it("should return an user object", async() => {
+      const documentId = "789QSD123";
       const user = await controller.findOne(documentId);
       expect(user).toBeDefined();
       expect(user).toEqual(outputWelcomeMock);
     });
   });
 
-  describe('remove', () => {
-    it('should delete an user object', async () => {
-      const documentId = '789QSD123';
+  describe("remove", () => {
+    it("should delete an user object", async() => {
+      const documentId = "789QSD123";
       const res = await controller.remove(documentId);
       expect(res).toBeDefined();
-      expect(res).toEqual('User deleted');
+      expect(res).toBe("User deleted");
     });
   });
 
-  describe('update', () => {
-    it('should update an user object', async () => {
-      const documentId = '789QSD123';
+  describe("update", () => {
+    it("should update an user object", async() => {
+      const documentId = "789QSD123";
       const res = await controller.update(documentId, inputUpdateWelcomeMock);
       expect(res).toBeDefined();
       expect(res).toEqual(outputUpdateWelcomeMock);
@@ -153,41 +156,40 @@ describe('Welcome controller', () => {
     });
   });
 
-  describe('transformAppGames', () => {
-    it('should return an array of appGame tranformed', async () => {
-      const res = await controller.transformAppGames('appGames');
+  describe("transformAppGames", () => {
+    it("should return an array of appGame tranformed", async() => {
+      const res = await controller.transformAppGames("appGames");
       expect(res).toBeDefined();
-      expect(res).toEqual({ status: 'success' });
+      expect(res).toEqual({ status: "success" });
     });
   });
 
-  describe('run', () => {
-    it('should launch the task and return the result (OK)', async () => {
+  describe("run", () => {
+    it("should launch the task and return the result (OK)", async() => {
       const data = await controller.run(response);
       expect(response.statusCode).toBe(201);
-      expect(data).toEqual([{ status: 'fulfilled', value: { _id: '1' } }]);
+      expect(data).toEqual([{ status: "fulfilled", value: { _id: "1" } }]);
     });
 
-    it('should launch the task and return the result (KO)', async () => {
-      controller['welcomeService']['run'] = jest
-        .fn()
-        .mockResolvedValue([{ status: 'rejected', reason: { _id: '1', error: 'unknown' } }]);
+    it("should launch the task and return the result (KO)", async() => {
+      jest.spyOn(controller["welcomeService"], "run").mockImplementation()
+        .mockResolvedValue([{ status: "rejected", reason: { _id: "1", error: "unknown" } }]);
       const data = await controller.run(response);
       expect(response.statusCode).toBe(500);
-      expect(data).toEqual([{ status: 'rejected', reason: { _id: '1', error: 'unknown' } }]);
+      expect(data).toEqual([{ status: "rejected", reason: { _id: "1", error: "unknown" } }]);
     });
   });
 
-  describe('completeStep', () => {
-    it('should complete the user step', async () => {
-      expect(controller.completeStep('1', '1')).resolves.toBeDefined();
+  describe("completeStep", () => {
+    it("should complete the user step", async() => {
+      await expect(controller.completeStep("1", "1")).resolves.toBeDefined();
     });
 
-    it('should not complete the user step and throw', async () => {
-      controller['welcomeService']['completeStep'] = jest.fn(() => {
+    it("should not complete the user step and throw", async() => {
+      jest.spyOn(controller["welcomeService"], "completeStep").mockImplementation(() => {
         throw new Error();
       });
-      expect(controller.completeStep('1', '1')).rejects.toThrow();
+      await expect(controller.completeStep("1", "1")).rejects.toThrow();
     });
   });
 });

@@ -1,13 +1,14 @@
-import { ContentServiceMock } from '@tests/unit/__mocks__/content/content.service.mock';
-import { Test, TestingModule } from '@nestjs/testing';
-import { ContentController } from '@src/modules/content/content.controller';
-import { ContentService } from '@src/modules/content/content.service';
-import { ContentEntity } from '@src/modules/content/entities/content.entity';
+import { ContentServiceMock } from "@tests/unit/__mocks__/content/content.service.mock";
+import type { TestingModule } from "@nestjs/testing";
+import { Test } from "@nestjs/testing";
+import { ContentController } from "@src/modules/content/content.controller";
+import { ContentService } from "@src/modules/content/content.service";
+import type { ContentEntity } from "@src/modules/content/entities/content.entity";
 
-describe('ContentController', () => {
+describe("ContentController", () => {
   let controller: ContentController;
 
-  beforeEach(async () => {
+  beforeEach(async() => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ContentController],
       providers: [{ provide: ContentService, useClass: ContentServiceMock }],
@@ -16,21 +17,21 @@ describe('ContentController', () => {
     controller = module.get<ContentController>(ContentController);
   });
 
-  it('should create a content', async () => {
+  it("should create a content", async() => {
     const res: ContentEntity = (await controller.create({})) as ContentEntity;
-    expect(res.id).toEqual('test-id');
+    expect(res.id).toBe("test-id");
     expect(res.data).toBeDefined();
   });
 
-  it('should find one content', async () => {
-    const res: ContentEntity = (await controller.findOne('azerty')) as ContentEntity;
-    expect(res.id).toEqual('test-id');
+  it("should find one content", async() => {
+    const res: ContentEntity = (await controller.findOne("azerty")) as ContentEntity;
+    expect(res.id).toBe("test-id");
     expect(res.data).toBeDefined();
   });
 
-  it('should update a content', async () => {
-    const res: ContentEntity = (await controller.update('azerty', {})) as ContentEntity;
-    expect(res.id).toEqual('test-id');
+  it("should update a content", async() => {
+    const res: ContentEntity = (await controller.update("azerty", {})) as ContentEntity;
+    expect(res.id).toBe("test-id");
     expect(res.data).toBeDefined();
   });
 });

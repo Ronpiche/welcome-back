@@ -1,12 +1,13 @@
-import { ConfigService } from '@nestjs/config';
-import { Test, TestingModule } from '@nestjs/testing';
-import { JwtCognito } from '@modules/cognito/jwtCognito.service';
-import { CognitoJwtVerifier } from 'aws-jwt-verify';
-import { UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from "@nestjs/config";
+import type { TestingModule } from "@nestjs/testing";
+import { Test } from "@nestjs/testing";
+import { JwtCognito } from "@modules/cognito/jwtCognito.service";
+import { CognitoJwtVerifier } from "aws-jwt-verify";
+import { UnauthorizedException } from "@nestjs/common";
 
-describe('jwtCognitoService', () => {
+describe("jwtCognitoService", () => {
   let service: JwtCognito;
-  beforeEach(async () => {
+  beforeEach(async() => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [JwtCognito, ConfigService],
     }).compile();
@@ -18,27 +19,29 @@ describe('jwtCognitoService', () => {
     jest.resetAllMocks();
   });
 
-  it('should verify a correct jwt token', async () => {
+  it("should verify a correct jwt token", async() => {
     const payload: any = {
-      sub: '1234-4567',
+      sub: "1234-4567",
     };
+    // eslint-disable-next-line jest/prefer-spy-on
     CognitoJwtVerifier.create = jest.fn().mockReturnValue({
       verify: jest.fn().mockResolvedValue(payload),
     });
-    const res = await service.verifyJwt('jwt.token');
+    const res = await service.verifyJwt("jwt.token");
     expect(res).toBeDefined();
-    expect(res.sub).toEqual('1234-4567');
+    expect(res.sub).toBe("1234-4567");
   });
 
-  it('should throw an error, if the token is false', async () => {
+  it("should throw an error, if the token is false", async() => {
+    // eslint-disable-next-line jest/prefer-spy-on
     CognitoJwtVerifier.create = jest.fn().mockReturnValue({
-      verify: jest.fn().mockRejectedValue(new Error('error')),
+      verify: jest.fn().mockRejectedValue(new Error("error")),
     });
     try {
-      await service.verifyJwt('jwt.token');
+      await service.verifyJwt("jwt.token");
     } catch (error) {
       expect(error).toBeInstanceOf(UnauthorizedException);
-      expect(error.status).toEqual(401);
+      expect(error.status).toBe(401);
     }
   });
 });

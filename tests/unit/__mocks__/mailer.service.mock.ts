@@ -1,3 +1,3 @@
 export class MailerServiceMock {
-  sendMail = jest.fn(() => Promise.resolve());
+  sendMail = jest.fn(async() => Promise.resolve());
 }

@@ -1,29 +1,32 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { FirebaseConfig, FIRESTORE_COLLECTIONS } from '@src/configs/types/Firestore.types';
+import { Injectable, Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { FirebaseConfig, FIRESTORE_COLLECTIONS } from "@src/configs/types/Firestore.types";
 import {
   AuthentificationUserOutputDto,
   GipUser,
-} from '@src/modules/authentification/dto/output/authentificationUserOutput.dto';
-import { WelcomeUserDto } from '@src/modules/welcome/dto/output/welcome-user.dto';
-import { FirestoreService } from '@src/services/firestore/firestore.service';
-import { instanceToPlain, plainToInstance } from 'class-transformer';
-import { FirebaseApp, initializeApp } from 'firebase/app';
-import { Auth, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+} from "@src/modules/authentification/dto/output/authentificationUserOutput.dto";
+import { WelcomeUserDto } from "@src/modules/welcome/dto/output/welcome-user.dto";
+import { FirestoreService } from "@src/services/firestore/firestore.service";
+import { instanceToPlain, plainToInstance } from "class-transformer";
+import { FirebaseApp, initializeApp } from "firebase/app";
+import { Auth, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 
 @Injectable()
 export class GipService {
-  private app: FirebaseApp;
-  private auth: Auth;
-  private firebaseConfig: FirebaseConfig;
+  private readonly app: FirebaseApp;
+
+  private readonly auth: Auth;
+
+  private readonly firebaseConfig: FirebaseConfig;
+
   constructor(
     private readonly configService: ConfigService,
     private readonly logger: Logger,
     private readonly firestoreService: FirestoreService,
   ) {
     this.firebaseConfig = {
-      apiKey: this.configService.get('API_KEY'),
-      authDomain: this.configService.get('AUTH_DOMAIN'),
+      apiKey: this.configService.get("API_KEY"),
+      authDomain: this.configService.get("AUTH_DOMAIN"),
     };
     this.app = initializeApp(this.firebaseConfig);
     this.auth = getAuth(this.app);
@@ -40,16 +43,14 @@ export class GipService {
       let gipUser: GipUser;
       let welcomeUser: WelcomeUserDto;
       for (const res of results) {
-        if (res.status === 'rejected') {
+        if (res.status === "rejected") {
           throw res.reason;
+        } else if ("user" in res.value) {
+          gipUser = plainToInstance(GipUser, res.value.user, { excludeExtraneousValues: true });
         } else {
-          if ('user' in res.value) {
-            gipUser = plainToInstance(GipUser, res.value.user, { excludeExtraneousValues: true });
-          } else {
-            welcomeUser = plainToInstance(WelcomeUserDto, instanceToPlain(res.value), {
-              excludeExtraneousValues: true,
-            });
-          }
+          welcomeUser = plainToInstance(WelcomeUserDto, instanceToPlain(res.value), {
+            excludeExtraneousValues: true,
+          });
         }
       }
       return { gipUser, welcomeUser };

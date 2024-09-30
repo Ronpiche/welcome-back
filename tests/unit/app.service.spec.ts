@@ -1,10 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { AppService } from '@src/app.service';
-import { version } from '../../package.json';
+import type { TestingModule } from "@nestjs/testing";
+import { Test } from "@nestjs/testing";
+import { AppService } from "@src/app.service";
+import { version } from "../../package.json";
 
-describe('AppService', () => {
+describe("AppService", () => {
   let service: AppService;
-  beforeEach(async () => {
+  beforeEach(async() => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [AppService],
     }).compile();
@@ -12,8 +13,8 @@ describe('AppService', () => {
     service = module.get<AppService>(AppService);
   });
 
-  it('should return a webApp version', () => {
+  it("should return a webApp version", () => {
     const res = service.getHealth();
-    expect(res).toEqual(`Welcome back version: ${version}`);
+    expect(res).toBe(`Welcome back version: ${version}`);
   });
 });

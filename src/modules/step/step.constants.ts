@@ -1,1 +1,1 @@
-export const HOLIDAY_COUNTRY = 'FR';
+export const HOLIDAY_COUNTRY = "FR";

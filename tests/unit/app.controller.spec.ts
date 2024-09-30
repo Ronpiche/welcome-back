@@ -1,12 +1,13 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { AppController } from '@src/app.controller';
-import { AppService } from '@src/app.service';
-import { version } from '../../package.json';
+import type { TestingModule } from "@nestjs/testing";
+import { Test } from "@nestjs/testing";
+import { AppController } from "@src/app.controller";
+import { AppService } from "@src/app.service";
+import { version } from "../../package.json";
 
-describe('AuthentificationController', () => {
+describe("AuthentificationController", () => {
   let controller: AppController;
 
-  beforeEach(async () => {
+  beforeEach(async() => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
       providers: [AppService],
@@ -15,10 +16,10 @@ describe('AuthentificationController', () => {
     controller = module.get<AppController>(AppController);
   });
 
-  describe('AppController', () => {
-    it('should return a webApp version', () => {
+  describe("AppController", () => {
+    it("should return a webApp version", () => {
       const res = controller.getHealth();
-      expect(res).toEqual(`Welcome back version: ${version}`);
+      expect(res).toBe(`Welcome back version: ${version}`);
     });
   });
 });

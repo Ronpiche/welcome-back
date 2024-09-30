@@ -1,4 +1,4 @@
-import { GipUserMock } from '@tests/unit/__mocks__/authentification/authentification.entities.mock';
+import { GipUserMock } from "@tests/unit/__mocks__/authentification/authentification.entities.mock";
 
 export const firebaseAuth = {
   signInWithEmailAndPassword: jest.fn().mockResolvedValue({ user: GipUserMock }),

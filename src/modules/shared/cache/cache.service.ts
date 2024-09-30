@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import NodeCache from 'node-cache';
+import { Injectable } from "@nestjs/common";
+import NodeCache from "node-cache";
 
 @Injectable()
 export class CacheService {
-  private cache: NodeCache;
+  private readonly cache: NodeCache;
 
   constructor() {
     this.cache = new NodeCache();
@@ -13,7 +13,7 @@ export class CacheService {
     return this.cache.get(key);
   }
 
-  set(key: string, value: unknown, ttl: number = 300): boolean {
+  set(key: string, value: unknown, ttl = 300): boolean {
     return this.cache.set(key, value, ttl);
   }
 }
