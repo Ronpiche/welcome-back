@@ -1,15 +1,12 @@
+import { WelcomeUserDto } from "@modules/welcome/dto/output/welcome-user.dto";
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { FirebaseConfig, FIRESTORE_COLLECTIONS } from "@src/configs/types/Firestore.types";
-import {
-  AuthentificationUserOutputDto,
-  GipUser,
-} from "@src/modules/authentification/dto/output/authentificationUserOutput.dto";
-import { WelcomeUserDto } from "@src/modules/welcome/dto/output/welcome-user.dto";
+import { AuthentificationUserOutputDto, GipUser } from "@src/modules/authentification/dto/output/authentificationUserOutput.dto";
 import { FirestoreService } from "@src/services/firestore/firestore.service";
 import { instanceToPlain, plainToInstance } from "class-transformer";
 import { FirebaseApp, initializeApp } from "firebase/app";
-import { Auth, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { Auth, createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
 @Injectable()
 export class GipService {
