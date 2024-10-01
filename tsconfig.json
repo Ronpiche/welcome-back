@@ -12,11 +12,12 @@
     "baseUrl": "./",
     "incremental": true,
     "resolveJsonModule": true,
+    "strictNullChecks": false,
     "esModuleInterop": true,
     "paths": {
       "@src/*": ["src/*"],
       "@modules/*": ["src/modules/*"],
-      "@test/*": ["test/*"]
+      "@tests/*": ["tests/*"]
     },
     "lib": ["ES2023", "DOM"]
   },

@@ -1,6 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { WelcomeUserDto } from '@src/modules/welcome/dto/output/welcome-user.dto';
-import { Expose, Type } from 'class-transformer';
+import { ApiProperty } from "@nestjs/swagger";
+import { WelcomeUserDto } from "@src/modules/welcome/dto/output/welcome-user.dto";
+import { Expose, Type } from "class-transformer";
 
 export class GipUser {
   @ApiProperty()

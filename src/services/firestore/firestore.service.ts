@@ -5,10 +5,10 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
-} from '@nestjs/common';
-import { Filter, Firestore, Query } from '@google-cloud/firestore';
-import { FIRESTORE_COLLECTIONS, FirestoreDocumentType, FirestoreErrorCode } from '@src/configs/types/Firestore.types';
-import { WelcomeUser } from '@modules/welcome/entities/user.entity';
+} from "@nestjs/common";
+import { Filter, Firestore, Query } from "@google-cloud/firestore";
+import { FIRESTORE_COLLECTIONS, FirestoreDocumentType, FirestoreErrorCode } from "@src/configs/types/Firestore.types";
+import { WelcomeUser } from "@modules/welcome/entities/user.entity";
 
 @Injectable()
 export class FirestoreService {
@@ -20,16 +20,16 @@ export class FirestoreService {
   private applyFilters(query: FirebaseFirestore.Query, filter: Filter): FirebaseFirestore.Query {
     let filteredQuery = query;
     Object.entries(filter).forEach(([field, value]) => {
-      if (field === 'arrivalDate') {
+      if (field === "arrivalDate") {
         Object.entries(value).forEach(([index, val]) => {
-          if (index === '$gte') {
-            filteredQuery = filteredQuery.where(field, '>=', val);
-          } else if (index === '$lte') {
-            filteredQuery = filteredQuery.where(field, '<=', val);
+          if (index === "$gte") {
+            filteredQuery = filteredQuery.where(field, ">=", val);
+          } else if (index === "$lte") {
+            filteredQuery = filteredQuery.where(field, "<=", val);
           }
         });
       } else {
-        filteredQuery = filteredQuery.where(field, '==', value);
+        filteredQuery = filteredQuery.where(field, "==", value);
       }
     });
 
@@ -46,7 +46,7 @@ export class FirestoreService {
       const filteredQuery = filter ? this.applyFilters(query, filter) : query;
       const querySnapshot = await filteredQuery.get();
 
-      querySnapshot.forEach((doc) => {
+      querySnapshot.forEach(doc => {
         documents.push({
           ...(doc.data() as T),
         });
@@ -62,10 +62,7 @@ export class FirestoreService {
     collection: FIRESTORE_COLLECTIONS,
     documentId: string,
   ): Promise<T> {
-    let documentSnapshot: FirebaseFirestore.DocumentSnapshot<
-      FirebaseFirestore.DocumentData,
-      FirebaseFirestore.DocumentData
-    >;
+    let documentSnapshot: FirebaseFirestore.DocumentSnapshot;
     try {
       documentSnapshot = await this.firestore.collection(collection).doc(documentId).get();
     } catch (error) {
@@ -73,25 +70,23 @@ export class FirestoreService {
     }
 
     if (!documentSnapshot.exists) {
-      throw new NotFoundException('Document not found in DB');
+      throw new NotFoundException("Document not found in DB");
     }
-
     return documentSnapshot.data() as T;
   }
 
   async getByEmail<T extends FirestoreDocumentType>(collection: FIRESTORE_COLLECTIONS, email: string): Promise<T> {
     let document: T;
-    const documentsSnapshot = await this.firestore.collection(collection).where('email', '==', email).get();
+    const documentsSnapshot = await this.firestore.collection(collection).where("email", "==", email).get();
     if (documentsSnapshot.size > 1) {
-      throw new HttpException('Multiple users found', 400);
+      throw new HttpException("Multiple users found", 400);
     } else if (documentsSnapshot.size === 1) {
-      documentsSnapshot.forEach((doc) => {
+      documentsSnapshot.forEach(doc => {
         document = doc.data() as T;
       });
     } else {
-      throw new NotFoundException('User not found in DB');
+      throw new NotFoundException("User not found in DB");
     }
-
     return document;
   }
 
@@ -111,7 +106,7 @@ export class FirestoreService {
       return await this.getDocument(collection, id);
     } catch (error) {
       if (error.code === FirestoreErrorCode.ALREADY_EXISTS) {
-        throw new HttpException('Document already exists.', HttpStatus.CONFLICT);
+        throw new HttpException("Document already exists.", HttpStatus.CONFLICT);
       }
       this.logger.error(error);
       throw error;
@@ -127,7 +122,8 @@ export class FirestoreService {
       await this.firestore
         .collection(collection)
         .doc(documentId)
-        .set({ ...data }, { merge: true });
+        .update({ ...data });
+
       return await this.getDocument(collection, documentId);
     } catch (error) {
       this.logger.error(error);
@@ -148,13 +144,13 @@ export class FirestoreService {
       const collectionRef = this.firestore.collection(collection);
 
       let query = collectionRef as Query;
-      Object.keys(filter).forEach((key) => {
-        query = query.where(key, '==', filter[key]);
+      Object.keys(filter).forEach(key => {
+        query = query.where(key, "==", filter[key]);
       });
 
       const snapshot = await query.get();
       const batch = this.firestore.batch();
-      snapshot.forEach((doc) => {
+      snapshot.forEach(doc => {
         const docRef = collectionRef.doc(doc.id);
         batch.update(docRef, data);
       });
@@ -173,11 +169,12 @@ export class FirestoreService {
    * the problem by changing the string property to an object, then saves back
    * to Firestore. It may be removed when all similar problems will be fixed.
    *
-   * @param {string} collection the name of the targetted collection
+   * @param {string} collection the name of the targeted collection
    * @param  {string} property the property that needs to be transformed to an object
    */
   async transformToObjectAndSaveProperty(collection: FIRESTORE_COLLECTIONS, property: string): Promise<void> {
     try {
+      // eslint-disable-next-line
       const documents = (await this.getAllDocuments(collection)) as WelcomeUser[];
 
       for (const doc of documents) {
@@ -186,11 +183,11 @@ export class FirestoreService {
           continue;
         }
 
-        if (value === '') {
+        if (value === "") {
           value = {};
-        } else if (value && typeof value === 'string') {
+        } else if (value && typeof value === "string") {
           try {
-            const propertyToObject: object = JSON.parse(value.replace(/'/g, '"'));
+            const propertyToObject: object = JSON.parse(value.replace(/'/g, "\""));
             value = propertyToObject;
             await this.updateDocument(collection, doc._id, { [property]: value });
           } catch (error) {
@@ -199,7 +196,7 @@ export class FirestoreService {
         }
       }
     } catch (error) {
-      this.logger.error('Error transforming and saving appGames:', error);
+      this.logger.error("Error transforming and saving appGames:", error);
       throw error;
     }
   }

@@ -1,5 +1,5 @@
-import { Injectable, PipeTransform } from '@nestjs/common';
-import { Filter } from '@google-cloud/firestore';
+import { Injectable, PipeTransform } from "@nestjs/common";
+import { Filter } from "@google-cloud/firestore";
 
 @Injectable()
 export class FindAllUsersPipe implements PipeTransform {
@@ -9,10 +9,10 @@ export class FindAllUsersPipe implements PipeTransform {
       return filters;
     }
     if (arrivalDate.startDate) {
-      filters.push(Filter.where('arrivalDate', '>=', arrivalDate.startDate));
+      filters.push(Filter.where("arrivalDate", ">=", arrivalDate.startDate));
     }
     if (arrivalDate.endDate) {
-      filters.push(Filter.where('arrivalDate', '<', arrivalDate.endDate));
+      filters.push(Filter.where("arrivalDate", "<", arrivalDate.endDate));
     }
     return Filter.and(...filters);
   }

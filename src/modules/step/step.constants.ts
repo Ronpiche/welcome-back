@@ -1,0 +1,1 @@
+export const HOLIDAY_COUNTRY = "FR";

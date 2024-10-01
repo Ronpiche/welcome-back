@@ -1,8 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { SignInDto } from './dto/input/signIn.dto';
-import { GipService } from '../../services/gip/gip.service';
-import { SignupDto } from './dto/input/signup.dto';
-import { AuthentificationUserOutputDto } from './dto/output/authentificationUserOutput.dto';
+import { SignInDto } from "@modules/authentification/dto/input/signIn.dto";
+import { SignupDto } from "@modules/authentification/dto/input/signup.dto";
+import { AuthentificationUserOutputDto } from "@modules/authentification/dto/output/authentificationUserOutput.dto";
+import { BadRequestException, Injectable } from "@nestjs/common";
+import { GipService } from "@src/services/gip/gip.service";
 
 @Injectable()
 export class AuthentificationService {
@@ -10,13 +10,14 @@ export class AuthentificationService {
 
   async signIn(signInDto: SignInDto): Promise<AuthentificationUserOutputDto> {
     const { email, password } = signInDto;
-    return await this.gipService.signInGIP(email, password);
+
+    return this.gipService.signInGIP(email, password);
   }
 
   async signUp(signUpDto: SignupDto): Promise<void> {
     const { email, password, copy_password } = signUpDto;
     if (copy_password !== password) {
-      throw new BadRequestException('These passwords are not the same');
+      throw new BadRequestException("These passwords are not the same");
     }
     await this.gipService.signUpGIP(email, password);
   }

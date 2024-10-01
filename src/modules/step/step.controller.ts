@@ -1,55 +1,55 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, HttpStatus, Put, HttpCode } from '@nestjs/common';
-import { StepService } from './step.service';
-import { CreateStepDto } from './dto/create-step.dto';
-import { UpdateStepDto } from './dto/update-step.dto';
-import { IsPublic } from '@src/decorators/isPublic';
-import { AccessGuard } from '@src/middleware/AuthGuard';
-import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { CreatedDto } from '../shared/dto/created.dto';
+import { CreatedDto } from "@modules/shared/dto/created.dto";
+import { CreateStepDto } from "@modules/step/dto/create-step.dto";
+import { UpdateStepDto } from "@modules/step/dto/update-step.dto";
+import { StepService } from "@modules/step/step.service";
+import { Controller, Get, Post, Body, Param, Delete, UseGuards, HttpStatus, Put, HttpCode } from "@nestjs/common";
+import { IsPublic } from "@src/decorators/isPublic";
+import { AccessGuard } from "@src/middleware/AuthGuard";
+import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 
-@ApiTags('step')
-@Controller('steps')
+@ApiTags("step")
+@Controller("steps")
 export class StepController {
   constructor(private readonly stepService: StepService) {}
 
   @Post()
   @IsPublic(false)
   @UseGuards(AccessGuard)
-  @ApiCreatedResponse({ description: 'OK', type: CreatedDto })
+  @ApiCreatedResponse({ description: "OK", type: CreatedDto })
   async create(@Body() createStepDto: CreateStepDto): Promise<CreateStepDto> {
-    return await this.stepService.create(createStepDto);
+    return this.stepService.create(createStepDto);
   }
 
   @Get()
   @IsPublic(false)
   @UseGuards(AccessGuard)
-  @ApiOkResponse({ description: 'OK', type: [CreateStepDto] })
+  @ApiOkResponse({ description: "OK", type: [CreateStepDto] })
   async findAll(): Promise<CreateStepDto[]> {
-    return await this.stepService.findAll();
+    return this.stepService.findAll();
   }
 
-  @Get(':id')
+  @Get(":id")
   @IsPublic(false)
   @UseGuards(AccessGuard)
-  @ApiOkResponse({ description: 'OK', type: CreateStepDto })
-  async findOne(@Param('id') id: string): Promise<CreateStepDto> {
-    return await this.stepService.findOne(id);
+  @ApiOkResponse({ description: "OK", type: CreateStepDto })
+  async findOne(@Param("id") id: string): Promise<CreateStepDto> {
+    return this.stepService.findOne(id);
   }
 
-  @Put(':id')
+  @Put(":id")
   @IsPublic(false)
   @UseGuards(AccessGuard)
-  @ApiOkResponse({ description: 'OK', type: CreateStepDto })
-  async update(@Param('id') id: string, @Body() updateStepDto: UpdateStepDto): Promise<UpdateStepDto> {
-    return await this.stepService.update(id, updateStepDto);
+  @ApiOkResponse({ description: "OK", type: CreateStepDto })
+  async update(@Param("id") id: string, @Body() updateStepDto: UpdateStepDto): Promise<UpdateStepDto> {
+    return this.stepService.update(id, updateStepDto);
   }
 
-  @Delete(':id')
+  @Delete(":id")
   @IsPublic(false)
   @UseGuards(AccessGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiNoContentResponse({ description: 'OK' })
-  async remove(@Param('id') id: string): Promise<void> {
-    return await this.stepService.remove(id);
+  @ApiNoContentResponse({ description: "OK" })
+  async remove(@Param("id") id: string): Promise<void> {
+    await this.stepService.remove(id);
   }
 }

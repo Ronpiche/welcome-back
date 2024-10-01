@@ -13,12 +13,12 @@ import {
   HttpCode,
   Res,
   HttpStatus,
-} from '@nestjs/common';
-import { WelcomeService } from '@modules/welcome/welcome.service';
-import { CreateUserDto } from '@modules/welcome/dto/input/create-user.dto';
-import { UpdateUserDto } from '@modules/welcome/dto/input/update-user.dto';
-import { WelcomeUserDto } from '@modules/welcome/dto/output/welcome-user.dto';
-import { AccessGuard } from '@src/middleware/AuthGuard';
+} from "@nestjs/common";
+import { WelcomeService } from "@modules/welcome/welcome.service";
+import { CreateUserDto } from "@modules/welcome/dto/input/create-user.dto";
+import { UpdateUserDto } from "@modules/welcome/dto/input/update-user.dto";
+import { WelcomeUserDto } from "@modules/welcome/dto/output/welcome-user.dto";
+import { AccessGuard } from "@src/middleware/AuthGuard";
 import {
   ApiBody,
   ApiCreatedResponse,
@@ -30,122 +30,125 @@ import {
   ApiQuery,
   ApiTags,
   getSchemaPath,
-} from '@nestjs/swagger';
-import { FindAllUsersPipe } from '@modules/welcome/pipes/find-all-users.pipe';
-import { instanceToPlain, plainToInstance } from 'class-transformer';
-import { WelcomeUser } from './entities/user.entity';
-import { IsPublic } from '@src/decorators/isPublic';
-import { EmailRunKO, EmailRunOK } from './dto/output/email-run.dto';
-import { Response } from 'express';
+} from "@nestjs/swagger";
+import { FindAllUsersPipe } from "@modules/welcome/pipes/find-all-users.pipe";
+import { instanceToPlain, plainToInstance } from "class-transformer";
+import { WelcomeUser } from "./entities/user.entity";
+import { IsPublic } from "@src/decorators/isPublic";
+import { EmailRunKO, EmailRunOK } from "./dto/output/email-run.dto";
+import { Response } from "express";
 
-@ApiTags('welcome')
-@Controller('welcome')
+@ApiTags("welcome")
+@Controller("welcome")
 export class WelcomeController {
   constructor(private readonly welcomeService: WelcomeService) {}
 
-  @Post('users')
+  @Post("users")
   @IsPublic(false)
   @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(AccessGuard)
-  @ApiOperation({ summary: 'Create User', description: 'Returns new user.' })
+  @ApiOperation({ summary: "Create User", description: "Returns new user." })
   @ApiBody({ type: CreateUserDto })
-  @ApiOkResponse({ description: 'User created', type: WelcomeUserDto })
+  @ApiOkResponse({ description: "User created", type: WelcomeUserDto })
   async create(@Body() createUserDto: CreateUserDto): Promise<WelcomeUserDto> {
     const user: WelcomeUser = await this.welcomeService.createUser(createUserDto);
+
     return plainToInstance(WelcomeUserDto, instanceToPlain(user), { excludeExtraneousValues: true });
   }
 
-  @Get('users')
+  @Get("users")
   @IsPublic(false)
   @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(AccessGuard)
   @HttpCode(200)
   @ApiQuery({
-    name: 'arrivalDate[startDate]',
+    name: "arrivalDate[startDate]",
     type: Date,
     required: false,
     example: new Date().toISOString().substring(0, 10),
   })
   @ApiQuery({
-    name: 'arrivalDate[endDate]',
+    name: "arrivalDate[endDate]",
     type: Date,
     required: false,
     example: new Date(new Date().setDate(new Date().getDate() + 90)).toISOString().substring(0, 10),
   })
-  @ApiOperation({ summary: 'Find all users', description: 'Returns all users.' })
-  @ApiOkResponse({ description: 'OK', type: [WelcomeUserDto] })
-  async findAll(@Query('arrivalDate', FindAllUsersPipe) filter: any): Promise<WelcomeUserDto[]> {
+  @ApiOperation({ summary: "Find all users", description: "Returns all users." })
+  @ApiOkResponse({ description: "OK", type: [WelcomeUserDto] })
+  async findAll(@Query("arrivalDate", FindAllUsersPipe) filter: any): Promise<WelcomeUserDto[]> {
     const users: WelcomeUser[] = await this.welcomeService.findAll(filter);
-    return users.map((user) =>
-      plainToInstance(WelcomeUserDto, instanceToPlain(user), { excludeExtraneousValues: true }),
-    );
+
+    return users.map(user => plainToInstance(WelcomeUserDto, instanceToPlain(user), { excludeExtraneousValues: true }));
   }
 
-  @Get('users/:id')
+  @Get("users/:id")
   @IsPublic(false)
   @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(AccessGuard)
   @HttpCode(200)
-  @ApiParam({ name: 'id', type: String, required: false, example: '123e4567-e89b-12d3-a456-426614174000' })
-  @ApiOperation({ summary: 'Find one user', description: 'Returns one user' })
-  @ApiOkResponse({ description: 'OK', type: WelcomeUserDto })
-  async findOne(@Param('id') id: string): Promise<WelcomeUserDto> {
+  @ApiParam({ name: "id", type: String, required: false, example: "123e4567-e89b-12d3-a456-426614174000" })
+  @ApiOperation({ summary: "Find one user", description: "Returns one user" })
+  @ApiOkResponse({ description: "OK", type: WelcomeUserDto })
+  async findOne(@Param("id") id: string): Promise<WelcomeUserDto> {
     const user = await this.welcomeService.findOne(id);
+
     return plainToInstance(WelcomeUserDto, instanceToPlain(user), { excludeExtraneousValues: true });
   }
 
   @IsPublic(false)
-  @Delete('users/:id')
+  @Delete("users/:id")
   @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(AccessGuard)
   @HttpCode(200)
-  @ApiParam({ name: 'id', type: String, required: false, example: '123e4567-e89b-12d3-a456-426614174000' })
-  @ApiOperation({ summary: 'Remove one user', description: 'Remove user' })
-  @ApiOkResponse({ description: 'User deleted' })
-  async remove(@Param('id') id: string): Promise<string> {
+  @ApiParam({ name: "id", type: String, required: false, example: "123e4567-e89b-12d3-a456-426614174000" })
+  @ApiOperation({ summary: "Remove one user", description: "Remove user" })
+  @ApiOkResponse({ description: "User deleted" })
+  async remove(@Param("id") id: string): Promise<string> {
     await this.welcomeService.remove(id);
-    return 'User deleted';
+
+    return "User deleted";
   }
 
-  @Put('users/:id')
+  @Put("users/:id")
   @IsPublic(false)
   @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(AccessGuard)
   @HttpCode(200)
-  @ApiParam({ name: 'id', type: String, required: false, example: '123e4567-e89b-12d3-a456-426614174000' })
+  @ApiParam({ name: "id", type: String, required: false, example: "123e4567-e89b-12d3-a456-426614174000" })
   @ApiBody({ type: UpdateUserDto })
-  @ApiOperation({ summary: 'Update One User', description: 'Update user' })
-  @ApiOkResponse({ description: 'OK', type: WelcomeUserDto })
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto): Promise<WelcomeUserDto> {
+  @ApiOperation({ summary: "Update One User", description: "Update user" })
+  @ApiOkResponse({ description: "OK", type: WelcomeUserDto })
+  async update(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto): Promise<WelcomeUserDto> {
     const user = await this.welcomeService.update(id, updateUserDto);
+
     return plainToInstance(WelcomeUserDto, instanceToPlain(user), {
       excludeExtraneousValues: true,
     });
   }
 
-  @Post('transform-property')
+  @Post("transform-property")
   @IsPublic(false)
   @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(AccessGuard)
   @HttpCode(201)
-  async transformAppGames(@Query('name') propertyName: string): Promise<{ status: string }> {
-    return await this.welcomeService.transformDbOjectStringsToArray(propertyName);
+  async transformAppGames(@Query("name") propertyName: string): Promise<{ status: string }> {
+    return this.welcomeService.transformDbOjectStringsToArray(propertyName);
   }
 
-  @Post('run')
+  @Post("run")
   @IsPublic(false)
   @UseGuards(AccessGuard)
   @ApiOperation({
-    summary: 'Notify users by email',
+    summary: "Notify users by email",
     description:
-      'Search users that have unlocked steps and send them an email. This method should be called by a CRON task.',
+      "Search users that have unlocked steps and send them an email. This method should be called by a CRON task.",
   })
-  @ApiCreatedResponse({ description: 'Users notified', type: EmailRunOK, isArray: true })
+  @ApiCreatedResponse({ description: "Users notified", type: EmailRunOK, isArray: true })
   @ApiExtraModels(EmailRunKO)
   @ApiInternalServerErrorResponse({
-    description: 'Error on user notification',
+    description: "Error on user notification",
     schema: {
-      type: 'array',
+      type: "array",
       items: {
         oneOf: [{ $ref: getSchemaPath(EmailRunOK) }, { $ref: getSchemaPath(EmailRunKO) }],
       },
@@ -153,19 +156,19 @@ export class WelcomeController {
   })
   async run(@Res({ passthrough: true }) response: Response) {
     const results = await this.welcomeService.run(new Date());
-    if (results.some((result) => result.status === 'rejected')) {
+    if (results.some(result => result.status === "rejected")) {
       response.status(HttpStatus.INTERNAL_SERVER_ERROR);
     }
     return results;
   }
 
-  @Post('users/:userId/steps/:stepId')
+  @Post("users/:userId/steps/:stepId")
   @IsPublic(false)
   @UseGuards(AccessGuard)
   @ApiOperation({
-    summary: 'Complete an user step',
+    summary: "Complete an user step",
   })
-  async completeStep(@Param('userId') userId: string, @Param('stepId') stepId: string) {
-    return await this.welcomeService.completeStep(userId, stepId, new Date());
+  async completeStep(@Param("userId") userId: string, @Param("stepId") stepId: string) {
+    return this.welcomeService.completeStep(userId, stepId, new Date());
   }
 }

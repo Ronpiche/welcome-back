@@ -1,0 +1,1 @@
+export const getImageFullExtension = (extension: string) => (extension === "svg" ? `image/${extension}+xml` : `image/${extension}`);

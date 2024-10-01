@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 
 class EmailFullfilled {
   @ApiProperty()
@@ -12,14 +12,16 @@ class EmailRejected extends EmailFullfilled {
 
 export class EmailRunOK implements PromiseFulfilledResult<EmailFullfilled> {
   @ApiProperty()
-  status: 'fulfilled';
+  status: "fulfilled";
+
   @ApiProperty()
   value: EmailFullfilled;
 }
 
 export class EmailRunKO implements PromiseRejectedResult {
   @ApiProperty()
-  status: 'rejected';
+  status: "rejected";
+
   @ApiProperty()
   reason: EmailRejected;
 }

@@ -1,8 +1,8 @@
-import { JwtCognito } from '@src/modules/cognito/jwtCognito.service';
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { Request } from 'express';
-import { ConfigService } from '@nestjs/config';
+import { JwtCognito } from "@src/modules/cognito/jwtCognito.service";
+import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
+import { Request } from "express";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class AccessGuard implements CanActivate {
@@ -13,10 +13,10 @@ export class AccessGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const isPublic = this.reflector.get<boolean>('public', context.getHandler());
+    const isPublic = this.reflector.get<boolean>("public", context.getHandler());
     // check if IsPublic is used in api
-    if (isPublic || this.configService.get('COGNITO_BY_PASS') === 'true') {
-      // Allow public API access
+    if (isPublic || this.configService.get("COGNITO_BY_PASS") === "true") {
+      // allow public API access
       return true;
     }
 
@@ -29,6 +29,8 @@ export class AccessGuard implements CanActivate {
 
     try {
       const payload = await this.jwtCognito.verifyJwt(token);
+
+      // eslint-disable-next-line
       request['email'] = payload.username.replace('azuread_', '');
     } catch (error) {
       throw new UnauthorizedException(error);
@@ -37,7 +39,8 @@ export class AccessGuard implements CanActivate {
   }
 
   private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
+    const [type, token] = request.headers.authorization.split(" ") ?? [];
+
+    return type === "Bearer" ? token : undefined;
   }
 }

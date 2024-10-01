@@ -1,12 +1,8 @@
-import { WelcomeUser } from '@modules/welcome/entities/user.entity';
+import type { WelcomeUser } from "@modules/welcome/entities/user.entity";
 
-const stepUnlockedString = (unlockedSteps: number[]) =>
-  unlockedSteps.length > 0
-    ? `Vous avez maintenant accès ${unlockedSteps.length > 1 ? 'aux étapes' : "à l'étape"} n°${unlockedSteps.map((s) => s + 1).join(', ')} sur l'application Welcome.`
-    : `Vous aurez prochainement accès aux differentes étapes de l'application Welcome.`;
+const stepUnlockedString = (unlockedSteps: number[]) => (unlockedSteps.length > 0 ? `Vous avez maintenant accès ${unlockedSteps.length > 1 ? "aux étapes" : "à l'étape"} n°${unlockedSteps.map(s => s + 1).join(", ")} sur l'application Welcome.` : `Vous aurez prochainement accès aux differentes étapes de l'application Welcome.`);
 
-const stepTemplate = (user: WelcomeUser, unlockedSteps: number[]) =>
-  `<html lang="fr">
+const stepTemplate = (user: WelcomeUser, unlockedSteps: number[]) => `<html lang="fr">
   <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,8 +16,7 @@ const stepTemplate = (user: WelcomeUser, unlockedSteps: number[]) =>
   </body>
 </html>`;
 
-const welcomeTemplate = (user: WelcomeUser, unlockedSteps: number[]) =>
-  `<html lang="fr">
+const welcomeTemplate = (user: WelcomeUser, unlockedSteps: number[]) => `<html lang="fr">
   <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">

@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Expose } from 'class-transformer';
+import { ApiProperty } from "@nestjs/swagger";
+import { Expose } from "class-transformer";
 
 export class OutputAgencyDto {
   @ApiProperty()
@@ -12,7 +12,7 @@ export class OutputAgencyDto {
 
   @ApiProperty()
   @Expose()
-  coordinates: Array<number>;
+  coordinates: number[];
 
   @ApiProperty()
   @Expose()
@@ -24,13 +24,13 @@ export class OutputAgencyDto {
 
   @ApiProperty()
   @Expose()
-  services: Array<string>;
+  services: string[];
 
   @ApiProperty()
   @Expose()
-  customers: Array<string>;
+  customers: string[];
 
   @ApiProperty()
   @Expose()
-  goodPlaces: Array<string>;
+  goodPlaces: string[];
 }
