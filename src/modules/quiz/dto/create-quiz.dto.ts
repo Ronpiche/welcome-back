@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsNotEmpty, IsString, ValidateNested } from "class-validator";
+import { IsArray, IsNotEmpty, IsString, ValidateNested } from "class-validator";
 import { QuestionDto } from "@modules/quiz/dto/question.dto";
 
 export class CreateQuizDto {
@@ -9,8 +9,9 @@ export class CreateQuizDto {
   @IsNotEmpty()
   public _id: string;
 
-  @ApiProperty()
-  @ValidateNested()
+  @ApiProperty({ isArray: true, type: QuestionDto })
+  @IsArray()
+  @ValidateNested({ each: true })
   @Type(() => QuestionDto)
   public questions: QuestionDto[];
 }

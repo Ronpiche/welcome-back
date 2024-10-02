@@ -2,11 +2,12 @@ import { CreatedDto } from "@modules/shared/dto/created.dto";
 import { CreateQuizDto } from "@modules/quiz/dto/create-quiz.dto";
 import { UpdateQuizDto } from "@modules/quiz/dto/update-quiz.dto";
 import { QuizService } from "@modules/quiz/quiz.service";
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, HttpStatus, Put, HttpCode } from "@nestjs/common";
+import { Controller, Get, Post, Body, Param, Delete, UseGuards, HttpStatus, Put, HttpCode, ParseArrayPipe, ParseIntPipe } from "@nestjs/common";
 import { IsPublic } from "@src/decorators/isPublic";
 import { AccessGuard } from "@src/middleware/AuthGuard";
 import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { Quiz } from "@modules/quiz/entities/quiz.entity";
+import { UserAnswerDto } from "./dto/user-answer.dto";
 
 @ApiTags("quiz")
 @Controller("quizzes")
@@ -52,5 +53,12 @@ export class QuizController {
   @ApiNoContentResponse({ description: "OK" })
   public async remove(@Param("id") id: string): Promise<void> {
     await this.quizService.remove(id);
+  }
+
+  @Post(":id")
+  @IsPublic(true)
+  @ApiCreatedResponse({ description: "Are answers true ?", type: Boolean })
+  public async isValid(@Param("id") id: string, @Body() userAnswerDto: UserAnswerDto): Promise<boolean> {
+    return this.quizService.isValid(id, userAnswerDto.questionIndex, userAnswerDto.answerIndexes);
   }
 }

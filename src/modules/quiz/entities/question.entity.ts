@@ -1,7 +1,7 @@
-import { Answer } from "./answer.entity";
+import type { Answer } from "@modules/quiz/entities/answer.entity";
 
 export class Question {
-  label: string;
+  public label: string;
 
-  answers: Answer[];
+  public answers: Answer[];
 }

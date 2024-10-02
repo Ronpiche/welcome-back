@@ -1,7 +1,7 @@
-import { Question } from "./question.entity";
+import type { Question } from "@modules/quiz/entities/question.entity";
 
 export class Quiz {
-  _id: string;
+  public _id: string;
 
-  questions: Question[];
+  public questions: Question[];
 }

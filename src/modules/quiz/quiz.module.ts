@@ -9,4 +9,5 @@ import { FirestoreModule } from "@src/services/firestore/firestore.module";
   controllers: [QuizController],
   providers: [Logger, QuizService, JwtCognito],
 })
-export class StepModule {}
+
+export class QuizModule { }

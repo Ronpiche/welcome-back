@@ -12,7 +12,7 @@ export class QuizService {
 
   public async create(createQuizDto: CreateQuizDto): Promise<Quiz> {
     try {
-      return await this.firestoreService.saveDocument(FIRESTORE_COLLECTIONS.STEPS, instanceToPlain(createQuizDto));
+      return await this.firestoreService.saveDocument(FIRESTORE_COLLECTIONS.QUIZZES, instanceToPlain(createQuizDto));
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -74,7 +74,7 @@ export class QuizService {
    * check answers validity.
    * @param quizId - The quiz ID
    * @param questionIndex - The index of the question
-   * @param answerIndexes - The array of selected answers
+   * @param answerIndexes - The array of indexes of selected answers
    * @returns Validity of the answers
    */
   public async isValid(quizId: string, questionIndex: number, answerIndexes: number[]): Promise<boolean> {
