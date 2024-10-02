@@ -81,7 +81,7 @@ export class QuizService {
     try {
       const quiz = await this.findOne(quizId);
 
-      return quiz.questions[questionIndex].answers.every((answer, i) => answer.isTrue && answerIndexes.includes(i) || !answer.isTrue && !answerIndexes.includes(i));
+      return quiz.questions[questionIndex].answers.every((answer, i) => (answer.isTrue && answerIndexes.includes(i)) || (!answer.isTrue && !answerIndexes.includes(i)));
     } catch {
       throw new InternalServerErrorException("Internal Server Error");
     }
