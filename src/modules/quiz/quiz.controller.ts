@@ -1,13 +1,12 @@
-import { CreatedDto } from "@modules/shared/dto/created.dto";
 import { CreateQuizDto } from "@modules/quiz/dto/create-quiz.dto";
 import { UpdateQuizDto } from "@modules/quiz/dto/update-quiz.dto";
+import { QuizUserAnswerDto } from "@modules/quiz/dto/quiz-user-answer.dto";
 import { QuizService } from "@modules/quiz/quiz.service";
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, HttpStatus, Put, HttpCode, ParseArrayPipe, ParseIntPipe } from "@nestjs/common";
+import { Controller, Get, Post, Body, Param, Delete, UseGuards, HttpStatus, Put, HttpCode } from "@nestjs/common";
 import { IsPublic } from "@src/decorators/isPublic";
 import { AccessGuard } from "@src/middleware/AuthGuard";
 import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { Quiz } from "@modules/quiz/entities/quiz.entity";
-import { UserAnswerDto } from "./dto/user-answer.dto";
 
 @ApiTags("quiz")
 @Controller("quizzes")
@@ -17,7 +16,7 @@ export class QuizController {
   @Post()
   @IsPublic(false)
   @UseGuards(AccessGuard)
-  @ApiCreatedResponse({ description: "OK", type: CreatedDto })
+  @ApiCreatedResponse({ description: "OK", type: Quiz })
   public async create(@Body() createQuizDto: CreateQuizDto): Promise<Quiz> {
     return this.quizService.create(createQuizDto);
   }
@@ -25,7 +24,7 @@ export class QuizController {
   @Get()
   @IsPublic(false)
   @UseGuards(AccessGuard)
-  @ApiOkResponse({ description: "OK", type: [CreateQuizDto] })
+  @ApiOkResponse({ description: "OK", type: [Quiz] })
   public async findAll(): Promise<Quiz[]> {
     return this.quizService.findAll();
   }
@@ -33,7 +32,7 @@ export class QuizController {
   @Get(":id")
   @IsPublic(false)
   @UseGuards(AccessGuard)
-  @ApiOkResponse({ description: "OK", type: CreateQuizDto })
+  @ApiOkResponse({ description: "OK", type: Quiz })
   public async findOne(@Param("id") id: string): Promise<Quiz> {
     return this.quizService.findOne(id);
   }
@@ -41,7 +40,7 @@ export class QuizController {
   @Put(":id")
   @IsPublic(false)
   @UseGuards(AccessGuard)
-  @ApiOkResponse({ description: "OK", type: CreateQuizDto })
+  @ApiOkResponse({ description: "OK", type: Quiz })
   public async update(@Param("id") id: string, @Body() updateStepDto: UpdateQuizDto): Promise<Quiz> {
     return this.quizService.update(id, updateStepDto);
   }
@@ -58,7 +57,7 @@ export class QuizController {
   @Post(":id")
   @IsPublic(true)
   @ApiCreatedResponse({ description: "Are answers true ?", type: Boolean })
-  public async isValid(@Param("id") id: string, @Body() userAnswerDto: UserAnswerDto): Promise<boolean> {
+  public async isValid(@Param("id") id: string, @Body() userAnswerDto: QuizUserAnswerDto): Promise<boolean> {
     return this.quizService.isValid(id, userAnswerDto.questionIndex, userAnswerDto.answerIndexes);
   }
 }

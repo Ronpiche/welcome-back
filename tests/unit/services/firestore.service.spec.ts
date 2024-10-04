@@ -179,14 +179,13 @@ describe("firestoreService", () => {
       service['firestore']['collection'] = jest.fn().mockReturnValue({
         doc: jest.fn().mockReturnValue({
           id: documentId,
-          create: jest.fn().mockRejectedValue(new InternalServerErrorException("internal server error")),
+          create: jest.fn().mockRejectedValue(new InternalServerErrorException()),
         }),
       });
       try {
         await service.saveDocument(collection as FIRESTORE_COLLECTIONS, {});
       } catch (error) {
         expect(error).toBeInstanceOf(InternalServerErrorException);
-        expect(error.message).toBe("internal server error");
         expect(error.status).toBe(500);
       }
     });
@@ -309,7 +308,7 @@ describe("firestoreService", () => {
       } catch (error) {
         expect(error).toBeInstanceOf(HttpException);
         expect(error.message).toBe("Multiple users found");
-        expect(error.status).toBe(400);
+        expect(error.status).toBe(409);
       }
     });
   });

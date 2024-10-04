@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNumber, Min } from "class-validator";
 
-export class UserAnswerDto {
+export class QuizUserAnswerDto {
   @ApiProperty({
     example: 0,
     description: "Index of the question.",
