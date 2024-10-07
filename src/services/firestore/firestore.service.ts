@@ -1,6 +1,5 @@
 import {
-  HttpException,
-  HttpStatus,
+  ConflictException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -12,31 +11,12 @@ import { WelcomeUser } from "@modules/welcome/entities/user.entity";
 
 @Injectable()
 export class FirestoreService {
-  constructor(
+  public constructor(
     private readonly firestore: Firestore,
     private readonly logger: Logger,
   ) {}
 
-  private applyFilters(query: FirebaseFirestore.Query, filter: Filter): FirebaseFirestore.Query {
-    let filteredQuery = query;
-    Object.entries(filter).forEach(([field, value]) => {
-      if (field === "arrivalDate") {
-        Object.entries(value).forEach(([index, val]) => {
-          if (index === "$gte") {
-            filteredQuery = filteredQuery.where(field, ">=", val);
-          } else if (index === "$lte") {
-            filteredQuery = filteredQuery.where(field, "<=", val);
-          }
-        });
-      } else {
-        filteredQuery = filteredQuery.where(field, "==", value);
-      }
-    });
-
-    return filteredQuery;
-  }
-
-  async getAllDocuments<T extends FirestoreDocumentType>(
+  public async getAllDocuments<T extends FirestoreDocumentType>(
     collection: FIRESTORE_COLLECTIONS,
     filter?: Filter,
   ): Promise<T[]> {
@@ -45,7 +25,6 @@ export class FirestoreService {
       const query = this.firestore.collection(collection);
       const filteredQuery = filter ? this.applyFilters(query, filter) : query;
       const querySnapshot = await filteredQuery.get();
-
       querySnapshot.forEach(doc => {
         documents.push({
           ...(doc.data() as T),
@@ -54,66 +33,77 @@ export class FirestoreService {
 
       return documents;
     } catch (error) {
-      throw new InternalServerErrorException(error);
+      this.logger.error(error);
+      throw new InternalServerErrorException();
     }
   }
 
-  async getDocument<T extends FirestoreDocumentType>(
+  public async getDocument<T extends FirestoreDocumentType>(
     collection: FIRESTORE_COLLECTIONS,
     documentId: string,
   ): Promise<T> {
-    let documentSnapshot: FirebaseFirestore.DocumentSnapshot;
     try {
-      documentSnapshot = await this.firestore.collection(collection).doc(documentId).get();
+      const documentSnapshot = await this.firestore.collection(collection).doc(documentId).get();
+      if (!documentSnapshot.exists) {
+        throw new NotFoundException("Document not found in DB");
+      }
+      return documentSnapshot.data() as T;
     } catch (error) {
-      throw new InternalServerErrorException(error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      this.logger.error(error);
+      throw new InternalServerErrorException();
     }
-
-    if (!documentSnapshot.exists) {
-      throw new NotFoundException("Document not found in DB");
-    }
-    return documentSnapshot.data() as T;
   }
 
-  async getByEmail<T extends FirestoreDocumentType>(collection: FIRESTORE_COLLECTIONS, email: string): Promise<T> {
-    let document: T;
-    const documentsSnapshot = await this.firestore.collection(collection).where("email", "==", email).get();
-    if (documentsSnapshot.size > 1) {
-      throw new HttpException("Multiple users found", 400);
-    } else if (documentsSnapshot.size === 1) {
+  public async getByEmail<T extends FirestoreDocumentType>(collection: FIRESTORE_COLLECTIONS, email: string): Promise<T> {
+    try {
+      const documentsSnapshot = await this.firestore.collection(collection).where("email", "==", email).get();
+      if (documentsSnapshot.size === 0) {
+        throw new NotFoundException("User not found in DB");
+      }
+      if (documentsSnapshot.size > 1) {
+        throw new ConflictException("Multiple users found");
+      }
+      let document: T | null = null;
       documentsSnapshot.forEach(doc => {
         document = doc.data() as T;
       });
-    } else {
-      throw new NotFoundException("User not found in DB");
+
+      return document;
+    } catch (error) {
+      if (error instanceof NotFoundException || error instanceof ConflictException) {
+        throw error;
+      }
+      this.logger.error(error);
+      throw new InternalServerErrorException();
     }
-    return document;
   }
 
-  async saveDocument<T extends FirestoreDocumentType>(
+  public async saveDocument<T extends FirestoreDocumentType>(
     collection: FIRESTORE_COLLECTIONS,
     data: Record<string, any>,
   ): Promise<T> {
     try {
       const documentRef = this.firestore.collection(collection).doc(data._id);
-
       await documentRef.create(data);
-
       const id = documentRef.id;
-
       this.logger.log(`[saveDocument] - data saved to database, id:${id}`);
 
       return await this.getDocument(collection, id);
     } catch (error) {
-      if (error.code === FirestoreErrorCode.ALREADY_EXISTS) {
-        throw new HttpException("Document already exists.", HttpStatus.CONFLICT);
+      if (error instanceof Error) {
+        if ("code" in error && error.code === FirestoreErrorCode.ALREADY_EXISTS) {
+          throw new ConflictException("Document already exists.");
+        }
       }
       this.logger.error(error);
-      throw error;
+      throw new InternalServerErrorException();
     }
   }
 
-  async updateDocument<T extends FirestoreDocumentType>(
+  public async updateDocument<T extends FirestoreDocumentType>(
     collection: FIRESTORE_COLLECTIONS,
     documentId: string,
     data: Record<string, unknown>,
@@ -127,15 +117,20 @@ export class FirestoreService {
       return await this.getDocument(collection, documentId);
     } catch (error) {
       this.logger.error(error);
-      throw new InternalServerErrorException(error);
+      throw new InternalServerErrorException();
     }
   }
 
-  async deleteDocument(collection: FIRESTORE_COLLECTIONS, documentId: string): Promise<void> {
-    await this.firestore.collection(collection).doc(documentId).delete();
+  public async deleteDocument(collection: FIRESTORE_COLLECTIONS, documentId: string): Promise<void> {
+    try {
+      await this.firestore.collection(collection).doc(documentId).delete();
+    } catch (error) {
+      this.logger.error(error);
+      throw new InternalServerErrorException();
+    }
   }
 
-  async updateManyDocuments(
+  public async updateManyDocuments(
     collection: FIRESTORE_COLLECTIONS,
     filter: Filter,
     data: Record<string, unknown>,
@@ -158,7 +153,7 @@ export class FirestoreService {
       await batch.commit();
     } catch (error) {
       this.logger.error(error);
-      throw error;
+      throw new InternalServerErrorException();
     }
   }
 
@@ -172,7 +167,7 @@ export class FirestoreService {
    * @param {string} collection the name of the targeted collection
    * @param  {string} property the property that needs to be transformed to an object
    */
-  async transformToObjectAndSaveProperty(collection: FIRESTORE_COLLECTIONS, property: string): Promise<void> {
+  public async transformToObjectAndSaveProperty(collection: FIRESTORE_COLLECTIONS, property: string): Promise<void> {
     try {
       // eslint-disable-next-line
       const documents = (await this.getAllDocuments(collection)) as WelcomeUser[];
@@ -197,7 +192,26 @@ export class FirestoreService {
       }
     } catch (error) {
       this.logger.error("Error transforming and saving appGames:", error);
-      throw error;
+      throw new InternalServerErrorException();
     }
+  }
+
+  private applyFilters(query: FirebaseFirestore.Query, filter: Filter): FirebaseFirestore.Query {
+    let filteredQuery = query;
+    Object.entries(filter).forEach(([field, value]) => {
+      if (field === "arrivalDate") {
+        Object.entries(value).forEach(([index, val]) => {
+          if (index === "$gte") {
+            filteredQuery = filteredQuery.where(field, ">=", val);
+          } else if (index === "$lte") {
+            filteredQuery = filteredQuery.where(field, "<=", val);
+          }
+        });
+      } else {
+        filteredQuery = filteredQuery.where(field, "==", value);
+      }
+    });
+
+    return filteredQuery;
   }
 }
