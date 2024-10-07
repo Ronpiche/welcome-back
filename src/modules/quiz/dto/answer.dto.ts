@@ -9,5 +9,5 @@ export class AnswerDto {
 
   @ApiProperty({ example: true })
   @IsBoolean()
-  public isTrue: boolean;
+  public isCorrect: boolean;
 }

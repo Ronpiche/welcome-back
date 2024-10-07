@@ -5,5 +5,5 @@ export class Answer {
   public label: string;
 
   @ApiProperty()
-  public isTrue: boolean;
+  public isCorrect: boolean;
 }

@@ -24,9 +24,8 @@ export class QuizService {
 
   public async update(id: string, updateQuizDto: UpdateQuizDto): Promise<Quiz> {
     await this.findOne(id);
-    await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.QUIZZES, id, instanceToPlain(updateQuizDto));
 
-    return this.findOne(id);
+    return this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.QUIZZES, id, instanceToPlain(updateQuizDto));
   }
 
   public async remove(id: string): Promise<void> {
@@ -44,6 +43,11 @@ export class QuizService {
   public async isValid(quizId: string, questionIndex: number, answerIndexes: number[]): Promise<boolean> {
     const quiz = await this.findOne(quizId);
 
-    return quiz.questions[questionIndex].answers.every((answer, i) => answer.isTrue && answerIndexes.includes(i) || !answer.isTrue && !answerIndexes.includes(i));
+    return quiz.questions[questionIndex].answers.every((answer, i) => {
+      if (answer.isCorrect) {
+        return answerIndexes.includes(i);
+      }
+      return !answerIndexes.includes(i);
+    });
   }
 }

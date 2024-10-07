@@ -15,23 +15,23 @@ const quizEntityMock: Quiz = {
       answers: [
         {
           label: "0",
-          isTrue: false,
+          isCorrect: false,
         },
         {
           label: "1",
-          isTrue: false,
+          isCorrect: false,
         },
         {
           label: "2",
-          isTrue: true,
+          isCorrect: true,
         },
         {
           label: "3",
-          isTrue: false,
+          isCorrect: false,
         },
         {
           label: "4/2",
-          isTrue: true,
+          isCorrect: true,
         },
       ],
     },
