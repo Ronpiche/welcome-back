@@ -34,20 +34,20 @@ export class QuizService {
   }
 
   /**
-   * check answers validity.
+   * check correctness of answers.
    * @param quizId - The quiz ID
    * @param questionIndex - The index of the question
    * @param answerIndexes - The array of indexes of selected answers
-   * @returns Validity of the answers
+   * @returns Array of correct answers
    */
-  public async isValid(quizId: string, questionIndex: number, answerIndexes: number[]): Promise<boolean> {
+  public async checkCorrectness(quizId: string, questionIndex: number, answerIndexes: number[]): Promise<number[]> {
     const quiz = await this.findOne(quizId);
 
-    return quiz.questions[questionIndex].answers.every((answer, i) => {
-      if (answer.isCorrect) {
-        return answerIndexes.includes(i);
+    return quiz.questions[questionIndex].answers.flatMap((answer, i) => {
+      if (answer.isCorrect && answerIndexes.includes(i)) {
+        return [i];
       }
-      return !answerIndexes.includes(i);
+      return [];
     });
   }
 }
