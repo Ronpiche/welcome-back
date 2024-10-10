@@ -169,10 +169,10 @@ describe("QuizController", () => {
     });
   });
 
-  describe("isValid", () => {
+  describe("checkCorrectness", () => {
     it("should check answer correctness when checkCorrectness is called.", async() => {
-      const isValid = await controller.checkCorrectness(createQuizMock._id, 0, quizCorrectAnswers);
-      expect(isValid).toBe(quizCorrectAnswers);
+      const checkCorrectness = await controller.checkCorrectness(createQuizMock._id, 0, quizCorrectAnswers);
+      expect(checkCorrectness).toBe(quizCorrectAnswers);
     });
   });
 });
