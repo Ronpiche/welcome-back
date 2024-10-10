@@ -7,6 +7,10 @@ export class SafeQuestionDto {
   @Expose()
   public label: string;
 
+  @ApiProperty()
+  @Expose()
+  public hint?: string;
+
   @ApiProperty({ isArray: true, type: SafeAnswerDto })
   @Expose()
   @Type(() => SafeAnswerDto)
