@@ -12,6 +12,7 @@ export class QuestionDto {
   @ApiProperty()
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
   public hint?: string;
 
   @ApiProperty({ isArray: true, type: AnswerDto })

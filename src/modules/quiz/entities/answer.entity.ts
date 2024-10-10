@@ -5,5 +5,8 @@ export class Answer {
   public label: string;
 
   @ApiProperty()
+  public iconPath?: string;
+
+  @ApiProperty()
   public isCorrect: boolean;
 }

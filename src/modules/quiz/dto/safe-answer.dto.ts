@@ -5,4 +5,8 @@ export class SafeAnswerDto {
   @ApiProperty()
   @Expose()
   public label: string;
+
+  @ApiProperty()
+  @Expose()
+  public iconPath?: string;
 }
