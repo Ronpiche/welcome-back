@@ -7,9 +7,10 @@ import { AccessGuard } from "@src/middleware/AuthGuard";
 import { JwtCognito } from "@modules/cognito/jwtCognito.service";
 import { QuizController } from "@modules/quiz/quiz.controller";
 import { QuizService } from "@modules/quiz/quiz.service";
-import type { QuizUserAnswerDto } from "@modules/quiz/dto/quiz-user-answer.dto";
 import type { CreateQuizDto } from "@src/modules/quiz/dto/create-quiz.dto";
 import type { UpdateQuizDto } from "@src/modules/quiz/dto/update-quiz.dto";
+import { OutputSafeQuizDto } from "@src/modules/quiz/dto/output-safe-quiz.dto";
+import { plainToInstance } from "class-transformer";
 
 const createQuizMock: CreateQuizDto = {
   _id: "mockedId",
@@ -70,7 +71,33 @@ const updateQuizMock: UpdateQuizDto = {
     },
   ],
 };
-const quizValidAnswer: QuizUserAnswerDto = { questionIndex: 0, answerIndexes: [2, 4] };
+const safeQuiz = plainToInstance(OutputSafeQuizDto, {
+  _id: "mockedId",
+  questions: [
+    {
+      label: "How many are 1 + 1 ?",
+      answers: [
+        {
+          label: "0",
+        },
+        {
+          label: "1",
+        },
+        {
+          label: "2",
+        },
+        {
+          label: "3",
+        },
+        {
+          label: "4/2",
+        },
+      ],
+      numberOfCorrectAnswers: 2,
+    },
+  ],
+});
+const quizCorrectAnswers: Parameters<QuizController["checkCorrectness"]>[2] = [2, 4];
 const serviceMock = {
   QuizService: (): Partial<QuizService> => ({
     create: jest.fn().mockResolvedValue(createQuizMock),
@@ -78,7 +105,7 @@ const serviceMock = {
     findOne: jest.fn().mockResolvedValue(createQuizMock),
     update: jest.fn().mockResolvedValue(updateQuizMock),
     remove: jest.fn().mockResolvedValue(undefined),
-    isValid: jest.fn().mockResolvedValue(true),
+    checkCorrectness: jest.fn().mockResolvedValue(quizCorrectAnswers),
   }),
 };
 
@@ -122,6 +149,13 @@ describe("QuizController", () => {
     });
   });
 
+  describe("findOneSafe", () => {
+    it("should return a safe quiz object when findOneSafe is called.", async() => {
+      const findOneSafe = await controller.findOneSafe(createQuizMock._id);
+      expect(findOneSafe).toStrictEqual(safeQuiz);
+    });
+  });
+
   describe("remove", () => {
     it("should remove when remove is called.", async() => {
       await expect(controller.remove(createQuizMock._id)).resolves.toBeUndefined();
@@ -135,10 +169,10 @@ describe("QuizController", () => {
     });
   });
 
-  describe("isValid", () => {
-    it("should check validity when isValid is called.", async() => {
-      const isValid = await controller.isValid(createQuizMock._id, quizValidAnswer);
-      expect(isValid).toBe(true);
+  describe("checkCorrectness", () => {
+    it("should check answer correctness when checkCorrectness is called.", async() => {
+      const checkCorrectness = await controller.checkCorrectness(createQuizMock._id, 0, quizCorrectAnswers);
+      expect(checkCorrectness).toBe(quizCorrectAnswers);
     });
   });
 });

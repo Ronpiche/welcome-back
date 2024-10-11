@@ -37,9 +37,8 @@ const quizEntityMock: Quiz = {
     },
   ],
 };
-const quizQuestionIndex: Parameters<QuizService["isValid"]>[1] = 0;
-const quizValidAnswer: Parameters<QuizService["isValid"]>[2] = [2, 4];
-const quizInvalidAnswer: Parameters<QuizService["isValid"]>[2] = [0, 1];
+const quizCorrectAnswers: Parameters<QuizService["checkCorrectness"]>[2] = [2, 4];
+const quizSomeCorrectAnswers: Parameters<QuizService["checkCorrectness"]>[2] = [0, 2];
 const serviceMock = {
   FirestoreService: (): Partial<FirestoreService> => ({
     getAllDocuments: jest.fn().mockResolvedValue([quizEntityMock]),
@@ -173,21 +172,26 @@ describe("QuizService", () => {
     });
   });
 
-  describe("isValid", () => {
-    it("should returns true when answers are valids.", async() => {
-      const isValid = await service.isValid(quizEntityMock._id, quizQuestionIndex, quizValidAnswer);
-      expect(isValid).toBe(true);
+  describe("checkCorrectness", () => {
+    it("should returns intersection of correct and given answers (all corrects).", async() => {
+      const checkCorrectness = await service.checkCorrectness(quizEntityMock._id, 0, quizCorrectAnswers);
+      expect(checkCorrectness).toStrictEqual(quizCorrectAnswers);
     });
 
-    it("should returns false when answers are invalids.", async() => {
-      const isValid = await service.isValid(quizEntityMock._id, quizQuestionIndex, quizInvalidAnswer);
-      expect(isValid).toBe(false);
+    it("should returns intersection of correct and given answers (some corrects).", async() => {
+      const checkCorrectness = await service.checkCorrectness(quizEntityMock._id, 0, quizSomeCorrectAnswers);
+      expect(checkCorrectness).toStrictEqual(quizSomeCorrectAnswers.filter(value => quizCorrectAnswers.includes(value)));
+    });
+
+    it("should returns intersection of correct and given answers (all incorrects).", async() => {
+      const checkCorrectness = await service.checkCorrectness(quizEntityMock._id, 0, [-1]);
+      expect(checkCorrectness).toStrictEqual([]);
     });
 
     it("should throw when the quiz doesn't exists (404).", async() => {
       jest.spyOn(service["firestoreService"], "getDocument").mockImplementation()
         .mockRejectedValue(new NotFoundException());
-      const error: HttpException = await getError(async() => service.isValid(quizEntityMock._id, quizQuestionIndex, quizValidAnswer));
+      const error: HttpException = await getError(async() => service.checkCorrectness(quizEntityMock._id, 0, quizCorrectAnswers));
       expect(error).not.toBeInstanceOf(NoErrorThrownError);
       expect(error).toBeInstanceOf(NotFoundException);
       expect(error.getStatus()).toBe(404);
@@ -195,7 +199,7 @@ describe("QuizService", () => {
 
     it("should throw when database fails (500).", async() => {
       jest.spyOn(service["firestoreService"], "getDocument").mockImplementation().mockRejectedValue(new InternalServerErrorException());
-      const error: InternalServerErrorException = await getError(async() => service.isValid(quizEntityMock._id, quizQuestionIndex, quizValidAnswer));
+      const error: InternalServerErrorException = await getError(async() => service.checkCorrectness(quizEntityMock._id, 0, quizCorrectAnswers));
       expect(error).not.toBeInstanceOf(NoErrorThrownError);
       expect(error).toBeInstanceOf(InternalServerErrorException);
       expect(error.getStatus()).toBe(500);

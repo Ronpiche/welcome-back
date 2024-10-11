@@ -1,17 +1,18 @@
 import { CreateQuizDto } from "@modules/quiz/dto/create-quiz.dto";
 import { UpdateQuizDto } from "@modules/quiz/dto/update-quiz.dto";
-import { QuizUserAnswerDto } from "@modules/quiz/dto/quiz-user-answer.dto";
 import { QuizService } from "@modules/quiz/quiz.service";
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, HttpStatus, Put, HttpCode } from "@nestjs/common";
+import { Controller, Get, Post, Body, Param, Delete, UseGuards, HttpStatus, Put, HttpCode, ParseArrayPipe, ParseIntPipe } from "@nestjs/common";
 import { IsPublic } from "@src/decorators/isPublic";
 import { AccessGuard } from "@src/middleware/AuthGuard";
-import { ApiConflictResponse, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { ApiBody, ApiConflictResponse, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Quiz } from "@modules/quiz/entities/quiz.entity";
+import { OutputSafeQuizDto } from "./dto/output-safe-quiz.dto";
+import { plainToInstance } from "class-transformer";
 
 @ApiTags("quiz")
 @Controller("quizzes")
 export class QuizController {
-  public constructor(private readonly quizService: QuizService) {}
+  public constructor(private readonly quizService: QuizService) { }
 
   @Post()
   @IsPublic(false)
@@ -42,6 +43,21 @@ export class QuizController {
     return this.quizService.findOne(id);
   }
 
+  @Get(":id/safe")
+  @IsPublic(true)
+  @ApiOperation({ summary: "Find a quiz by id without correct answers", description: "Returns a quiz or 404" })
+  @ApiOkResponse({ description: "Ok", type: OutputSafeQuizDto })
+  @ApiNotFoundResponse({ description: "Not found" })
+  public async findOneSafe(@Param("id") id: string): Promise<OutputSafeQuizDto> {
+    const quiz = await this.quizService.findOne(id);
+    const questions = quiz.questions.map(question => ({
+      ...question,
+      numberOfCorrectAnswers: question.answers.filter(f => f.isCorrect).length,
+    }));
+
+    return plainToInstance(OutputSafeQuizDto, { ...quiz, questions }, { excludeExtraneousValues: true });
+  }
+
   @Put(":id")
   @IsPublic(false)
   @UseGuards(AccessGuard)
@@ -63,13 +79,14 @@ export class QuizController {
     await this.quizService.remove(id);
   }
 
-  @Post(":id")
+  @Post(":id/:questionIndex")
   @HttpCode(200)
   @IsPublic(true)
-  @ApiOperation({ summary: "Check the correctness of an answer", description: "Returns true or false" })
-  @ApiOkResponse({ description: "Are answers true ?", type: Boolean })
+  @ApiBody({ description: "Array of indexes of selected answers", type: [Number] })
+  @ApiOperation({ summary: "Check correctness of answers", description: "Returns array of correct answers" })
+  @ApiOkResponse({ description: "Ok", type: [Number] })
   @ApiNotFoundResponse({ description: "Not found" })
-  public async isValid(@Param("id") id: string, @Body() userAnswerDto: QuizUserAnswerDto): Promise<boolean> {
-    return this.quizService.isValid(id, userAnswerDto.questionIndex, userAnswerDto.answerIndexes);
+  public async checkCorrectness(@Param("id") id: string, @Param("questionIndex", ParseIntPipe) questionIndex: number, @Body(new ParseArrayPipe({ items: Number })) answers: number[]): Promise<number[]> {
+    return this.quizService.checkCorrectness(id, questionIndex, answers);
   }
 }
