@@ -5,17 +5,18 @@ import { FirestoreModule } from "@src/services/firestore/firestore.module";
 import { AuthorizationModule } from "@modules/authorization/authorization.module";
 import { APP_GUARD } from "@nestjs/core";
 import { MailerModule } from "@nestjs-modules/mailer";
-import { AccessGuard } from "./middleware/AuthGuard";
+import { AccessGuard } from "@src/middleware/AuthGuard";
 import { WelcomeModule } from "@modules/welcome/welcome.module";
-import { JwtCognito } from "./modules/cognito/jwtCognito.service";
-import { AuthentificationModule } from "./modules/authentification/authentification.module";
-import { ContentModule } from "./modules/content/content.module";
+import { JwtCognito } from "@modules/cognito/jwtCognito.service";
+import { AuthentificationModule } from "@modules/authentification/authentification.module";
+import { ContentModule } from "@modules/content/content.module";
 import { StepModule } from "@modules/step/step.module";
-import { AppController } from "./app.controller";
-import { AppService } from "./app.service";
-import { AgenciesModule } from "./modules/agencies/agencies.module";
-import { MembersModule } from "./modules/members/members.module";
-import { CloudStorageModule } from "./modules/cloud-storage/cloud-storage.module";
+import { AppController } from "@src/app.controller";
+import { AppService } from "@src/app.service";
+import { AgenciesModule } from "@modules/agencies/agencies.module";
+import { MembersModule } from "@modules/members/members.module";
+import { CloudStorageModule } from "@modules/cloud-storage/cloud-storage.module";
+import { QuizModule } from "@modules/quiz/quiz.module";
 
 @Module({
   imports: [
@@ -35,7 +36,7 @@ import { CloudStorageModule } from "./modules/cloud-storage/cloud-storage.module
     }),
     JwtModule.registerAsync({
       global: true,
-      useFactory: async() => ({
+      useFactory: () => ({
         secret: process.env.JWT_SECRET,
         signOptions: { expiresIn: "2h", algorithm: "HS256" },
       }),
@@ -49,6 +50,7 @@ import { CloudStorageModule } from "./modules/cloud-storage/cloud-storage.module
     AgenciesModule,
     MembersModule,
     CloudStorageModule,
+    QuizModule,
   ],
   controllers: [AppController],
   providers: [

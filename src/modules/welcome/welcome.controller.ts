@@ -13,6 +13,7 @@ import {
   HttpCode,
   Res,
   HttpStatus,
+  UseFilters,
 } from "@nestjs/common";
 import { WelcomeService } from "@modules/welcome/welcome.service";
 import { CreateUserDto } from "@modules/welcome/dto/input/create-user.dto";
@@ -37,6 +38,7 @@ import { WelcomeUser } from "./entities/user.entity";
 import { IsPublic } from "@src/decorators/isPublic";
 import { EmailRunKO, EmailRunOK } from "./dto/output/email-run.dto";
 import { Response } from "express";
+import { CreateUserExceptionFilter } from "@modules/welcome/filters/create-user.filter";
 
 @ApiTags("welcome")
 @Controller("welcome")
@@ -50,6 +52,7 @@ export class WelcomeController {
   @ApiOperation({ summary: "Create User", description: "Returns new user." })
   @ApiBody({ type: CreateUserDto })
   @ApiOkResponse({ description: "User created", type: WelcomeUserDto })
+  @UseFilters(CreateUserExceptionFilter)
   async create(@Body() createUserDto: CreateUserDto): Promise<WelcomeUserDto> {
     const user: WelcomeUser = await this.welcomeService.createUser(createUserDto);
 

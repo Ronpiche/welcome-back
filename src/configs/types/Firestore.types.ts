@@ -21,6 +21,7 @@ export enum UserRoles {
 export enum FIRESTORE_COLLECTIONS {
   ROLES = "AuthorizationDatabase_roles",
   AUTHORIZED_USERS = "AuthorizationDatabase_users",
+  QUIZZES = "WelcomeDatabase_quizzes",
   STEPS = "WelcomeDatabase_steps",
   WELCOME_USERS = "WelcomeDatabase_users",
   WELCOME_CONTENT = "WelcomeDatabase_content",
