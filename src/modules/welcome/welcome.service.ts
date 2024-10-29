@@ -145,6 +145,10 @@ export class WelcomeService {
    */
   getNewlyUnlockedSteps(user: WelcomeUser, now: Date) {
     return user.steps ? user.steps.reduce<string[]>((acc, step) => {
+      /*
+       * date format wasn't the same everywhere (string VS timestamp)
+       * this.logger.debug(step.unlockDate + " <= " + now);
+       */
       if (!step.unlockEmailSentAt && step.unlockDate.toDate() <= now) {
         acc.push(step._id);
       }
@@ -163,9 +167,12 @@ export class WelcomeService {
     const steps = await this.stepService.findAll();
     const users = await this.findAll(Filter.where("arrivalDate", ">", now.toISOString()));
     const userEmails = [];
+
     users.forEach(user => {
       const unlockedSteps = this.getNewlyUnlockedSteps(user, now);
       const step = unlockedSteps[0] !== undefined ? steps.find(step => step._id === unlockedSteps[0]) : undefined;
+      this.logger.log(user.email);
+
       if (step && step.unlockEmail) {
         userEmails.push(new Promise((resolve, reject) => {
           this.mailerService
@@ -182,7 +189,7 @@ export class WelcomeService {
                 step_id: step._id,
               }),
             })
-            .then(async() => {
+            .then(async () => {
               await this.updateEmailSteps(user, unlockedSteps);
               resolve({ _id: user._id });
             })

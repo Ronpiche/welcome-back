@@ -17,6 +17,7 @@ import { AgenciesModule } from "@modules/agencies/agencies.module";
 import { MembersModule } from "@modules/members/members.module";
 import { CloudStorageModule } from "@modules/cloud-storage/cloud-storage.module";
 import { QuizModule } from "@modules/quiz/quiz.module";
+import { CronModule } from "@src/services/crons/crons.module";
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { QuizModule } from "@modules/quiz/quiz.module";
     MembersModule,
     CloudStorageModule,
     QuizModule,
+    CronModule,
   ],
   controllers: [AppController],
   providers: [
