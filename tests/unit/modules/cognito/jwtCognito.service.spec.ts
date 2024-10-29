@@ -27,7 +27,7 @@ describe("jwtCognitoService", () => {
     CognitoJwtVerifier.create = jest.fn().mockReturnValue({
       verify: jest.fn().mockResolvedValue(payload),
     });
-    const res = await service.verifyJwt("jwt.token");
+    const res = await service.verifyIdToken("jwt.token");
     expect(res).toBeDefined();
     expect(res.sub).toBe("1234-4567");
   });
@@ -38,7 +38,7 @@ describe("jwtCognitoService", () => {
       verify: jest.fn().mockRejectedValue(new Error("error")),
     });
     try {
-      await service.verifyJwt("jwt.token");
+      await service.verifyIdToken("jwt.token");
     } catch (error) {
       expect(error).toBeInstanceOf(UnauthorizedException);
       expect(error.status).toBe(401);

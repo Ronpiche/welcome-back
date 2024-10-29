@@ -3,18 +3,20 @@ import { ConfigService } from "@nestjs/config";
 import { CognitoJwtVerifier } from "aws-jwt-verify";
 import { CognitoJwtVerifierSingleUserPool } from "aws-jwt-verify/cognito-verifier";
 
+type Verifier = CognitoJwtVerifierSingleUserPool<{
+  userPoolId: string;
+  tokenUse: "id" | "access";
+  clientId: string | string[];
+}>;
+
 @Injectable()
 @Global()
 export class JwtCognito {
-  private verifier: CognitoJwtVerifierSingleUserPool<{
-    userPoolId: string;
-    tokenUse: "id" | "access";
-    clientId: string | string[];
-  }>;
+  private verifier: Verifier;
 
-  constructor(private readonly configService: ConfigService) {}
+  public constructor(private readonly configService: ConfigService) { }
 
-  async verifyJwt(token: string): Promise<any> {
+  public async verifyIdToken(token: string): Promise<ReturnType<Verifier["verify"]>> {
     this.initCognitoJwt();
     try {
       return await this.verifier.verify(token);
@@ -23,7 +25,7 @@ export class JwtCognito {
     }
   }
 
-  private initCognitoJwt() {
+  private initCognitoJwt(): void {
     try {
       this.verifier = CognitoJwtVerifier.create({
         userPoolId: this.configService.get("USER_POOL_ID"),

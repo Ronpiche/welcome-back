@@ -3,7 +3,6 @@ import { Test } from "@nestjs/testing";
 import { Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
-import { AccessGuard } from "@src/middleware/AuthGuard";
 import { JwtCognito } from "@modules/cognito/jwtCognito.service";
 import { QuizController } from "@modules/quiz/quiz.controller";
 import { QuizService } from "@modules/quiz/quiz.service";
@@ -118,7 +117,6 @@ describe("QuizController", () => {
       providers: [
         JwtService,
         ConfigService,
-        AccessGuard,
         { provide: JwtCognito, useFactory: jest.fn },
         { provide: QuizService, useFactory: serviceMock.QuizService },
         { provide: Logger, useFactory: jest.fn },

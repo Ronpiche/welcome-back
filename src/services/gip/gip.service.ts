@@ -1,70 +1,32 @@
-import { WelcomeUserDto } from "@modules/welcome/dto/output/welcome-user.dto";
-import { Injectable, Logger } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { FirebaseConfig, FIRESTORE_COLLECTIONS } from "@src/configs/types/Firestore.types";
-import { AuthentificationUserOutputDto, GipUser } from "@src/modules/authentification/dto/output/authentificationUserOutput.dto";
-import { FirestoreService } from "@src/services/firestore/firestore.service";
-import { instanceToPlain, plainToInstance } from "class-transformer";
-import { FirebaseApp, initializeApp } from "firebase/app";
-import { Auth, createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
+import { DecodedIdToken, Auth, CreateRequest, UserRecord } from "firebase-admin/auth";
 
 @Injectable()
 export class GipService {
-  private readonly app: FirebaseApp;
-
-  private readonly auth: Auth;
-
-  private readonly firebaseConfig: FirebaseConfig;
-
-  constructor(
-    private readonly configService: ConfigService,
+  public constructor(
+    private readonly auth: Auth,
     private readonly logger: Logger,
-    private readonly firestoreService: FirestoreService,
-  ) {
-    this.firebaseConfig = {
-      apiKey: this.configService.get("API_KEY"),
-      authDomain: this.configService.get("AUTH_DOMAIN"),
-    };
-    this.app = initializeApp(this.firebaseConfig);
-    this.auth = getAuth(this.app);
+  ) {}
+
+  public async verifyIdToken(token: string): Promise<DecodedIdToken> {
+    return this.auth.verifyIdToken(token);
   }
 
-  async signInGIP(email: string, password: string): Promise<AuthentificationUserOutputDto> {
+  public async createUser(properties: CreateRequest): Promise<UserRecord> {
     try {
-      await this.auth.authStateReady();
-      const promises = [
-        signInWithEmailAndPassword(this.auth, email, password),
-        this.firestoreService.getByEmail(FIRESTORE_COLLECTIONS.WELCOME_USERS, email),
-      ];
-      const results = await Promise.allSettled(promises);
-      let gipUser: GipUser;
-      let welcomeUser: WelcomeUserDto;
-      for (const res of results) {
-        if (res.status === "rejected") {
-          throw res.reason;
-        } else if ("user" in res.value) {
-          gipUser = plainToInstance(GipUser, res.value.user, { excludeExtraneousValues: true });
-        } else {
-          welcomeUser = plainToInstance(WelcomeUserDto, instanceToPlain(res.value), {
-            excludeExtraneousValues: true,
-          });
-        }
-      }
-      return { gipUser, welcomeUser };
+      return await this.auth.createUser(properties);
     } catch (error) {
-      this.logger.error(error);
-      throw error;
+      this.logger.error(error.message);
+      throw new InternalServerErrorException();
     }
   }
 
-  async signUpGIP(email: string, password: string): Promise<void> {
+  public async deleteUser(uid: string): Promise<void> {
     try {
-      await this.auth.authStateReady();
-      await this.firestoreService.getByEmail(FIRESTORE_COLLECTIONS.WELCOME_USERS, email);
-      await createUserWithEmailAndPassword(this.auth, email, password);
+      await this.auth.deleteUser(uid);
     } catch (error) {
       this.logger.error(error.message);
-      throw error;
+      throw new InternalServerErrorException();
     }
   }
 }
