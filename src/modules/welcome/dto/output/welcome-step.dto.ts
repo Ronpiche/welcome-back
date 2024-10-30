@@ -5,35 +5,35 @@ import { Expose, Transform, Type } from "class-transformer";
 export class WelcomeSubStep {
   @ApiProperty()
   @Expose()
-  _id: string;
+  public _id: string;
 
   @ApiProperty()
   @Expose()
-  isCompleted: boolean;
+  public isCompleted: boolean;
 }
 
 export class WelcomeStepDto {
   @ApiProperty()
   @Expose()
-  _id: string;
+  public _id: string;
 
   @ApiProperty()
   @Expose()
   @Transform(({ value }) => (value?._seconds ? new Timestamp(value._seconds, value._nanoseconds).toDate() : value))
-  unlockDate: Date;
+  public unlockDate: Date;
 
   @ApiProperty()
   @Expose()
   @Transform(({ value }) => (value?._seconds ? new Timestamp(value._seconds, value._nanoseconds).toDate() : value))
-  emailSentAt?: Date;
+  public emailSentAt?: Date;
 
   @ApiProperty()
   @Expose()
   @Transform(({ value }) => (value?._seconds ? new Timestamp(value._seconds, value._nanoseconds).toDate() : value))
-  completedAt?: Date;
+  public completedAt?: Date;
 
   @ApiProperty()
   @Expose()
   @Type(() => WelcomeSubStep)
-  subStep: WelcomeSubStep[];
+  public subStep: WelcomeSubStep[];
 }

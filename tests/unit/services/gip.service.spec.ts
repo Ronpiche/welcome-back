@@ -1,168 +1,90 @@
-import type { TestingModule } from "@nestjs/testing";
+import { InternalServerErrorException, Logger } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
+import { Auth } from "firebase-admin/auth";
 import { GipService } from "@src/services/gip/gip.service";
-import { ConfigService } from "@nestjs/config";
-import { BadRequestException, InternalServerErrorException, Logger, NotFoundException } from "@nestjs/common";
-import { firebaseAuth, firebaseApp } from "@tests/unit/__mocks__/firebase.mock";
-import {
-  authentificationUserOutput,
-  GipUserMock,
-} from "@tests/unit/__mocks__/authentification/authentification.entities.mock";
-import { FirestoreService } from "@src/services/firestore/firestore.service";
-import { FirestoreServiceMock } from "@tests/unit/__mocks__/firestore.service";
-import { outputWelcomeMock } from "@tests/unit/__mocks__/welcome/User.entity.mock";
-import type { AuthentificationUserOutputDto } from "@src/modules/authentification/dto/output/authentificationUserOutput.dto";
+import { NoErrorThrownError, getError } from "@tests/unit/utils";
 
-// eslint-disable-next-line jest/no-untyped-mock-factory
-jest.mock("firebase/auth", () => ({
-  signInWithEmailAndPassword: () => firebaseAuth.signInWithEmailAndPassword(),
-  createUserWithEmailAndPassword: () => firebaseAuth.createUserWithEmailAndPassword(),
-  getAuth: () => firebaseAuth.getAuth(),
-}));
-
-// eslint-disable-next-line
-jest.mock("firebase/app", () => ({
-  initializeApp: () => firebaseApp.initializeApp(),
-}));
+const tokenPayload = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIn0.rTCH8cLoGxAm_xw68z-zXVKi9ie6xJn9tnVWjd_9ftE";
+const createUserPayload = {
+  email: "test@test.fr",
+  password: "Azerty@123",
+};
+const userResult = { uid: "1" };
+const tokenResult = { sub: "1" };
 
 describe("GipService", () => {
   let service: GipService;
+
   beforeEach(async() => {
-    const module: TestingModule = await Test.createTestingModule({
+    const module = await Test.createTestingModule({
       providers: [
         GipService,
-        { provide: FirestoreService, useClass: FirestoreServiceMock },
         {
-          provide: ConfigService,
+          provide: Auth,
           useValue: {
-            get: (key: string) => {
-              if (["API_KEY", "AUTH_DOMAIN"].includes(key)) {
-                return "api-key";
-              }
-              return null;
-            },
+            verifyIdToken: jest.fn().mockResolvedValue(tokenResult),
+            createUser: jest.fn().mockResolvedValue(userResult),
+            deleteUser: jest.fn().mockResolvedValue(undefined),
           },
         },
-        Logger,
+        {
+          provide: Logger,
+          useValue: {
+            log: jest.fn(),
+            error: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
     service = module.get<GipService>(GipService);
   });
-  describe("signinGIP", () => {
-    it("should initialize Firebase configuration correctly", () => {
-      expect(service["firebaseConfig"]).toHaveProperty("apiKey", service["configService"].get("API_KEY"));
-      expect(service["firebaseConfig"]).toHaveProperty("authDomain", service["configService"].get("AUTH_DOMAIN"));
-      expect(service["firebaseConfig"]).not.toStrictEqual({});
-      expect(service["firebaseConfig"]).toStrictEqual({
-        apiKey: service["configService"].get("API_KEY"),
-        authDomain: service["configService"].get("AUTH_DOMAIN"),
-      });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  describe("verifyIdToken", () => {
+    it("should return decoded token when verifyIdToken success.", async() => {
+      const verifyIdToken = await service.verifyIdToken(tokenPayload);
+      expect(verifyIdToken).toStrictEqual(tokenResult);
     });
 
-    it("should return user authentication information", async() => {
-      const email = "test@test.fr";
-      const password = "Azerty@123";
-      jest.spyOn(service["auth"], "authStateReady").mockImplementation().mockResolvedValue(undefined);
-      jest.spyOn(service["firestoreService"], "getByEmail").mockImplementation().mockResolvedValue(outputWelcomeMock);
-      const signIn: AuthentificationUserOutputDto = await service.signInGIP(email, password);
-      expect(signIn.gipUser).toEqual(authentificationUserOutput.gipUser);
-    });
-
-    it("should throw BadRequestException if user is not found", async() => {
-      const email = "test@test.fr";
-      const password = "Azerty@123";
-      jest.spyOn(firebaseAuth, "signInWithEmailAndPassword").mockImplementation().mockRejectedValue(new BadRequestException("User not found"));
-      try {
-        await service.signInGIP(email, password);
-        expect(true).toBe(false);
-      } catch (error) {
-        expect(error).toBeInstanceOf(BadRequestException);
-        expect(error.message).toBe("User not found");
-      }
-    });
-
-    it("should throw InternalServerErrorException if authStateReady fails", async() => {
-      const email = "test@test.fr";
-      const password = "Azerty@123";
-      jest.spyOn(firebaseAuth, "signInWithEmailAndPassword").mockImplementation().mockResolvedValue(GipUserMock);
-      jest.spyOn(service["auth"], "authStateReady").mockImplementation()
-        .mockRejectedValue(new InternalServerErrorException("Error authStateReady"));
-      try {
-        await service.signInGIP(email, password);
-        expect(true).toBe(false);
-      } catch (error) {
-        expect(error).toBeInstanceOf(InternalServerErrorException);
-        expect(error.message).toBe("Error authStateReady");
-      }
-    });
-
-    it("should throw NotFoundException if user is not found in Firestore", async() => {
-      const email = "test@test.fr";
-      const password = "Azerty@123";
-      jest.spyOn(firebaseAuth, "signInWithEmailAndPassword").mockImplementation().mockResolvedValue(GipUserMock);
-      jest.spyOn(service["auth"], "authStateReady").mockImplementation().mockResolvedValue(undefined);
-      jest.spyOn(service["firestoreService"], "getByEmail").mockImplementation().mockRejectedValue(new NotFoundException("User not found"));
-      try {
-        await service.signInGIP(email, password);
-        expect(true).toBe(false);
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotFoundException);
-        expect(error.message).toBe("User not found");
-      }
+    it("should throw when verifyIdToken fails.", async() => {
+      jest.spyOn(service["auth"], "verifyIdToken").mockImplementation().mockRejectedValue(new InternalServerErrorException());
+      const error: InternalServerErrorException = await getError(async() => service.verifyIdToken(tokenPayload));
+      expect(error).not.toBeInstanceOf(NoErrorThrownError);
+      expect(error).toBeInstanceOf(InternalServerErrorException);
     });
   });
-  describe("signupGIP", () => {
-    it("should return authentication information for newly created user", async() => {
-      const email = "test@test.fr";
-      const password = "Azerty@123";
-      jest.spyOn(service["auth"], "authStateReady").mockImplementation().mockResolvedValue(undefined);
-      jest.spyOn(service["firestoreService"], "getByEmail").mockImplementation().mockResolvedValue(outputWelcomeMock);
-      const user = await service.signUpGIP(email, password);
-      expect(user).toBeUndefined();
+
+  describe("createUser", () => {
+    it("should return user when createUser.", async() => {
+      const createUser = await service.createUser(createUserPayload);
+      expect(createUser).toStrictEqual(userResult);
     });
 
-    it("should throw BadRequestException if user creation fails", async() => {
-      const email = "test@test.fr";
-      const password = "Azerty@123";
-      jest.spyOn(firebaseAuth, "createUserWithEmailAndPassword").mockImplementation().mockRejectedValue(new BadRequestException("error"));
-      try {
-        await service.signUpGIP(email, password);
-        expect(true).toBe(false);
-      } catch (error) {
-        expect(error).toBeInstanceOf(BadRequestException);
-        expect(error.message).toBe("error");
-      }
+    it("should throw when createUser fails.", async() => {
+      jest.spyOn(service["auth"], "createUser").mockImplementation().mockRejectedValue(new InternalServerErrorException());
+      const error: InternalServerErrorException = await getError(async() => service.createUser(createUserPayload));
+      expect(error).not.toBeInstanceOf(NoErrorThrownError);
+      expect(error).toBeInstanceOf(InternalServerErrorException);
+    });
+  });
+
+  describe("deleteUser", () => {
+    it("should return void when deleteUser.", async() => {
+      const spy = jest.spyOn(service["auth"], "deleteUser");
+      await service.deleteUser(userResult.uid);
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith(userResult.uid);
     });
 
-    it("should throw InternalServerErrorException if authStateReady fails", async() => {
-      const email = "test@test.fr";
-      const password = "Azerty@123";
-      jest.spyOn(firebaseAuth, "createUserWithEmailAndPassword").mockImplementation().mockResolvedValue(GipUserMock);
-      jest.spyOn(service["auth"], "authStateReady").mockImplementation()
-        .mockRejectedValue(new InternalServerErrorException("Error authStateReady"));
-      try {
-        await service.signUpGIP(email, password);
-        expect(true).toBe(false);
-      } catch (error) {
-        expect(error).toBeInstanceOf(InternalServerErrorException);
-        expect(error.message).toBe("Error authStateReady");
-      }
-    });
-
-    it("should throw NotFoundException if user is not found in Firestore", async() => {
-      const email = "test@test.fr";
-      const password = "Azerty@123";
-      jest.spyOn(firebaseAuth, "createUserWithEmailAndPassword").mockImplementation().mockResolvedValue(GipUserMock);
-      jest.spyOn(service["auth"], "authStateReady").mockImplementation().mockResolvedValue(undefined);
-      jest.spyOn(service["firestoreService"], "getByEmail").mockImplementation().mockRejectedValue(new NotFoundException("User not found"));
-      try {
-        await service.signUpGIP(email, password);
-        expect(true).toBe(false);
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotFoundException);
-        expect(error.message).toBe("User not found");
-      }
+    it("should throw when deleteUser fails.", async() => {
+      jest.spyOn(service["auth"], "deleteUser").mockImplementation().mockRejectedValue(new InternalServerErrorException());
+      const error: InternalServerErrorException = await getError(async() => service.deleteUser(userResult.uid));
+      expect(error).not.toBeInstanceOf(NoErrorThrownError);
+      expect(error).toBeInstanceOf(InternalServerErrorException);
     });
   });
 });

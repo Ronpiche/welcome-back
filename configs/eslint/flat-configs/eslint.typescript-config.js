@@ -10,6 +10,7 @@ const ESLINT_TYPESCRIPT_CONFIG = Object.freeze({
     parserOptions: {
       parser: TypeScriptParser,
       ecmaVersion: 2024,
+      tsconfigRootDir: `${__dirname}/../../../`,
       project: "./tsconfig.json",
       sourceType: "module",
     },

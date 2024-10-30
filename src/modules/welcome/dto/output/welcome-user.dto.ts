@@ -1,4 +1,4 @@
-import { RhUserInfoDto } from "@modules/welcome/dto/input/create-user.dto";
+import { HrReferentDto } from "@modules/welcome/dto/output/hr-referent.dto";
 import { ApiProperty } from "@nestjs/swagger";
 import { Expose, Transform, Type } from "class-transformer";
 import { Timestamp } from "@google-cloud/firestore";
@@ -7,68 +7,65 @@ import { WelcomeStepDto } from "./welcome-step.dto";
 export class WelcomeUserDto {
   @ApiProperty()
   @Expose()
-  _id: string;
+  public _id: string;
 
   @ApiProperty()
   @Expose()
-  note: string;
+  public note: string;
 
   @ApiProperty()
   @Expose()
-  signupDate: string;
+  public signupDate: string;
 
   @ApiProperty()
   @Expose()
-  lastName: string;
+  public lastName: string;
 
   @ApiProperty()
   @Expose()
-  civility: string;
+  public civility: string;
 
   @ApiProperty()
   @Expose()
-  agency: string;
-
-  @ApiProperty()
-  @Expose()
-  @Transform(({ value }) => (value?._seconds ? new Timestamp(value._seconds, value._nanoseconds).toDate() : value))
-  creationDate: Date;
-
-  @ApiProperty()
-  @Expose()
-  referentRH: RhUserInfoDto;
-
-  @ApiProperty()
-  @Expose()
-  arrivalDate: string;
-
-  @ApiProperty()
-  @Expose()
-  firstName: string;
+  public agency: string;
 
   @ApiProperty()
   @Expose()
   @Transform(({ value }) => (value?._seconds ? new Timestamp(value._seconds, value._nanoseconds).toDate() : value))
-  lastUpdate: Date;
+  public creationDate: Date;
 
   @ApiProperty()
   @Expose()
-  email: string;
+  @Type(() => HrReferentDto)
+  public hrReferent: HrReferentDto;
 
   @ApiProperty()
   @Expose()
-  grade: string;
+  public arrivalDate: string;
 
   @ApiProperty()
   @Expose()
-  practice: string;
+  public firstName: string;
 
   @ApiProperty()
   @Expose()
-  smileyQuestion: string;
+  @Transform(({ value }) => (value?._seconds ? new Timestamp(value._seconds, value._nanoseconds).toDate() : value))
+  public lastUpdate: Date;
+
+  @ApiProperty()
+  @Expose()
+  public email: string;
+
+  @ApiProperty()
+  @Expose()
+  public grade: string;
+
+  @ApiProperty()
+  @Expose()
+  public practice: string;
 
   @ApiProperty()
   @Expose()
   @Type(() => WelcomeStepDto)
-  steps: WelcomeStepDto[];
+  public steps: WelcomeStepDto[];
 }

@@ -1,26 +1,30 @@
 import { Step } from "@modules/step/entities/step.entity";
-import { HttpException, Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
+import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
 import { CreateUserDto } from "@modules/welcome/dto/input/create-user.dto";
 import { UpdateUserDto } from "@modules/welcome/dto/input/update-user.dto";
 import { FirestoreService } from "@src/services/firestore/firestore.service";
 import { FIRESTORE_COLLECTIONS } from "@src/configs/types/Firestore.types";
 import { Filter, Timestamp } from "@google-cloud/firestore";
 import { WelcomeUser } from "./entities/user.entity";
-import { v4 as uuidv4 } from "uuid";
 import { instanceToPlain } from "class-transformer";
 import { StepService } from "@modules/step/step.service";
 import { MailerService } from "@nestjs-modules/mailer";
 import markdownit, { StateCore } from "markdown-it";
+import crypto from "crypto";
+import { GipService } from "@src/services/gip/gip.service";
 
 const APP_NAME = "Welcome";
 const APP_URL = "http://localhost:3000";
+const NEW_ACCOUNT_EMAIL_SUBJECT = "Compte créé";
+const NEW_ACCOUNT_EMAIL_BODY = "Bonjour {{userFirstName}},\n\nTu peux désormais accéder à l'application [{{appName}}]({{appUrl}}) (sur desktop, tablette ou mobile) en te connectant avec ces identifiants :\n\n\n\n*Email :* {{email}}\n\n*Mot de passe :* {{password}}\n\n\n\nÀ très bientôt,\n\n{{managerFirstName}} {{managerLastName}}.";
 
 @Injectable()
 export class WelcomeService {
   private readonly md = markdownit();
 
-  constructor(
+  public constructor(
     private readonly firestoreService: FirestoreService,
+    private readonly gipService: GipService,
     private readonly stepService: StepService,
     private readonly mailerService: MailerService,
     private readonly logger: Logger,
@@ -28,113 +32,14 @@ export class WelcomeService {
     this.md.core.ruler.after("normalize", "variables", WelcomeService.markdownVariable);
   }
 
-  static markdownVariable(state: StateCore) {
+  private static markdownVariable(state: StateCore): void {
     state.src = state.src.replaceAll(/{{\s?(\w+)\s?}}/g, (_, name) => state.env[name] || "".padStart(name.length, "█"));
   }
 
-  async createUser(createUserDto: CreateUserDto): Promise<WelcomeUser> {
-    try {
-      let id = uuidv4();
-      if (process.env.NODE_ENV === "test") {
-        id = "test-integration";
-      }
-      const now = Timestamp.now();
-      const dbUser: WelcomeUser = Object.assign(instanceToPlain(createUserDto) as CreateUserDto, {
-        _id: id,
-        steps: [],
-        creationDate: now,
-        lastUpdate: now,
-      });
-
-      dbUser.steps.push(...(await this.stepService.generateSteps(dbUser)).map(s => ({
-        _id: s.step._id,
-        unlockDate: Timestamp.fromDate(s.dt),
-        subStep: s.step.subStep,
-      })));
-
-      return await this.firestoreService.saveDocument(FIRESTORE_COLLECTIONS.WELCOME_USERS, dbUser);
-    } catch (error) {
-      if (error instanceof HttpException) {
-        this.logger.error(error);
-        throw error;
-      } else {
-        throw new InternalServerErrorException("Internal Server Error");
-      }
-    }
-  }
-
-  async findAll(filter: any): Promise<WelcomeUser[]> {
-    try {
-      this.logger.log("[FindAllUsers] - find all users with filter : ", filter);
-
-      return (
-        await this.firestoreService.getAllDocuments<WelcomeUser>(FIRESTORE_COLLECTIONS.WELCOME_USERS, filter)
-      ).map(u => new WelcomeUser(u));
-    } catch (error) {
-      if (error instanceof HttpException) {
-        this.logger.error(error);
-        throw error;
-      } else {
-        throw new InternalServerErrorException();
-      }
-    }
-  }
-
-  async findOne(id: string): Promise<WelcomeUser> {
-    try {
-      return new WelcomeUser(await this.firestoreService.getDocument<WelcomeUser>(FIRESTORE_COLLECTIONS.WELCOME_USERS, id));
-    } catch (error) {
-      if (error instanceof HttpException) {
-        this.logger.error("User is not registered in welcome");
-        throw new HttpException("User is not registered in welcome", error.getStatus());
-      } else {
-        throw new InternalServerErrorException("Internal Server Error");
-      }
-    }
-  }
-
-  async remove(id: string): Promise<void> {
-    await this.findOne(id);
-    try {
-      await this.firestoreService.deleteDocument(FIRESTORE_COLLECTIONS.WELCOME_USERS, id);
-    } catch (error) {
-      throw new InternalServerErrorException("Internal Server Error");
-    }
-  }
-
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<WelcomeUser> {
-    const userToUpdate = Object.assign(instanceToPlain(updateUserDto), { lastUpdate: Timestamp.now() });
-    try {
-      await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.WELCOME_USERS, id, userToUpdate);
-    } catch (error) {
-      if (error instanceof HttpException) {
-        this.logger.error(error);
-        throw error;
-      } else {
-        throw new InternalServerErrorException("Internal Server Error");
-      }
-    }
-    return this.findOne(id);
-  }
-
-  async transformDbOjectStringsToArray(propertyName: string): Promise<{ status: string }> {
-    await this.firestoreService.transformToObjectAndSaveProperty(FIRESTORE_COLLECTIONS.WELCOME_USERS, propertyName);
-
-    return { status: "success" };
-  }
-
-  /**
-   * update date of email sent on unlocked steps.
-   * @param user - The user to update
-   * @param unlockedSteps - The list of steps to update
-   * @returns The database result
-   */
-  private async updateEmailSteps(user: WelcomeUser, unlockedSteps: string[]) {
-    const unlockEmailSentAt = Timestamp.now();
-
-    return this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.WELCOME_USERS, user._id, {
-      steps: user.steps.map(step => (unlockedSteps.includes(step._id) ? Object.assign(step, { unlockEmailSentAt }) : step)),
-    });
+  private static generatePassord(length = 12, characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789?.:/!@"): string {
+    return Array.from(crypto.randomFillSync(new Uint32Array(length)))
+      .map(x => characters[x % characters.length])
+      .join("");
   }
 
   /**
@@ -143,13 +48,66 @@ export class WelcomeService {
    * @param now - The actual date
    * @returns The list of unlocked steps
    */
-  getNewlyUnlockedSteps(user: WelcomeUser, now: Date) {
-    return user.steps ? user.steps.reduce<string[]>((acc, step) => {
-      if (!step.unlockEmailSentAt && step.unlockDate.toDate() <= now) {
+  private static getNewlyUnlockedSteps(user: WelcomeUser, now: Date): WelcomeUser["steps"][0]["_id"][] {
+    return user.steps !== undefined ? user.steps.reduce<string[]>((acc, step) => {
+      if (step.unlockEmailSentAt === undefined && step.unlockDate.toDate() <= now) {
         acc.push(step._id);
       }
       return acc;
     }, []) : [];
+  }
+
+  public async createUser(createUserDto: CreateUserDto): Promise<WelcomeUser> {
+    const password = WelcomeService.generatePassord();
+    try {
+      await this.mailerService
+        .sendMail({
+          to: createUserDto.email,
+          subject: NEW_ACCOUNT_EMAIL_SUBJECT,
+          html: this.md.render(NEW_ACCOUNT_EMAIL_BODY, {
+            appName: APP_NAME,
+            appUrl: APP_URL,
+            userFirstName: createUserDto.firstName,
+            userLastName: createUserDto.lastName,
+            email: createUserDto.email,
+            password,
+          }),
+        });
+    } catch (error) {
+      this.logger.error(error);
+      throw new InternalServerErrorException();
+    }
+    const gip = await this.gipService.createUser({ email: createUserDto.email, password, displayName: `${createUserDto.firstName} ${createUserDto.lastName}` });
+
+    return this.createDbUser(Object.assign(createUserDto, { _id: gip.uid }));
+  }
+
+  public async findAll(arrivalDateStart?: Date, arrivalDateEnd?: Date): Promise<WelcomeUser[]> {
+    const filters: Filter[] = [];
+    if (arrivalDateStart !== undefined) {
+      filters.push(Filter.where("arrivalDate", ">=", arrivalDateStart));
+    }
+    if (arrivalDateEnd !== undefined) {
+      filters.push(Filter.where("arrivalDate", "<", arrivalDateEnd));
+    }
+    return this.firestoreService.getAllDocuments<WelcomeUser>(FIRESTORE_COLLECTIONS.WELCOME_USERS, Filter.and(...filters));
+  }
+
+  public async findOne(id: string): Promise<WelcomeUser> {
+    return this.firestoreService.getDocument<WelcomeUser>(FIRESTORE_COLLECTIONS.WELCOME_USERS, id);
+  }
+
+  public async remove(id: string): Promise<void> {
+    await this.findOne(id);
+    await this.firestoreService.deleteDocument(FIRESTORE_COLLECTIONS.WELCOME_USERS, id);
+    await this.gipService.deleteUser(id);
+  }
+
+  public async update(id: string, updateUserDto: UpdateUserDto): Promise<WelcomeUser> {
+    const userToUpdate = Object.assign(instanceToPlain(updateUserDto), { lastUpdate: Timestamp.now() });
+    await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.WELCOME_USERS, id, userToUpdate);
+
+    return this.findOne(id);
   }
 
   /**
@@ -158,28 +116,27 @@ export class WelcomeService {
    * @param now - The actual date
    * @returns List of email sent with status
    */
-  async run(now: Date) {
-    this.logger.log("[Step] - send email to users");
+  public async run(now: Date): Promise<PromiseSettledResult<{ _id: WelcomeUser["_id"] }>[]> {
     const steps = await this.stepService.findAll();
-    const users = await this.findAll(Filter.where("arrivalDate", ">", now.toISOString()));
+    const users = await this.findAll(now);
     const userEmails = [];
     users.forEach(user => {
-      const unlockedSteps = this.getNewlyUnlockedSteps(user, now);
-      const step = unlockedSteps[0] !== undefined ? steps.find(step => step._id === unlockedSteps[0]) : undefined;
-      if (step && step.unlockEmail) {
+      const unlockedSteps = WelcomeService.getNewlyUnlockedSteps(user, now);
+      const step = unlockedSteps[0] !== undefined ? steps.find(s => s._id === unlockedSteps[0]) : undefined;
+      if (step?.unlockEmail !== undefined) {
         userEmails.push(new Promise((resolve, reject) => {
           this.mailerService
             .sendMail({
               to: user.email,
               subject: step.unlockEmail.subject,
               html: this.md.render(step.unlockEmail.body, {
-                app_name: APP_NAME,
-                app_url: APP_URL,
-                user_firstName: user.firstName,
-                user_lastName: user.lastName,
-                manager_firstName: user.referentRH.firstName,
-                manager_lastName: user.referentRH.lastName,
-                step_id: step._id,
+                appName: APP_NAME,
+                appUrl: APP_URL,
+                userFirstName: user.firstName,
+                userLastName: user.lastName,
+                managerFirstName: user.hrReferent.firstName,
+                managerLastName: user.hrReferent.lastName,
+                stepId: step._id,
               }),
             })
             .then(async() => {
@@ -195,49 +152,96 @@ export class WelcomeService {
   }
 
   /**
-   * update the completion of a step for an user.
+   * update the completion of a sub step for an user.
    * @param userId - The id of the user
    * @param stepId - The id of the step completed
-   * @param now - The actual date
-   * @returns The status of the completed step
+   * @param subStepId - The id of the sub step completed
    */
-  async completeStep(userId: WelcomeUser["_id"], stepId: Step["_id"], now: Date) {
-    const completedAt = Timestamp.fromDate(now);
+  public async completeSubStep(userId: WelcomeUser["_id"], stepId: Step["_id"], subStepId: string): Promise<void> {
+    const completedAt = Timestamp.now();
     const user = await this.findOne(userId);
     const step = await this.stepService.findOne(stepId);
-    await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.WELCOME_USERS, user._id, {
-      steps: user.steps.map(s => (s._id === stepId ? Object.assign(s, { completedAt }) : s)),
-    });
-    if (step.completionEmailManager) {
-      await this.mailerService.sendMail({
-        to: user.referentRH.email,
-        subject: step.completionEmailManager.subject,
-        html: this.md.render(step.completionEmailManager.body, {
-          app_name: APP_NAME,
-          app_url: APP_URL,
-          user_firstName: user.firstName,
-          user_lastName: user.lastName,
-          manager_firstName: user.referentRH.firstName,
-          manager_lastName: user.referentRH.lastName,
-          step_id: step._id,
+    const newSteps = user.steps.map(s => {
+      if (s._id !== stepId) {
+        return s;
+      }
+      return {
+        ...s,
+        subStep: s.subStep.map(sub => {
+          if (sub._id !== subStepId) {
+            return sub;
+          }
+          return { ...sub, isCompleted: true };
         }),
+      };
+    });
+    const isStepCompleted = newSteps.find(s => s._id === stepId).subStep.every(sub => sub.isCompleted);
+    if (isStepCompleted) {
+      newSteps.find(s => s._id === stepId).completedAt = completedAt;
+    }
+    await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.WELCOME_USERS, user._id, { steps: newSteps });
+    if (isStepCompleted) {
+      await this.notifyCompletedStep(user, step);
+    }
+  }
+
+  /**
+   * update date of email sent on unlocked steps.
+   * @param user - The user to update
+   * @param unlockedSteps - The list of steps to update
+   */
+  private async updateEmailSteps(user: WelcomeUser, unlockedSteps: string[]): Promise<void> {
+    const unlockEmailSentAt = Timestamp.now();
+
+    await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.WELCOME_USERS, user._id, {
+      steps: user.steps.map(step => (unlockedSteps.includes(step._id) ? { ...step, unlockEmailSentAt } : step)),
+    });
+  }
+
+  private async notifyCompletedStep(user: WelcomeUser, step: Step): Promise<void> {
+    const env = {
+      appName: APP_NAME,
+      appUrl: APP_URL,
+      userFirstName: user.firstName,
+      userLastName: user.lastName,
+      managerFirstName: user.hrReferent.firstName,
+      managerLastName: user.hrReferent.lastName,
+      stepId: step._id,
+    };
+    if (step.completionEmailManager !== undefined) {
+      await this.mailerService.sendMail({
+        to: user.hrReferent.email,
+        subject: step.completionEmailManager.subject,
+        html: this.md.render(step.completionEmailManager.body, env),
       });
     }
-    if (step.completionEmail) {
+    if (step.completionEmail !== undefined) {
       await this.mailerService.sendMail({
         to: user.email,
         subject: step.completionEmail.subject,
-        html: this.md.render(step.completionEmail.body, {
-          app_name: APP_NAME,
-          app_url: APP_URL,
-          user_firstName: user.firstName,
-          user_lastName: user.lastName,
-          manager_firstName: user.referentRH.firstName,
-          manager_lastName: user.referentRH.lastName,
-          step_id: step._id,
-        }),
+        html: this.md.render(step.completionEmail.body, env),
       });
     }
-    return { status: "OK" };
+  }
+
+  private async createDbUser(createUserDto: CreateUserDto): Promise<WelcomeUser> {
+    const now = Timestamp.now();
+
+    const steps = await this.stepService.generateSteps(
+      new Date(createUserDto.signupDate),
+      new Date(createUserDto.arrivalDate),
+    );
+
+    const dbUser = Object.assign(instanceToPlain(createUserDto), {
+      steps: steps.map(s => ({
+        _id: s.step._id,
+        unlockDate: Timestamp.fromDate(s.dt),
+        subStep: s.step.subStep,
+      })),
+      creationDate: now,
+      lastUpdate: now,
+    });
+
+    return this.firestoreService.saveDocument(FIRESTORE_COLLECTIONS.WELCOME_USERS, dbUser);
   }
 }
