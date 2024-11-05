@@ -65,7 +65,7 @@ export class WelcomeService {
 
   async findAll(filter: any): Promise<WelcomeUser[]> {
     try {
-      this.logger.log("[FindAllUsers] - find all users with filter : ", filter);
+      this.logger.log(`[FindAllUsers] - find all users${filter === undefined ? "" : ` with filter : ${JSON.stringify(filter, null, 2)?.replace(/[\n\r]+/g, "")}`}`);
 
       return (
         await this.firestoreService.getAllDocuments<WelcomeUser>(FIRESTORE_COLLECTIONS.WELCOME_USERS, filter)
@@ -145,10 +145,9 @@ export class WelcomeService {
    */
   getNewlyUnlockedSteps(user: WelcomeUser, now: Date) {
     return user.steps ? user.steps.reduce<string[]>((acc, step) => {
-      /*
-       * date format wasn't the same everywhere (string VS timestamp)
-       * this.logger.debug(step.unlockDate + " <= " + now);
-       */
+      // date format is not the same everywhere (string ISOdate VS timestamp)
+      this.logger.debug(`[getNewlyUnlockedSteps] ${step.unlockDate.seconds} <= ${now}`);
+
       if (!step.unlockEmailSentAt && step.unlockDate.toDate() <= now) {
         acc.push(step._id);
       }
@@ -165,9 +164,11 @@ export class WelcomeService {
   async run(now: Date) {
     this.logger.log("[Step] - send email to users");
     const steps = await this.stepService.findAll();
-    const users = await this.findAll(Filter.where("arrivalDate", ">", now.toISOString()));
+    const users = await this.findAll(undefined);
     const userEmails = [];
 
+    this.logger.debug(`users count : ${users.length}`);
+    
     users.forEach(user => {
       const unlockedSteps = this.getNewlyUnlockedSteps(user, now);
       const step = unlockedSteps[0] !== undefined ? steps.find(step => step._id === unlockedSteps[0]) : undefined;
@@ -189,7 +190,7 @@ export class WelcomeService {
                 step_id: step._id,
               }),
             })
-            .then(async () => {
+            .then(async() => {
               await this.updateEmailSteps(user, unlockedSteps);
               resolve({ _id: user._id });
             })
