@@ -146,7 +146,7 @@ export class WelcomeService {
   getNewlyUnlockedSteps(user: WelcomeUser, now: Date) {
     return user.steps ? user.steps.reduce<string[]>((acc, step) => {
       // date format is not the same everywhere (string ISOdate VS timestamp)
-      this.logger.debug(`[getNewlyUnlockedSteps] ${step.unlockDate.seconds} <= ${now}`);
+      this.logger.debug(`[getNewlyUnlockedSteps] ${step.unlockDate.seconds} <= ${now.getSeconds()}`);
 
       if (!step.unlockEmailSentAt && step.unlockDate.toDate() <= now) {
         acc.push(step._id);
