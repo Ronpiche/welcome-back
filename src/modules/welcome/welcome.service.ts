@@ -65,7 +65,8 @@ export class WelcomeService {
 
   async findAll(filter: any): Promise<WelcomeUser[]> {
     try {
-      this.logger.log(`[FindAllUsers] - find all users${filter === undefined ? "" : ` with filter : ${JSON.stringify(filter, null, 2)?.replace(/[\n\r]+/g, "")}`}`);
+      const filterDetail = filter === undefined ? "" : ` with filter : ${JSON.stringify(filter, null, 2)?.replace(/[\n\r]+/g, "")}`;
+      this.logger.log(`[FindAllUsers] - find all users ${filterDetail}`);
 
       return (
         await this.firestoreService.getAllDocuments<WelcomeUser>(FIRESTORE_COLLECTIONS.WELCOME_USERS, filter)
