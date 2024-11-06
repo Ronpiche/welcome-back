@@ -1,21 +1,80 @@
+import { HttpException, HttpStatus, InternalServerErrorException, Logger, NotFoundException } from "@nestjs/common";
 import type { TestingModule } from "@nestjs/testing";
 import { Test } from "@nestjs/testing";
+import { MailerService } from "@nestjs-modules/mailer";
+import { Timestamp } from "@google-cloud/firestore";
 import { WelcomeService } from "@modules/welcome/welcome.service";
 import { FirestoreService } from "@src/services/firestore/firestore.service";
-import { FirestoreServiceMock } from "@tests/unit/__mocks__/firestore.service";
-import { HttpException, InternalServerErrorException, Logger } from "@nestjs/common";
-import {
-  inputUpdateWelcomeMock,
-  inputWelcomeMock,
-  welcomeUserEntityMock,
-} from "@tests/unit/__mocks__/welcome/User.entity.mock";
 import { StepService } from "@modules/step/step.service";
-import { StepServiceMock } from "@tests/unit/__mocks__/step/step.service.mock";
-import { Timestamp } from "@google-cloud/firestore";
-import { WelcomeUser } from "@modules/welcome/entities/user.entity";
-import { MailerService } from "@nestjs-modules/mailer";
-import { MailerServiceMock } from "@tests/unit/__mocks__/mailer.service.mock";
+import type { WelcomeUser } from "@modules/welcome/entities/user.entity";
 import { FIRESTORE_COLLECTIONS } from "@src/configs/types/Firestore.types";
+import type { CreateUserDto } from "@src/modules/welcome/dto/input/create-user.dto";
+import { GRADE, PRACTICE } from "@src/modules/welcome/types/user.enum";
+import { NoErrorThrownError, getError } from "@tests/unit/utils";
+import { GipService } from "@src/services/gip/gip.service";
+import type { Step } from "@src/modules/step/entities/step.entity";
+
+const user: WelcomeUser = {
+  _id: "1",
+  note: "",
+  email: "john.doe@127.0.0.1",
+  signupDate: "2022-04-24 22:00:00",
+  firstName: "John",
+  lastName: "Doe",
+  civility: "M",
+  agency: "Any",
+  creationDate: Timestamp.fromDate(new Date("2022-04-25 13:24:06.627")),
+  hrReferent: {
+    _id: "abcd-1234",
+    firstName: "Joe",
+    lastName: "Bloggs",
+    email: "joe.bloggs@127.0.0.1",
+  },
+  arrivalDate: "2023-02-01 22:00:00",
+  lastUpdate: Timestamp.fromDate(new Date("2023-02-01 22:00:00")),
+  grade: GRADE.PRACTIONNER,
+  practice: PRACTICE.PRODUCT,
+  steps: [
+    {
+      _id: "1",
+      unlockDate: Timestamp.fromDate(new Date(2022, 4, 25, 13, 24, 6)),
+      subStep: [{ _id: "1", isCompleted: true }],
+    },
+    {
+      _id: "2",
+      unlockDate: Timestamp.fromDate(new Date(2022, 4, 25, 13, 24, 6)),
+      subStep: [{ _id: "1", isCompleted: false }],
+    },
+    {
+      _id: "3",
+      unlockDate: Timestamp.fromDate(new Date(2022, 4, 25, 13, 24, 6)),
+      subStep: [{ _id: "1", isCompleted: false }],
+    },
+  ],
+};
+const createUserDto: CreateUserDto = {
+  note: "",
+  email: "john.doe@127.0.0.1",
+  signupDate: "2022-04-24 22:00:00",
+  firstName: "John",
+  lastName: "Doe",
+  civility: "M",
+  agency: "Any",
+  hrReferent: {
+    _id: "abcd-1234",
+    firstName: "Joe",
+    lastName: "Bloggs",
+    email: "joe.bloggs@127.0.0.1",
+  },
+  arrivalDate: "2023-02-01 22:00:00",
+  grade: GRADE.PRACTIONNER,
+  practice: PRACTICE.PRODUCT,
+};
+const steps: Step[] = [
+  { _id: "0", cutAt: 0.25, unlockEmail: { subject: "Test", body: "1234" }, maxDays: 90, minDays: 30, subStep: [{ _id: "1", isCompleted: false }] },
+  { _id: "1", cutAt: 0.5, unlockEmail: { subject: "Test", body: "1234" }, maxDays: 90, minDays: 30, subStep: [{ _id: "1", isCompleted: false }] },
+  { _id: "2", cutAt: 0.7, unlockEmail: { subject: "Test", body: "1234" }, maxDays: 90, minDays: 30, subStep: [{ _id: "1", isCompleted: false }] },
+];
 
 describe("UsersService", () => {
   let service: WelcomeService;
@@ -26,15 +85,34 @@ describe("UsersService", () => {
         WelcomeService,
         {
           provide: MailerService,
-          useClass: MailerServiceMock,
+          useValue: {
+            sendMail: jest.fn().mockResolvedValue(undefined),
+          },
         },
         {
           provide: StepService,
-          useClass: StepServiceMock,
+          useValue: {
+            findAll: jest.fn().mockResolvedValue(steps),
+            findOne: jest.fn().mockResolvedValue(steps[0]),
+            generateSteps: jest.fn().mockResolvedValue([{ step: { _id: "1" }, dt: new Date(2024, 5, 1) }]),
+          },
         },
         {
           provide: FirestoreService,
-          useClass: FirestoreServiceMock,
+          useValue: {
+            getAllDocuments: jest.fn().mockResolvedValue([user]),
+            getDocument: jest.fn().mockResolvedValue(user),
+            saveDocument: jest.fn().mockResolvedValue(user),
+            updateDocument: jest.fn().mockResolvedValue(user),
+            deleteDocument: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: GipService,
+          useValue: {
+            createUser: jest.fn().mockResolvedValue({ uid: user._id }),
+            deleteUser: jest.fn().mockResolvedValue(undefined),
+          },
         },
         {
           provide: Logger,
@@ -52,412 +130,148 @@ describe("UsersService", () => {
     }).compile();
 
     service = module.get<WelcomeService>(WelcomeService);
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(2024, 5, 1));
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.useRealTimers();
   });
 
   describe("createUser", () => {
-    it("should create an user object and return an object", async() => {
-      jest.spyOn(service["firestoreService"], "saveDocument").mockImplementation().mockResolvedValue({ status: "ok", id: "789QSD123" });
-      const create = await service.createUser(inputWelcomeMock);
-      expect(create).toBeDefined();
-      expect(create).toEqual({ status: "ok", id: "789QSD123" });
+    it("should create an user when createUser is called.", async() => {
+      const createUser = await service.createUser(createUserDto);
+      expect(createUser).toStrictEqual(user);
     });
 
-    it("should throw a httpException error", async() => {
-      jest.spyOn(service["firestoreService"], "saveDocument").mockImplementation()
-        .mockRejectedValue(new HttpException("exception error", 400));
-      try {
-        await service.createUser(inputWelcomeMock);
-      } catch (error) {
-        expect(error).toBeInstanceOf(HttpException);
-        expect(error.message).toBe("exception error");
-        expect(error.status).toBe(400);
-      }
+    it("should throw an HttpException when generateSteps fails.", async() => {
+      jest.spyOn(service["stepService"], "generateSteps").mockImplementation().mockRejectedValue(new HttpException("Invalid parameter: startDate > endDate", HttpStatus.BAD_REQUEST));
+      const error: HttpException = await getError(async() => service.createUser(createUserDto));
+      expect(error).not.toBeInstanceOf(NoErrorThrownError);
+      expect(error).toBeInstanceOf(HttpException);
     });
 
-    it("should throw a InternalServer error", async() => {
-      jest.spyOn(service["firestoreService"], "saveDocument").mockImplementation().mockRejectedValue(new Error("error"));
-      try {
-        await service.createUser(inputWelcomeMock);
-      } catch (error) {
-        expect(error).toBeInstanceOf(InternalServerErrorException);
-        expect(error.message).toBe("Internal Server Error");
-        expect(error.status).toBe(500);
-      }
+    it("should throw an InternalServerError when mailer fails.", async() => {
+      jest.spyOn(service["mailerService"], "sendMail").mockImplementation().mockRejectedValue(new Error());
+      const error: InternalServerErrorException = await getError(async() => service.createUser(createUserDto));
+      expect(error).not.toBeInstanceOf(NoErrorThrownError);
+      expect(error).toBeInstanceOf(InternalServerErrorException);
     });
 
-    it("should throw an error, because the arrivalDate is invalid", async() => {
-      inputWelcomeMock.arrivalDate = "-1";
-      try {
-        await service.createUser(inputWelcomeMock);
-      } catch (error) {
-        expect(error).toBeInstanceOf(HttpException);
-        expect(error.status).toBe(400);
-      }
+    it("should throw an InternalServerError when gip fails.", async() => {
+      jest.spyOn(service["gipService"], "createUser").mockImplementation().mockRejectedValue(new InternalServerErrorException());
+      const error: InternalServerErrorException = await getError(async() => service.createUser(createUserDto));
+      expect(error).not.toBeInstanceOf(NoErrorThrownError);
+      expect(error).toBeInstanceOf(InternalServerErrorException);
+    });
+
+    it("should throw an InternalServerError when database fails.", async() => {
+      jest.spyOn(service["firestoreService"], "saveDocument").mockImplementation().mockRejectedValue(new InternalServerErrorException());
+      const error: InternalServerErrorException = await getError(async() => service.createUser(createUserDto));
+      expect(error).not.toBeInstanceOf(NoErrorThrownError);
+      expect(error).toBeInstanceOf(InternalServerErrorException);
     });
   });
 
   describe("findAll", () => {
-    it("should return a user array with no filters", async() => {
-      jest.spyOn(service["firestoreService"], "getAllDocuments").mockImplementation().mockResolvedValue([welcomeUserEntityMock]);
-      const users = await service.findAll({});
-      expect(users).toEqual([welcomeUserEntityMock]);
+    it("should return an user array when findAll is called (without filter).", async() => {
+      const findAll = await service.findAll();
+      expect(findAll).toStrictEqual([user]);
     });
 
-    it("should return a no empty user array with no filters", async() => {
-      jest.spyOn(service["firestoreService"], "getAllDocuments").mockImplementation().mockResolvedValue([]);
-      const users = await service.findAll({});
-      expect(users).toEqual([]);
+    it("should return an user array when findAll is called (with filters).", async() => {
+      const findAll = await service.findAll(new Date(), new Date());
+      expect(findAll).toStrictEqual([user]);
     });
 
-    it("should throw a HttpException error", async() => {
-      jest.spyOn(service["firestoreService"], "getAllDocuments").mockImplementation()
-        .mockRejectedValue(new HttpException("Error getAllDocuments", 400));
-      try {
-        await service.findAll({});
-      } catch (error) {
-        expect(error).toBeInstanceOf(HttpException);
-        expect(error.message).toBe("Error getAllDocuments");
-        expect(error.status).toBe(400);
-      }
-    });
-
-    it("should throw a internalServer error (500)", async() => {
-      jest.spyOn(service["firestoreService"], "getAllDocuments").mockImplementation().mockRejectedValue(new Error("Internal Server Error"));
-      try {
-        await service.findAll({});
-      } catch (error) {
-        expect(error).toBeInstanceOf(HttpException);
-        expect(error.message).toBe("Internal Server Error");
-        expect(error.status).toBe(500);
-      }
+    it("should throw an InternalServerError when database fails.", async() => {
+      jest.spyOn(service["firestoreService"], "getAllDocuments").mockImplementation().mockRejectedValue(new InternalServerErrorException());
+      const error: InternalServerErrorException = await getError(async() => service.findAll());
+      expect(error).not.toBeInstanceOf(NoErrorThrownError);
+      expect(error).toBeInstanceOf(InternalServerErrorException);
     });
   });
 
   describe("findOne", () => {
-    it("should return a no empty user object", async() => {
-      const documentId = "789QSD123";
-      jest.spyOn(service["firestoreService"], "getDocument").mockImplementation().mockResolvedValue(welcomeUserEntityMock);
-      const user = await service.findOne(documentId);
-      expect(user).toEqual(welcomeUserEntityMock);
+    it("should return an user when findOne is called.", async() => {
+      const findOne = await service.findOne(user._id);
+      expect(findOne).toStrictEqual(user);
     });
 
-    it("should throw an error if the documentId doesn't exist", async() => {
-      const documentId = "789QSD123";
-      jest.spyOn(service["firestoreService"], "getDocument").mockImplementation()
-        .mockRejectedValue(new HttpException("User is not registered in welcome", 404));
-      try {
-        await service.findOne(documentId);
-      } catch (error) {
-        expect(error).toBeInstanceOf(HttpException);
-        expect(error.message).toBe("User is not registered in welcome");
-        expect(error.status).toBe(404);
-      }
+    it("should throw a NotFound when user does not exists.", async() => {
+      jest.spyOn(service["firestoreService"], "getDocument").mockImplementation().mockRejectedValue(new NotFoundException());
+      const error: InternalServerErrorException = await getError(async() => service.findOne(user._id));
+      expect(error).not.toBeInstanceOf(NoErrorThrownError);
+      expect(error).toBeInstanceOf(NotFoundException);
     });
 
-    it("should throw an internalServerError", async() => {
-      const documentId = "789QSD123";
-      jest.spyOn(service["firestoreService"], "getDocument").mockImplementation().mockRejectedValue(new Error("Internal Server Error"));
-      try {
-        await service.findOne(documentId);
-      } catch (error) {
-        expect(error).toBeInstanceOf(InternalServerErrorException);
-        expect(error.message).toBe("Internal Server Error");
-        expect(error.status).toBe(500);
-      }
-    });
-  });
-
-  describe("delete", () => {
-    it("should deleted an user object", async() => {
-      const documentId = "789QSD123";
-      jest.spyOn(service["firestoreService"], "deleteDocument").mockImplementation();
-      await expect(service.remove(documentId)).resolves.toBeUndefined();
-    });
-  });
-
-  it("should throw an internalServerError", async() => {
-    const documentId = "789QSD123";
-    jest.spyOn(service["firestoreService"], "getDocument").mockImplementation().mockResolvedValue(welcomeUserEntityMock);
-    jest.spyOn(service["firestoreService"], "deleteDocument").mockImplementation().mockRejectedValue(new Error("Internal Server Error"));
-    try {
-      await service.remove(documentId);
-    } catch (error) {
+    it("should throw an InternalServerError when database fails.", async() => {
+      jest.spyOn(service["firestoreService"], "getDocument").mockImplementation().mockRejectedValue(new InternalServerErrorException());
+      const error: InternalServerErrorException = await getError(async() => service.findOne(user._id));
+      expect(error).not.toBeInstanceOf(NoErrorThrownError);
       expect(error).toBeInstanceOf(InternalServerErrorException);
-      expect(error.message).toBe("Internal Server Error");
-      expect(error.status).toBe(500);
-    }
+    });
+  });
+
+  describe("remove", () => {
+    it("should delete an user when remove is called.", async() => {
+      const spy = jest.spyOn(service["firestoreService"], "deleteDocument");
+      await service.remove(user._id);
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+
+    it("should throw an InternalServerError when database fails.", async() => {
+      jest.spyOn(service["firestoreService"], "deleteDocument").mockImplementation().mockRejectedValue(new InternalServerErrorException());
+      const error: InternalServerErrorException = await getError(async() => service.remove(user._id));
+      expect(error).not.toBeInstanceOf(NoErrorThrownError);
+      expect(error).toBeInstanceOf(InternalServerErrorException);
+    });
   });
 
   describe("update", () => {
-    it("should updated an user object", async() => {
-      const documentId = "789QSD123";
-      jest.spyOn(service["firestoreService"], "updateDocument").mockImplementation();
-      jest.spyOn(service["firestoreService"], "getDocument").mockImplementation().mockResolvedValue(welcomeUserEntityMock);
-      const res = await service.update(documentId, inputUpdateWelcomeMock);
-      expect(res).toEqual(welcomeUserEntityMock);
+    it("should update an user when update is called.", async() => {
+      const update = await service.update(user._id, createUserDto);
+      expect(update).toStrictEqual(user);
     });
-  });
 
-  it("should throw an HttpException", async() => {
-    const documentId = "789QSD123";
-    jest.spyOn(service["firestoreService"], "getDocument").mockImplementation().mockResolvedValue(welcomeUserEntityMock);
-    jest.spyOn(service["firestoreService"], "updateDocument").mockImplementation()
-      .mockRejectedValue(new HttpException("HttpExceptionError", 400));
-    try {
-      await service.update(documentId, inputUpdateWelcomeMock);
-    } catch (error) {
-      expect(error).toBeInstanceOf(HttpException);
-      expect(error.message).toBe("HttpExceptionError");
-      expect(error.status).toBe(400);
-    }
-  });
-
-  it("should throw an internalServerError", async() => {
-    const documentId = "789QSD123";
-    jest.spyOn(service["firestoreService"], "getDocument").mockImplementation().mockResolvedValue(welcomeUserEntityMock);
-    jest.spyOn(service["firestoreService"], "updateDocument").mockImplementation().mockRejectedValue(new Error("Internal Server Error"));
-    try {
-      await service.update(documentId, inputUpdateWelcomeMock);
-    } catch (error) {
+    it("should throw an InternalServerError when database fails.", async() => {
+      jest.spyOn(service["firestoreService"], "updateDocument").mockImplementation().mockRejectedValue(new InternalServerErrorException());
+      const error: InternalServerErrorException = await getError(async() => service.update(user._id, createUserDto));
+      expect(error).not.toBeInstanceOf(NoErrorThrownError);
       expect(error).toBeInstanceOf(InternalServerErrorException);
-      expect(error.message).toBe("Internal Server Error");
-      expect(error.status).toBe(500);
-    }
-  });
-
-  describe("transformAppGames", () => {
-    it("should return an array", async() => {
-      const res = await service.transformDbOjectStringsToArray("appGame");
-      expect(res).toBeDefined();
-      expect(res).toEqual({ status: "success" });
-    });
-  });
-
-  describe("getNewlyUnlockedSteps", () => {
-    it("should return unlocked steps (no step)", async() => {
-      const user = new WelcomeUser({ steps: [] });
-      expect(service.getNewlyUnlockedSteps(user, new Date("2024-06-01"))).toStrictEqual([]);
-    });
-
-    it("should return unlocked steps (some steps)", async() => {
-      const user = new WelcomeUser({
-        steps: [
-          {
-            _id: "0",
-            unlockEmailSentAt: Timestamp.fromDate(new Date("2024-05-01")),
-            unlockDate: Timestamp.fromDate(new Date("2024-05-01")),
-            subStep: [{ _id: "1", isCompleted: false }],
-          },
-          {
-            _id: "1",
-            unlockDate: Timestamp.fromDate(new Date("2024-05-15")),
-            subStep: [{ _id: "1", isCompleted: false }],
-          },
-          {
-            _id: "2",
-            unlockDate: Timestamp.fromDate(new Date("2024-06-01")),
-            subStep: [{ _id: "1", isCompleted: false }],
-          },
-          {
-            _id: "3",
-            unlockDate: Timestamp.fromDate(new Date("2024-06-15")),
-            subStep: [{ _id: "1", isCompleted: false }],
-          },
-        ],
-      });
-      expect(service.getNewlyUnlockedSteps(user, new Date("2024-06-01"))).toStrictEqual(["1", "2"]);
     });
   });
 
   describe("run", () => {
-    it("should send emails to newcommers with unlocked steps (no user)", async() => {
-      const result = await service.run(new Date("2024-06-01"));
-      expect(result).toStrictEqual([]);
+    it("should send emails to newcommers with unlocked steps when run is called (no user).", async() => {
+      jest.spyOn(service["firestoreService"], "getAllDocuments").mockImplementation().mockResolvedValue([]);
+      const run = await service.run(new Date());
+      expect(run).toStrictEqual([]);
     });
 
-    it("should send emails to newcommers with unlocked steps (some users)", async() => {
-      const users = [
-        {
-          _id: "0",
-          firstName: "aaa",
-          lastName: "bbb",
-          referentRH: {
-            firstName: "rhf",
-            lastName: "rhl",
-          },
-          steps: [
-            {
-              _id: "0",
-              unlockEmailSentAt: Timestamp.fromDate(new Date("2024-05-01")),
-              unlockDate: Timestamp.fromDate(new Date("2024-05-01")),
-            },
-            { _id: "1", unlockDate: Timestamp.fromDate(new Date("2024-05-15")) },
-            { _id: "2", unlockDate: Timestamp.fromDate(new Date("2024-06-01")) },
-            { _id: "3", unlockDate: Timestamp.fromDate(new Date("2024-06-15")) },
-          ],
-        },
-        {
-          _id: "1",
-          firstName: "ccc",
-          lastName: "ddd",
-          referentRH: {
-            firstName: "rhf",
-            lastName: "rhl",
-          },
-          steps: [
-            { _id: "0", unlockDate: Timestamp.fromDate(new Date("2024-05-01")) },
-            { _id: "1", unlockDate: Timestamp.fromDate(new Date("2024-05-15")) },
-            { _id: "2", unlockDate: Timestamp.fromDate(new Date("2024-06-01")) },
-            { _id: "3", unlockDate: Timestamp.fromDate(new Date("2024-06-15")) },
-          ],
-        },
-        {
-          _id: "2",
-          firstName: "eee",
-          lastName: "fff",
-          referentRH: {
-            firstName: "rhf",
-            lastName: "rhl",
-          },
-          steps: [
-            { _id: "0", unlockDate: Timestamp.fromDate(new Date("2024-06-15")) },
-            { _id: "1", unlockDate: Timestamp.fromDate(new Date("2024-07-01")) },
-            { _id: "2", unlockDate: Timestamp.fromDate(new Date("2024-07-15")) },
-            { _id: "3", unlockDate: Timestamp.fromDate(new Date("2024-08-01")) },
-          ],
-        },
-      ];
-      const steps = [
-        { _id: "0", cutAt: 0.25, unlockEmail: { subject: "Test", body: "1234" }, maxDays: 90, minDays: 30 },
-        { _id: "1", cutAt: 0.5, unlockEmail: { subject: "Test", body: "1234" }, maxDays: 90, minDays: 30 },
-        { _id: "2", cutAt: 0.7, unlockEmail: { subject: "Test", body: "1234" }, maxDays: 90, minDays: 30 },
-      ];
-      // eslint-disable-next-line jest/prefer-spy-on
-      service["firestoreService"].getAllDocuments = jest.fn().mockResolvedValue(users);
-      // eslint-disable-next-line jest/prefer-spy-on
-      service["stepService"].findAll = jest.fn().mockResolvedValue(steps);
-      const result = await service.run(new Date("2024-06-01"));
-      expect(result).toStrictEqual([
-        { status: "fulfilled", value: { _id: "0" } },
-        { status: "fulfilled", value: { _id: "1" } },
-      ]);
+    it("should send emails to newcommers with unlocked steps when run is called (some users).", async() => {
+      const run = await service.run(new Date());
+      expect(run).toStrictEqual([{ status: "fulfilled", value: { _id: user._id } }]);
     });
 
-    it("should return rejected when emails cannot be send", async() => {
-      const users = [
-        {
-          _id: "0",
-          firstName: "aaa",
-          lastName: "bbb",
-          referentRH: {
-            firstName: "rhf",
-            lastName: "rhl",
-          },
-          steps: [
-            {
-              _id: "0",
-              unlockEmailSentAt: Timestamp.fromDate(new Date("2024-05-01")),
-              unlockDate: Timestamp.fromDate(new Date("2024-05-01")),
-            },
-            { _id: "1", unlockDate: Timestamp.fromDate(new Date("2024-05-15")) },
-            { _id: "2", unlockDate: Timestamp.fromDate(new Date("2024-06-01")) },
-            { _id: "3", unlockDate: Timestamp.fromDate(new Date("2024-06-15")) },
-          ],
-        },
-        {
-          _id: "1",
-          firstName: "ccc",
-          lastName: "ddd",
-          referentRH: {
-            firstName: "rhf",
-            lastName: "rhl",
-          },
-          steps: [
-            { _id: "0", unlockDate: Timestamp.fromDate(new Date("2024-05-01")) },
-            { _id: "1", unlockDate: Timestamp.fromDate(new Date("2024-05-15")) },
-            { _id: "2", unlockDate: Timestamp.fromDate(new Date("2024-06-01")) },
-            { _id: "3", unlockDate: Timestamp.fromDate(new Date("2024-06-15")) },
-          ],
-        },
-        {
-          _id: "2",
-          firstName: "eee",
-          lastName: "fff",
-          referentRH: {
-            firstName: "rhf",
-            lastName: "rhl",
-          },
-          steps: [
-            { _id: "0", unlockDate: Timestamp.fromDate(new Date("2024-06-15")) },
-            { _id: "1", unlockDate: Timestamp.fromDate(new Date("2024-07-01")) },
-            { _id: "2", unlockDate: Timestamp.fromDate(new Date("2024-07-15")) },
-            { _id: "3", unlockDate: Timestamp.fromDate(new Date("2024-08-01")) },
-          ],
-        },
-      ];
-      const steps = [
-        { _id: "0", cutAt: 0.25, unlockEmail: { subject: "Test", body: "1234" }, maxDays: 90, minDays: 30 },
-        { _id: "1", cutAt: 0.5, unlockEmail: { subject: "Test", body: "1234" }, maxDays: 90, minDays: 30 },
-        { _id: "2", cutAt: 0.7, unlockEmail: { subject: "Test", body: "1234" }, maxDays: 90, minDays: 30 },
-      ];
-      // eslint-disable-next-line jest/prefer-spy-on,@typescript-eslint/dot-notation
-      service["mailerService"]["sendMail"] = jest.fn().mockRejectedValue(new Error("Internal Server Error"));
-      // eslint-disable-next-line jest/prefer-spy-on,@typescript-eslint/dot-notation
-      service["firestoreService"]["getAllDocuments"] = jest.fn().mockResolvedValue(users);
-      // eslint-disable-next-line jest/prefer-spy-on,@typescript-eslint/dot-notation
-      service["stepService"]["findAll"] = jest.fn().mockResolvedValue(steps);
-      const result = await service.run(new Date("2024-06-01"));
-      expect(result).toStrictEqual([
-        { status: "rejected", reason: { _id: "0", message: "Internal Server Error" } },
-        { status: "rejected", reason: { _id: "1", message: "Internal Server Error" } },
-      ]);
+    it("should return rejected when emails cannot be send.", async() => {
+      jest.spyOn(service["mailerService"], "sendMail").mockImplementation().mockRejectedValue(new Error("test"));
+      const run = await service.run(new Date());
+      expect(run).toStrictEqual([{ status: "rejected", reason: { _id: user._id, message: "test" } }]);
     });
   });
 
-  describe("completeStep", () => {
-    it("should complete user step and send emails", async() => {
-      const date = new Date();
-      const user = {
-        _id: "1",
-        firstName: "aaa",
-        lastName: "bbb",
-        email: "aaa.bbb@localhost",
-        referentRH: {
-          firstName: "ccc",
-          lastName: "ddd",
-          email: "ccc.ddd@localhost",
-        },
-        steps: [{ _id: "1" }, { _id: "2" }, { _id: "3" }, { _id: "4" }],
-      };
-      const step = {
-        _id: "2",
-        completionEmail: { subject: "Test", body: "1234" },
-        completionEmailManager: { subject: "Test2", body: "12345" },
-      };
-      // eslint-disable-next-line
-      service.findOne = jest.fn().mockResolvedValue(user);
-      // eslint-disable-next-line
-      service['firestoreService']['updateDocument'] = jest.fn();
-      // eslint-disable-next-line
-      service['stepService']['findOne'] = jest.fn().mockResolvedValue(step);
-      await service.completeStep("1", "2", date);
+  describe("completeSubStep", () => {
+    it("should complete user sub step when completeStep is called.", async() => {
+      await service.completeSubStep("1", "2", "1");
       expect(service["firestoreService"].updateDocument).toHaveBeenCalledWith(
         FIRESTORE_COLLECTIONS.WELCOME_USERS,
         "1",
         {
-          steps: [{ _id: "1" }, { _id: "2", completedAt: Timestamp.fromDate(date) }, { _id: "3" }, { _id: "4" }],
+          steps: [user.steps[0], { ...user.steps[1], subStep: [{ _id: "1", isCompleted: true }], completedAt: Timestamp.now() }, user.steps[2]],
         },
       );
-      expect(service["mailerService"].sendMail).toHaveBeenNthCalledWith(1, {
-        to: user.referentRH.email,
-        subject: step.completionEmailManager.subject,
-        html: `<p>${step.completionEmailManager.body}</p>\n`,
-      });
-      expect(service["mailerService"].sendMail).toHaveBeenNthCalledWith(2, {
-        to: user.email,
-        subject: step.completionEmail.subject,
-        html: `<p>${step.completionEmail.body}</p>\n`,
-      });
     });
   });
 });

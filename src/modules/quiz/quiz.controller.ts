@@ -1,22 +1,21 @@
 import { CreateQuizDto } from "@modules/quiz/dto/create-quiz.dto";
 import { UpdateQuizDto } from "@modules/quiz/dto/update-quiz.dto";
 import { QuizService } from "@modules/quiz/quiz.service";
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, HttpStatus, Put, HttpCode, ParseArrayPipe, ParseIntPipe } from "@nestjs/common";
-import { IsPublic } from "@src/decorators/isPublic";
-import { AccessGuard } from "@src/middleware/AuthGuard";
-import { ApiBody, ApiConflictResponse, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { Controller, Get, Post, Body, Param, Delete, HttpStatus, Put, HttpCode, ParseArrayPipe, ParseIntPipe } from "@nestjs/common";
+import { ApiBearerAuth, ApiBody, ApiConflictResponse, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Quiz } from "@modules/quiz/entities/quiz.entity";
-import { OutputSafeQuizDto } from "./dto/output-safe-quiz.dto";
+import { OutputSafeQuizDto } from "@modules/quiz/dto/output-safe-quiz.dto";
 import { plainToInstance } from "class-transformer";
+import { Role, Roles } from "@src/decorators/role";
 
 @ApiTags("quiz")
 @Controller("quizzes")
+@ApiBearerAuth()
 export class QuizController {
   public constructor(private readonly quizService: QuizService) { }
 
   @Post()
-  @IsPublic(false)
-  @UseGuards(AccessGuard)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: "Create a quiz", description: "Returns a new quiz" })
   @ApiCreatedResponse({ description: "Ok", type: Quiz })
   @ApiConflictResponse({ description: "Conflict" })
@@ -25,8 +24,7 @@ export class QuizController {
   }
 
   @Get()
-  @IsPublic(false)
-  @UseGuards(AccessGuard)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: "Find all quizzes", description: "Returns all quizzes" })
   @ApiOkResponse({ description: "Ok", type: [Quiz] })
   public async findAll(): Promise<Quiz[]> {
@@ -34,8 +32,7 @@ export class QuizController {
   }
 
   @Get(":id")
-  @IsPublic(false)
-  @UseGuards(AccessGuard)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: "Find a quiz by id", description: "Returns a quiz or 404" })
   @ApiOkResponse({ description: "Ok", type: Quiz })
   @ApiNotFoundResponse({ description: "Not found" })
@@ -44,7 +41,7 @@ export class QuizController {
   }
 
   @Get(":id/safe")
-  @IsPublic(true)
+  @Roles(Role.ADMIN, Role.USER)
   @ApiOperation({ summary: "Find a quiz by id without correct answers", description: "Returns a quiz or 404" })
   @ApiOkResponse({ description: "Ok", type: OutputSafeQuizDto })
   @ApiNotFoundResponse({ description: "Not found" })
@@ -59,8 +56,7 @@ export class QuizController {
   }
 
   @Put(":id")
-  @IsPublic(false)
-  @UseGuards(AccessGuard)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: "Update a quiz", description: "Returns the updated quiz" })
   @ApiOkResponse({ description: "Ok", type: Quiz })
   @ApiNotFoundResponse({ description: "Not found" })
@@ -69,8 +65,7 @@ export class QuizController {
   }
 
   @Delete(":id")
-  @IsPublic(false)
-  @UseGuards(AccessGuard)
+  @Roles(Role.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: "Delete a quiz", description: "Returns 204" })
   @ApiNoContentResponse({ description: "Ok" })
@@ -80,13 +75,17 @@ export class QuizController {
   }
 
   @Post(":id/:questionIndex")
-  @HttpCode(200)
-  @IsPublic(true)
+  @Roles(Role.ADMIN, Role.USER)
+  @HttpCode(HttpStatus.OK)
   @ApiBody({ description: "Array of indexes of selected answers", type: [Number] })
   @ApiOperation({ summary: "Check correctness of answers", description: "Returns array of correct answers" })
   @ApiOkResponse({ description: "Ok", type: [Number] })
   @ApiNotFoundResponse({ description: "Not found" })
-  public async checkCorrectness(@Param("id") id: string, @Param("questionIndex", ParseIntPipe) questionIndex: number, @Body(new ParseArrayPipe({ items: Number })) answers: number[]): Promise<number[]> {
+  public async checkCorrectness(
+    @Param("id") id: string,
+    @Param("questionIndex", ParseIntPipe) questionIndex: number,
+    @Body(new ParseArrayPipe({ items: Number })) answers: number[],
+  ): Promise<number[]> {
     return this.quizService.checkCorrectness(id, questionIndex, answers);
   }
 }

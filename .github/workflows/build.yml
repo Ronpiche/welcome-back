@@ -85,7 +85,7 @@ jobs:
           key: ${{ runner.os }}-npm-v3-${{ hashFiles('package-lock.json') }}
 
       - name: Check and lint code 🔍
-        run: npm run lint -- --max-warnings 1609
+        run: npm run lint -- --max-warnings 829
 
   unit-tests:
     name: Unit Tests 🧪

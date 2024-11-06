@@ -1,13 +1,32 @@
 import { NestFactory } from "@nestjs/core";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
+import type { INestApplication } from "@nestjs/common";
 import { Logger, ValidationPipe } from "@nestjs/common";
 import cookieParser from "cookie-parser";
-import { AppModule } from "./app.module";
+import { AppModule } from "src/app.module";
 
 const DEFAULT_HTTP_PORT = 3337;
 
-async function bootstrap() {
-  const logger = new Logger("welcome-back");
+const swaggerSetup = (app: INestApplication): void => {
+  const config = new DocumentBuilder()
+    .setTitle("Welcome Back")
+    .setDescription("API description")
+    .setVersion("0.0.1")
+    .addTag("Welcome")
+    .addBearerAuth({
+      description: "Token in format: Bearer &lt;JWT&gt;",
+      name: "Authorization",
+      bearerFormat: "Bearer",
+      scheme: "Bearer",
+      type: "http",
+      in: "Header",
+    })
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup("swagger", app, document);
+};
+
+const bootstrap = async(): Promise<void> => {
   const app = await NestFactory.create(AppModule);
 
   app.setGlobalPrefix("api");
@@ -28,15 +47,7 @@ async function bootstrap() {
    * }
    */
 
-  // swagger
-  const config = new DocumentBuilder()
-    .setTitle("Welcome Back")
-    .setDescription("API description")
-    .setVersion("0.0.1")
-    .addTag("Welcome")
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup("swagger", app, document);
+  swaggerSetup(app);
 
   // validation Pipes
   app.useGlobalPipes(new ValidationPipe({
@@ -47,7 +58,13 @@ async function bootstrap() {
   }));
 
   await app.listen(process.env.PORT || DEFAULT_HTTP_PORT);
-  logger.log(`Application running on port ${process.env.PORT || DEFAULT_HTTP_PORT}`);
-}
+};
 
-bootstrap();
+((): void => {
+  const logger = new Logger("welcome-back");
+  bootstrap().then(() => {
+    logger.log(`Application running on port ${process.env.PORT || DEFAULT_HTTP_PORT}`);
+  }).catch((err: unknown) => {
+    logger.error(err);
+  });
+})();

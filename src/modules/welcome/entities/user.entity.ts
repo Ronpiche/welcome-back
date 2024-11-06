@@ -1,67 +1,51 @@
+import { ApiProperty } from "@nestjs/swagger";
 import type { Timestamp } from "@google-cloud/firestore";
-
-export class RhUserInfo {
-  _id: string;
-
-  firstName: string;
-
-  lastName: string;
-
-  email: string;
-}
-
-export class UserSubStep {
-  _id: string;
-
-  isCompleted: boolean;
-}
-
-export class UserStep {
-  _id: string;
-
-  unlockDate: Timestamp;
-
-  unlockEmailSentAt?: Timestamp;
-
-  completedAt?: Timestamp;
-
-  subStep: UserSubStep[];
-}
+import { HrReferent } from "./hr-referent.entity";
+import { UserStep } from "./user-step.entity";
 
 export class WelcomeUser {
-  constructor(partial: Partial<WelcomeUser>) {
-    Object.assign(this, partial);
-  }
+  @ApiProperty()
+  public _id: string;
 
-  _id: string;
+  @ApiProperty()
+  public email: string;
 
-  email: string;
+  @ApiProperty()
+  public note: string;
 
-  note: string;
+  @ApiProperty()
+  public signupDate: string;
 
-  signupDate: string;
+  @ApiProperty()
+  public lastName: string;
 
-  lastName: string;
+  @ApiProperty()
+  public civility: string;
 
-  civility: string;
+  @ApiProperty()
+  public agency: string;
 
-  agency: string;
+  @ApiProperty()
+  public creationDate: Timestamp;
 
-  creationDate: Timestamp;
+  @ApiProperty({ type: HrReferent })
+  public hrReferent: HrReferent;
 
-  referentRH: RhUserInfo;
+  @ApiProperty()
+  public arrivalDate: string;
 
-  arrivalDate: string;
+  @ApiProperty()
+  public firstName: string;
 
-  firstName: string;
+  @ApiProperty()
+  public lastUpdate: Timestamp;
 
-  lastUpdate: Timestamp;
+  @ApiProperty()
+  public grade: string;
 
-  grade: string;
+  @ApiProperty()
+  public practice: string;
 
-  practice: string;
-
-  smileyQuestion?: string;
-
-  steps: UserStep[];
+  @ApiProperty({ isArray: true, type: UserStep })
+  public steps: UserStep[];
 }

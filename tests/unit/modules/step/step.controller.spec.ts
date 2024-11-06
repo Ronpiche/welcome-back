@@ -1,16 +1,26 @@
 import type { TestingModule } from "@nestjs/testing";
 import { Test } from "@nestjs/testing";
-import { Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { JwtService } from "@nestjs/jwt";
-import { AccessGuard } from "@src/middleware/AuthGuard";
-import { JwtCognito } from "@modules/cognito/jwtCognito.service";
-import { CognitoServiceMock } from "@tests/unit/__mocks__/cognito/cognito.service.mock";
-import { LoggerMock } from "@tests/unit/__mocks__/logger.mock";
 import { StepController } from "@modules/step/step.controller";
 import { StepService } from "@modules/step/step.service";
-import { StepServiceMock } from "@tests/unit/__mocks__/step/step.service.mock";
-import { stepEntityMock } from "@tests/unit/__mocks__/step/Step.entity.mock";
+import type { Step } from "@src/modules/step/entities/step.entity";
+
+const step: Step = {
+  _id: "1",
+  cutAt: 0,
+  minDays: 30,
+  maxDays: 90,
+  unlockEmail: {
+    subject: "Test",
+    body: "1234",
+  },
+  subStep: [
+    {
+      _id: "1",
+      isCompleted: false,
+    },
+  ],
+};
 
 describe("StepController", () => {
   let controller: StepController;
@@ -19,12 +29,17 @@ describe("StepController", () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [StepController],
       providers: [
-        JwtService,
         ConfigService,
-        AccessGuard,
-        { provide: JwtCognito, useClass: CognitoServiceMock },
-        { provide: StepService, useClass: StepServiceMock },
-        { provide: Logger, useClass: LoggerMock },
+        {
+          provide: StepService,
+          useValue: {
+            create: jest.fn().mockResolvedValue(step),
+            findAll: jest.fn().mockResolvedValue([step]),
+            findOne: jest.fn().mockResolvedValue(step),
+            update: jest.fn().mockResolvedValue(step),
+            remove: jest.fn().mockResolvedValue(undefined),
+          },
+        },
       ],
     }).compile();
 
@@ -32,37 +47,38 @@ describe("StepController", () => {
   });
 
   describe("create", () => {
-    it("should create a step object", async() => {
-      const step = await controller.create(stepEntityMock);
-      expect(step).toEqual({ status: "OK", _id: stepEntityMock._id });
+    it("should create a step when create is called.", async() => {
+      const create = await controller.create(step);
+      expect(create).toStrictEqual(step);
     });
   });
 
   describe("findAll", () => {
-    it("should return an array of step object", async() => {
-      const users = await controller.findAll();
-      expect(users).toEqual([stepEntityMock]);
+    it("should return an array of step when findAll is called.", async() => {
+      const findAll = await controller.findAll();
+      expect(findAll).toStrictEqual([step]);
     });
   });
 
-  describe("FindOne", () => {
-    it("should return a step object", async() => {
-      const user = await controller.findOne(stepEntityMock._id);
-      expect(user).toEqual(stepEntityMock);
-    });
-  });
-
-  describe("remove", () => {
-    it("should delete a step object", async() => {
-      const res = await controller.remove(stepEntityMock._id);
-      expect(res).toBeUndefined();
+  describe("findOne", () => {
+    it("should return a step when findOne is called.", async() => {
+      const findOne = await controller.findOne(step._id);
+      expect(findOne).toStrictEqual(step);
     });
   });
 
   describe("update", () => {
-    it("should update a step object", async() => {
-      const step = await controller.update(stepEntityMock._id, stepEntityMock);
-      expect(step).toEqual(stepEntityMock);
+    it("should update a step when update is called.", async() => {
+      const update = await controller.update(step._id, step);
+      expect(update).toStrictEqual(step);
+    });
+  });
+
+  describe("remove", () => {
+    it("should delete a step when remove is called.", async() => {
+      const spy = jest.spyOn(controller["stepService"], "remove");
+      await controller.remove(step._id);
+      expect(spy).toHaveBeenCalledTimes(1);
     });
   });
 });

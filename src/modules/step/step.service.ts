@@ -2,7 +2,6 @@ import { HttpException, Injectable, InternalServerErrorException } from "@nestjs
 import { CreateStepDto } from "./dto/create-step.dto";
 import { UpdateStepDto } from "./dto/update-step.dto";
 import { FirestoreService } from "@src/services/firestore/firestore.service";
-import { WelcomeUser } from "@modules/welcome/entities/user.entity";
 import { FIRESTORE_COLLECTIONS } from "@src/configs/types/Firestore.types";
 import { Step } from "./entities/step.entity";
 import { instanceToPlain } from "class-transformer";
@@ -11,83 +10,44 @@ import { HOLIDAY_COUNTRY } from "./step.constants";
 
 @Injectable()
 export class StepService {
-  constructor(private readonly firestoreService: FirestoreService) {}
+  public constructor(private readonly firestoreService: FirestoreService) {}
 
-  async create(createStepDto: CreateStepDto): Promise<Step> {
-    try {
-      return await this.firestoreService.saveDocument(
-        FIRESTORE_COLLECTIONS.STEPS,
-        instanceToPlain(createStepDto),
-      );
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      } else {
-        throw new InternalServerErrorException("Internal Server Error");
-      }
-    }
+  public async create(createStepDto: CreateStepDto): Promise<Step> {
+    return this.firestoreService.saveDocument(
+      FIRESTORE_COLLECTIONS.STEPS,
+      instanceToPlain(createStepDto),
+    );
   }
 
-  async findAll(): Promise<Step[]> {
-    try {
-      return await this.firestoreService.getAllDocuments<Step>(FIRESTORE_COLLECTIONS.STEPS);
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      } else {
-        throw new InternalServerErrorException();
-      }
-    }
+  public async findAll(): Promise<Step[]> {
+    return this.firestoreService.getAllDocuments<Step>(FIRESTORE_COLLECTIONS.STEPS);
   }
 
-  async findOne(id: string): Promise<Step> {
-    try {
-      return await this.firestoreService.getDocument<Step>(FIRESTORE_COLLECTIONS.STEPS, id);
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw new HttpException("Step does not exists", error.getStatus());
-      } else {
-        throw new InternalServerErrorException("Internal Server Error");
-      }
-    }
+  public async findOne(id: string): Promise<Step> {
+    return this.firestoreService.getDocument<Step>(FIRESTORE_COLLECTIONS.STEPS, id);
   }
 
-  async update(id: string, updateStepDto: UpdateStepDto): Promise<Step> {
-    await this.findOne(id);
+  public async update(id: string, updateStepDto: UpdateStepDto): Promise<Step> {
     const stepToUpdate: Record<string, any> = instanceToPlain(updateStepDto);
-    try {
-      await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.STEPS, id, stepToUpdate);
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      } else {
-        throw new InternalServerErrorException("Internal Server Error");
-      }
-    }
+    await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.STEPS, id, stepToUpdate);
+    
     return this.findOne(id);
   }
 
-  async remove(id: string): Promise<void> {
+  public async remove(id: string): Promise<void> {
     await this.findOne(id);
-    try {
-      await this.firestoreService.deleteDocument(FIRESTORE_COLLECTIONS.STEPS, id);
-    } catch (error) {
-      throw new InternalServerErrorException("Internal Server Error");
-    }
+    await this.firestoreService.deleteDocument(FIRESTORE_COLLECTIONS.STEPS, id);
   }
 
   /**
-   * generate steps for an user.
-   * @param user - The receiver
-   * @returns An array of step with date associated
+   * generate array of steps for an user.
+   * @param startDate - The date when it starts
+   * @param endDate - The date when it ends
+   * @returns An array of steps with date associated
    */
-  async generateSteps(user: WelcomeUser): Promise<{ step: Step; dt: Date }[]> {
-    try {
-      const steps = await this.findAll();
+  public async generateSteps(startDate: Date, endDate: Date): Promise<{ step: Step; dt: Date }[]> {
+    const steps = await this.findAll();
 
-      return generateStepDates(new Date(user.signupDate), new Date(user.arrivalDate), steps, HOLIDAY_COUNTRY);
-    } catch (error) {
-      throw new InternalServerErrorException("Internal Server Error");
-    }
+    return generateStepDates(startDate, endDate, steps, HOLIDAY_COUNTRY);
   }
 }
