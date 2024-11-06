@@ -170,37 +170,47 @@ export class WelcomeService {
 
     this.logger.debug(`users count : ${users.length}`);
     
+    // for each User
     users.forEach(user => {
+      // we get all the new Steps unlocked
       const unlockedSteps = this.getNewlyUnlockedSteps(user, now);
+
+      // selecting the most recent step in the list (fallback case : undefined)
       const step = unlockedSteps[0] !== undefined ? steps.find(step => step._id === unlockedSteps[0]) : undefined;
       this.logger.log(user.email);
-
+      
+      // if the Step is valid, generate a Promise for an email and for store the state in db
       if (step && step.unlockEmail) {
-        userEmails.push(new Promise((resolve, reject) => {
-          this.mailerService
-            .sendMail({
-              to: user.email,
-              subject: step.unlockEmail.subject,
-              html: this.md.render(step.unlockEmail.body, {
-                app_name: APP_NAME,
-                app_url: APP_URL,
-                user_firstName: user.firstName,
-                user_lastName: user.lastName,
-                manager_firstName: user.referentRH.firstName,
-                manager_lastName: user.referentRH.lastName,
-                step_id: step._id,
-              }),
-            })
-            .then(async() => {
-              await this.updateEmailSteps(user, unlockedSteps);
-              resolve({ _id: user._id });
-            })
-            .catch(({ message }) => reject({ _id: user._id, message }));
-        }));
+        userEmails.push(this.getStepEmailPromiseThenSaveState(user, unlockedSteps, step));
+        this.logger.debug(`[WelcomeServive][run] ${user.email} - Unlocked Steps: ${unlockedSteps.toString()}`);
       }
     });
 
     return Promise.allSettled(userEmails);
+  }
+
+  getStepEmailPromiseThenSaveState(user: WelcomeUser, unlockedSteps: string[], step: Step): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.mailerService
+        .sendMail({
+          to: user.email,
+          subject: step.unlockEmail.subject,
+          html: this.md.render(step.unlockEmail.body, {
+            app_name: APP_NAME,
+            app_url: APP_URL,
+            user_firstName: user.firstName,
+            user_lastName: user.lastName,
+            manager_firstName: user.referentRH.firstName,
+            manager_lastName: user.referentRH.lastName,
+            step_id: step._id,
+          }),
+        })
+        .then(async() => {
+          await this.updateEmailSteps(user, unlockedSteps);
+          resolve({ _id: user._id });
+        })
+        .catch(({ message }) => reject({ _id: user._id, message }));
+    });
   }
 
   /**
