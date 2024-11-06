@@ -189,7 +189,7 @@ export class WelcomeService {
     return Promise.allSettled(userEmails);
   }
 
-  getStepEmailPromiseThenSaveState(user: WelcomeUser, unlockedSteps: string[], step: Step): Promise<any> {
+  async getStepEmailPromiseThenSaveState(user: WelcomeUser, unlockedSteps: string[], step: Step): Promise<any> {
     return new Promise((resolve, reject) => {
       this.mailerService
         .sendMail({

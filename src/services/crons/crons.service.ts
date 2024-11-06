@@ -15,14 +15,20 @@ export class CronService {
   // TODO variabiliser .conf
 
   /*
+   *
+   * @Cron(CronExpression.EVERY_30_SECONDS)
+   *
    * // du lundi au vendredi à 8h30
-   *@Cron('0 30 8 * * 1-5', {
-   *name: 'notifications',
-   *timeZone: 'Europe/Paris',
+   * @Cron('0 30 8 * * 1-5', {
+   * name: 'notifications',
+   * timeZone: 'Europe/Paris',
    *})
    */
 
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  @Cron("0 30 8 * * 1-5", {
+    name: "notifications",
+    timeZone: "Europe/Paris",
+  })
   handleCron() {
     this.logger.log("[CronService] sending emails...");
     try {
