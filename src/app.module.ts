@@ -15,7 +15,6 @@ import { AgenciesModule } from "@modules/agencies/agencies.module";
 import { MembersModule } from "@modules/members/members.module";
 import { CloudStorageModule } from "@modules/cloud-storage/cloud-storage.module";
 import { QuizModule } from "@modules/quiz/quiz.module";
-import { CronModule } from "@src/services/crons/crons.module";
 import { JwtGuard } from "@src/guards/jwt.guard";
 import { RoleGuard } from "@src/guards/role.guard";
 import { GipModule } from "@src/services/gip/gip.module";
@@ -54,7 +53,6 @@ import { GipModule } from "@src/services/gip/gip.module";
     MembersModule,
     CloudStorageModule,
     QuizModule,
-    CronModule,
     GipModule,
   ],
   controllers: [AppController],
