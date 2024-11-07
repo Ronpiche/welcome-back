@@ -1,11 +1,11 @@
 import { Injectable } from "@nestjs/common";
-import { CreateMemberDto } from "./dto/create-member.dto";
-import { UpdateMemberDto } from "./dto/update-member.dto";
+import { CreateMemberDto } from "@src/modules/members/dto/create-member.dto";
+import { UpdateMemberDto } from "@src/modules/members/dto/update-member.dto";
 import { FirestoreService } from "@src/services/firestore/firestore.service";
 import { instanceToPlain } from "class-transformer";
 import { v4 as uuidv4 } from "uuid";
 import { FIRESTORE_COLLECTIONS } from "@src/configs/types/Firestore.types";
-import { Member } from "./entities/member.entity";
+import { Member } from "@src/modules/members/entities/member.entity";
 
 @Injectable()
 export class MembersService {

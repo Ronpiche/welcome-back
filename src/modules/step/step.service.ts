@@ -1,12 +1,12 @@
 import { HttpException, Injectable, InternalServerErrorException } from "@nestjs/common";
-import { CreateStepDto } from "./dto/create-step.dto";
-import { UpdateStepDto } from "./dto/update-step.dto";
+import { CreateStepDto } from "@src/modules/step/dto/create-step.dto";
+import { UpdateStepDto } from "@src/modules/step/dto/update-step.dto";
 import { FirestoreService } from "@src/services/firestore/firestore.service";
 import { FIRESTORE_COLLECTIONS } from "@src/configs/types/Firestore.types";
-import { Step } from "./entities/step.entity";
+import { Step } from "@src/modules/step/entities/step.entity";
 import { instanceToPlain } from "class-transformer";
-import { generateStepDates } from "./step.utils";
-import { HOLIDAY_COUNTRY } from "./step.constants";
+import { generateStepDates } from "@src/modules/step/step.utils";
+import { HOLIDAY_COUNTRY } from "@src/modules/step/step.constants";
 
 @Injectable()
 export class StepService {

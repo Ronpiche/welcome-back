@@ -35,7 +35,7 @@ export class WelcomeService {
   }
 
   private static markdownVariable(state: StateCore): void {
-    state.src = state.src.replaceAll(/{{\s?(\w+)\s?}}/g, (_, name) => state.env[name] || "".padStart(name.length, "█"));
+    state.src = state.src.replaceAll(/{{\s?(\w+)\s?}}/g, (_, name: string) => state.env[name] || "".padStart(name.length, "█"));
   }
 
   private static generatePassword(length = 12, characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789?.:/!@"): string {
