@@ -42,20 +42,19 @@ export class WelcomeService {
       .join("");
   }
 
-  async findAll(filter: any): Promise<WelcomeUser[]> {
-    try {
-      const filterDetail = filter === undefined ? "" : ` with filter : ${JSON.stringify(filter, null, 2)?.replace(/[\n\r]+/g, "")}`;
-      this.logger.log(`[FindAllUsers] - find all users ${filterDetail}`);
-
-      return (
-        await this.firestoreService.getAllDocuments<WelcomeUser>(FIRESTORE_COLLECTIONS.WELCOME_USERS, filter)
-      ).map(u => new WelcomeUser(u));
-    } catch (error) {
-      if (error instanceof HttpException) {
-        this.logger.error(error);
-        throw error;
-      } else {
-        throw new InternalServerErrorException();
+  /**
+   * get all of the newly unlocked steps.
+   * @param user - The user to check
+   * @param now - The actual date
+   * @returns The list of unlocked steps
+   */
+  private static getNewlyUnlockedSteps(user: WelcomeUser, now: Date): WelcomeUser["steps"][0]["_id"][] {
+    return user.steps !== undefined ? user.steps.reduce<string[]>((acc, step) => {
+      if (step.unlockEmailSentAt === undefined && step.unlockDate.toDate() <= now) {
+        acc.push(step._id);
+      }
+      return acc;
+    }, []) : [];
   }
 
   public async createUser(createUserDto: CreateUserDto): Promise<WelcomeUser> {
@@ -104,22 +103,11 @@ export class WelcomeService {
     await this.gipService.deleteUser(id);
   }
 
-  /**
-   * get all of the newly unlocked steps.
-   * @param user - The user to check
-   * @param now - The actual date
-   * @returns The list of unlocked steps
-   */
-  getNewlyUnlockedSteps(user: WelcomeUser, now: Date) {
-    return user.steps ? user.steps.reduce<string[]>((acc, step) => {
-      // date format is not the same everywhere (string ISOdate VS timestamp)
-      this.logger.debug(`[getNewlyUnlockedSteps] ${step.unlockDate.seconds} <= ${now.getSeconds()}`);
+  public async update(id: string, updateUserDto: UpdateUserDto): Promise<WelcomeUser> {
+    const userToUpdate = Object.assign(instanceToPlain(updateUserDto), { lastUpdate: Timestamp.now() });
+    await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.WELCOME_USERS, id, userToUpdate);
 
-      if (!step.unlockEmailSentAt && step.unlockDate.toDate() <= now) {
-        acc.push(step._id);
-      }
-      return acc;
-    }, []) : [];
+    return this.findOne(id);
   }
 
   /**
@@ -130,52 +118,37 @@ export class WelcomeService {
    */
   public async run(now: Date): Promise<PromiseSettledResult<{ _id: WelcomeUser["_id"] }>[]> {
     const steps = await this.stepService.findAll();
-    const users = await this.findAll(undefined);
+    const users = await this.findAll(now);
     const userEmails = [];
-
-    this.logger.debug(`users count : ${users.length}`);
-    
-    // for each User
     users.forEach(user => {
-      // we get all the new Steps unlocked
-      const unlockedSteps = this.getNewlyUnlockedSteps(user, now);
-
-      // selecting the most recent step in the list (fallback case : undefined)
-      const step = unlockedSteps[0] !== undefined ? steps.find(step => step._id === unlockedSteps[0]) : undefined;
-      this.logger.log(user.email);
-      
-      // if the Step is valid, generate a Promise for an email and for store the state in db
-      if (step && step.unlockEmail) {
-        userEmails.push(this.getStepEmailPromiseThenSaveState(user, unlockedSteps, step));
-        this.logger.debug(`[WelcomeServive][run] ${user.email} - Unlocked Steps: ${unlockedSteps.toString()}`);
+      const unlockedSteps = WelcomeService.getNewlyUnlockedSteps(user, now);
+      const step = unlockedSteps[0] !== undefined ? steps.find(s => s._id === unlockedSteps[0]) : undefined;
+      if (step?.unlockEmail !== undefined) {
+        userEmails.push(new Promise((resolve, reject) => {
+          this.mailerService
+            .sendMail({
+              to: user.email,
+              subject: step.unlockEmail.subject,
+              html: this.md.render(step.unlockEmail.body, {
+                appName: APP_NAME,
+                appUrl: APP_URL,
+                userFirstName: user.firstName,
+                userLastName: user.lastName,
+                managerFirstName: user.hrReferent.firstName,
+                managerLastName: user.hrReferent.lastName,
+                stepId: step._id,
+              }),
+            })
+            .then(async() => {
+              await this.updateEmailSteps(user, unlockedSteps);
+              resolve({ _id: user._id });
+            })
+            .catch(({ message }) => reject({ _id: user._id, message }));
+        }));
       }
     });
 
     return Promise.allSettled(userEmails);
-  }
-
-  async getStepEmailPromiseThenSaveState(user: WelcomeUser, unlockedSteps: string[], step: Step): Promise<any> {
-    return new Promise((resolve, reject) => {
-      this.mailerService
-        .sendMail({
-          to: user.email,
-          subject: step.unlockEmail.subject,
-          html: this.md.render(step.unlockEmail.body, {
-            app_name: APP_NAME,
-            app_url: APP_URL,
-            user_firstName: user.firstName,
-            user_lastName: user.lastName,
-            manager_firstName: user.referentRH.firstName,
-            manager_lastName: user.referentRH.lastName,
-            step_id: step._id,
-          }),
-        })
-        .then(async() => {
-          await this.updateEmailSteps(user, unlockedSteps);
-          resolve({ _id: user._id });
-        })
-        .catch(({ message }) => reject({ _id: user._id, message }));
-    });
   }
 
   /**
