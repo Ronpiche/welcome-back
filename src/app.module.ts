@@ -18,6 +18,7 @@ import { QuizModule } from "@modules/quiz/quiz.module";
 import { JwtGuard } from "@src/guards/jwt.guard";
 import { RoleGuard } from "@src/guards/role.guard";
 import { GipModule } from "@src/services/gip/gip.module";
+import { CronModule } from "./services/crons/crons.module";
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { GipModule } from "@src/services/gip/gip.module";
     CloudStorageModule,
     QuizModule,
     GipModule,
+    CronModule,
   ],
   controllers: [AppController],
   providers: [
