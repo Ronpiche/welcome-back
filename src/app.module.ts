@@ -15,6 +15,9 @@ import { AgenciesModule } from "@modules/agencies/agencies.module";
 import { MembersModule } from "@modules/members/members.module";
 import { CloudStorageModule } from "@modules/cloud-storage/cloud-storage.module";
 import { QuizModule } from "@modules/quiz/quiz.module";
+import { FeedbackModule } from "@modules/feedback/feedback.module";
+import { FeedbackQuestionModule } from "@modules/feedback-question/feedback-question.module";
+import { FeedbackAnswerModule } from "@modules/feedback-answer/feedback-answer.module";
 import { JwtGuard } from "@src/guards/jwt.guard";
 import { RoleGuard } from "@src/guards/role.guard";
 import { GipModule } from "@src/services/gip/gip.module";
@@ -49,6 +52,9 @@ import { CronModule } from "./services/crons/crons.module";
     AuthorizationModule,
     WelcomeModule,
     ContentModule,
+    FeedbackModule,
+    FeedbackQuestionModule,
+    FeedbackAnswerModule,
     StepModule,
     AgenciesModule,
     MembersModule,

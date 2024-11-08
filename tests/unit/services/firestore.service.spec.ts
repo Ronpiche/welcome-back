@@ -1,7 +1,7 @@
 import { ConflictException, InternalServerErrorException, Logger, NotFoundException } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import { Filter, Firestore } from "@google-cloud/firestore";
-import type { DocumentSnapshot, QueryDocumentSnapshot } from "@google-cloud/firestore";
+import type { DocumentReference, DocumentSnapshot, QueryDocumentSnapshot } from "@google-cloud/firestore";
 import { FirestoreErrorCode } from "@src/configs/types/Firestore.types";
 import type { FIRESTORE_COLLECTIONS } from "@src/configs/types/Firestore.types";
 import { FirestoreService } from "@src/services/firestore/firestore.service";
@@ -43,6 +43,7 @@ describe("FirestoreService", () => {
               where: jest.fn().mockReturnThis(),
               add: jest.fn().mockResolvedValue(documents[0]._id),
             }),
+            recursiveDelete: jest.fn(),
           },
         },
         {
@@ -65,6 +66,17 @@ describe("FirestoreService", () => {
 
   afterEach(() => {
     jest.resetAllMocks();
+  });
+
+  describe("getDoc", () => {
+    it("should return a document reference when getDoc is called.", () => {
+      const docId = "1";
+      const docRef = {} as DocumentReference;
+      const spy = jest.spyOn(service["firestore"].collection(collection), "doc").mockReturnValue(docRef);
+      const getDoc = service.getDoc(collection, docId);
+      expect(spy).toHaveBeenCalledWith(docId);
+      expect(getDoc).toBe(docRef);
+    });
   });
 
   describe("getAllDocuments", () => {
@@ -157,6 +169,21 @@ describe("FirestoreService", () => {
     it("should throw an InternalServerError when database fails.", async() => {
       jest.spyOn(service["firestore"].collection(collection).doc(documents[0]._id), "delete").mockImplementation().mockRejectedValue(new InternalServerErrorException());
       const error: InternalServerErrorException = await getError(async() => service.deleteDocument(collection, documents[0]._id));
+      expect(error).not.toBeInstanceOf(NoErrorThrownError);
+      expect(error).toBeInstanceOf(InternalServerErrorException);
+    });
+  });
+
+  describe("deleteRecursive", () => {
+    it("should delete when deleteRecursive is called.", async() => {
+      const spy = jest.spyOn(service["firestore"], "recursiveDelete");
+      await service.deleteRecursive({} as DocumentReference);
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+
+    it("should throw an InternalServerError when database fails.", async() => {
+      jest.spyOn(service["firestore"], "recursiveDelete").mockRejectedValue(new InternalServerErrorException());
+      const error: InternalServerErrorException = await getError(async() => service.deleteRecursive({} as DocumentReference));
       expect(error).not.toBeInstanceOf(NoErrorThrownError);
       expect(error).toBeInstanceOf(InternalServerErrorException);
     });

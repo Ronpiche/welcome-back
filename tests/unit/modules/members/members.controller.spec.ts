@@ -2,7 +2,6 @@ import type { TestingModule } from "@nestjs/testing";
 import { Test } from "@nestjs/testing";
 import { MembersController } from "@src/modules/members/members.controller";
 import { MembersService } from "@src/modules/members/members.service";
-import { MembersServiceMock } from "@tests/unit/__mocks__/members/members.service.mock";
 import type { OutputMembersDto } from "@src/modules/members/dto/output-members.dto";
 import { createMemberMock, OutputMembersDtoMock } from "@tests/unit/__mocks__/members/members.entity.mock";
 
@@ -12,15 +11,26 @@ describe("MembersController", () => {
   beforeEach(async() => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [MembersController],
-      providers: [{ provide: MembersService, useClass: MembersServiceMock }],
+      providers: [
+        {
+          provide: MembersService,
+          useValue: {
+            findAll: jest.fn().mockResolvedValue([OutputMembersDtoMock]),
+            createMany: jest.fn().mockResolvedValue(undefined),
+            create: jest.fn().mockResolvedValue(OutputMembersDtoMock),
+            remove: jest.fn().mockResolvedValue(undefined),
+            update: jest.fn().mockResolvedValue(OutputMembersDtoMock),
+          },
+        },
+      ],
     }).compile();
 
     controller = module.get<MembersController>(MembersController);
   });
 
   describe("create", () => {
-    it("should create a member, and return an OutputMembers", () => {
-      const data = controller.create(createMemberMock);
+    it("should create a member, and return an OutputMembers", async() => {
+      const data = await controller.create(createMemberMock);
       expect(data).toBeDefined();
       expect(data).toEqual(OutputMembersDtoMock);
     });
@@ -42,17 +52,17 @@ describe("MembersController", () => {
   });
 
   describe("remove", () => {
-    it("should delete 1 member", () => {
+    it("should delete 1 member", async() => {
       const documentId = "789QSD123";
-      const res = controller.remove(documentId);
+      const res = await controller.remove(documentId);
       expect(res).toBeUndefined();
     });
   });
 
   describe("update", () => {
-    it("should update 1 member", () => {
+    it("should update 1 member", async() => {
       const documentId = "789QSD123";
-      const res = controller.update(documentId, createMemberMock);
+      const res = await controller.update(documentId, createMemberMock);
       expect(res).toBeDefined();
       expect(res).toEqual(OutputMembersDtoMock);
     });

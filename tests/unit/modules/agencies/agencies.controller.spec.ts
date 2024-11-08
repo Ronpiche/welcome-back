@@ -4,7 +4,6 @@ import { AgenciesController } from "@src/modules/agencies/agencies.controller";
 import { AgenciesService } from "@src/modules/agencies/agencies.service";
 import type { OutputAgencyDto } from "@src/modules/agencies/dto/output-agency.dto";
 import { createAgencyMock, outputAgencyMock } from "@tests/unit/__mocks__/agencies/agencies.entity.mock";
-import { AgenciesServiceMock } from "@tests/unit/__mocks__/agencies/agencies.service.mock";
 
 describe("agencyController", () => {
   let controller: AgenciesController;
@@ -12,15 +11,26 @@ describe("agencyController", () => {
   beforeEach(async() => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AgenciesController],
-      providers: [{ provide: AgenciesService, useClass: AgenciesServiceMock }],
+      providers: [
+        {
+          provide: AgenciesService,
+          useValue: {
+            findAll: jest.fn().mockResolvedValue([outputAgencyMock]),
+            createMany: jest.fn().mockResolvedValue(undefined),
+            create: jest.fn().mockResolvedValue(outputAgencyMock),
+            remove: jest.fn().mockResolvedValue(undefined),
+            update: jest.fn().mockResolvedValue(outputAgencyMock),
+          },
+        },
+      ],
     }).compile();
 
     controller = module.get<AgenciesController>(AgenciesController);
   });
 
   describe("create", () => {
-    it("should create an agency, and return an OutputAgency", () => {
-      const data = controller.create(createAgencyMock);
+    it("should create an agency, and return an OutputAgency", async() => {
+      const data = await controller.create(createAgencyMock);
       expect(data).toBeDefined();
       expect(data).toEqual(outputAgencyMock);
     });
@@ -42,17 +52,17 @@ describe("agencyController", () => {
   });
 
   describe("remove", () => {
-    it("should delete 1 agency", () => {
+    it("should delete 1 agency", async() => {
       const documentId = "789QSD123";
-      const res = controller.remove(documentId);
+      const res = await controller.remove(documentId);
       expect(res).toBeUndefined();
     });
   });
 
   describe("update", () => {
-    it("should update 1 agency", () => {
+    it("should update 1 agency", async() => {
       const documentId = "789QSD123";
-      const res = controller.update(documentId, createAgencyMock);
+      const res = await controller.update(documentId, createAgencyMock);
       expect(res).toBeDefined();
       expect(res).toEqual(outputAgencyMock);
     });

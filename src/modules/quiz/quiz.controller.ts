@@ -60,8 +60,8 @@ export class QuizController {
   @ApiOperation({ summary: "Update a quiz", description: "Returns the updated quiz" })
   @ApiOkResponse({ description: "Ok", type: Quiz })
   @ApiNotFoundResponse({ description: "Not found" })
-  public async update(@Param("id") id: string, @Body() updateStepDto: UpdateQuizDto): Promise<Quiz> {
-    return this.quizService.update(id, updateStepDto);
+  public async update(@Param("id") id: string, @Body() updateQuizDto: UpdateQuizDto): Promise<Quiz> {
+    return this.quizService.update(id, updateQuizDto);
   }
 
   @Delete(":id")

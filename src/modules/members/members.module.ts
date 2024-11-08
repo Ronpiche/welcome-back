@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
-import { MembersService } from "./members.service";
-import { MembersController } from "./members.controller";
+import { MembersService } from "@modules/members/members.service";
+import { MembersController } from "@modules/members/members.controller";
 import { FirestoreModule } from "@src/services/firestore/firestore.module";
 
 @Module({
