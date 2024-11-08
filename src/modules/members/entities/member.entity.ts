@@ -1,21 +1,21 @@
 class RoleMember {
-  scope: string;
+  public scope: string;
 
-  subscope?: string;
+  public subscope?: string;
 
-  role: string;
+  public role: string;
 }
 
 export class Member {
-  _id: string;
+  public _id: string;
 
-  firstname: string;
+  public firstname: string;
 
-  lastname: string;
+  public lastname: string;
 
-  gender: "male" | "female";
+  public gender: "male" | "female";
 
-  executiveCommittee: boolean;
+  public executiveCommittee: boolean;
 
-  roles: RoleMember[];
+  public roles: RoleMember[];
 }

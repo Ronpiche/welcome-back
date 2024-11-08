@@ -9,12 +9,12 @@ import {
   ClassSerializerInterceptor,
   Put,
 } from "@nestjs/common";
-import { AgenciesService } from "./agencies.service";
-import { CreateAgencyDto } from "./dto/create-agency.dto";
-import { UpdateAgencyDto } from "./dto/update-agency.dto";
+import { AgenciesService } from "@modules/agencies/agencies.service";
+import { CreateAgencyDto } from "@modules/agencies/dto/create-agency.dto";
+import { UpdateAgencyDto } from "@modules/agencies/dto/update-agency.dto";
 import { plainToInstance } from "class-transformer";
-import { OutputAgencyDto } from "./dto/output-agency.dto";
-import { Agency } from "./entities/agency.entity";
+import { OutputAgencyDto } from "@modules/agencies/dto/output-agency.dto";
+import { Agency } from "@modules/agencies/entities/agency.entity";
 import { ApiOperation, ApiBody, ApiOkResponse, ApiTags, ApiParam, ApiBearerAuth } from "@nestjs/swagger";
 import { Role, Roles } from "@src/decorators/role";
 
@@ -30,10 +30,10 @@ export class AgenciesController {
   @ApiOperation({ summary: "Create an agency", description: "Returns a new agency" })
   @ApiBody({ type: CreateAgencyDto })
   @ApiOkResponse({ description: "agency created", type: OutputAgencyDto })
-  public create(@Body() createAgencyDto: CreateAgencyDto): OutputAgencyDto {
-    return plainToInstance(OutputAgencyDto, this.agenciesService.create(createAgencyDto), {
-      excludeExtraneousValues: true,
-    });
+  public async create(@Body() createAgencyDto: CreateAgencyDto): Promise<OutputAgencyDto> {
+    const agency = await this.agenciesService.create(createAgencyDto);
+
+    return plainToInstance(OutputAgencyDto, agency, { excludeExtraneousValues: true });
   }
 
   @Post("create-many")
@@ -64,10 +64,10 @@ export class AgenciesController {
   @ApiParam({ name: "id", type: String, required: true, example: "123e4567-e89b-12d3-a456-426614174000" })
   @ApiBody({ type: UpdateAgencyDto })
   @ApiOkResponse({ description: "agency updated", type: OutputAgencyDto })
-  public update(@Param("id") id: string, @Body() updateAgencyDto: UpdateAgencyDto): OutputAgencyDto {
-    return plainToInstance(OutputAgencyDto, this.agenciesService.update(id, updateAgencyDto), {
-      excludeExtraneousValues: true,
-    });
+  public async update(@Param("id") id: string, @Body() updateAgencyDto: UpdateAgencyDto): Promise<OutputAgencyDto> {
+    const agency = await this.agenciesService.update(id, updateAgencyDto);
+
+    return plainToInstance(OutputAgencyDto, agency, { excludeExtraneousValues: true });
   }
 
   @Delete(":id")
@@ -76,7 +76,7 @@ export class AgenciesController {
   @ApiOperation({ summary: "Delete an agency" })
   @ApiParam({ name: "id", type: String, required: true, example: "123e4567-e89b-12d3-a456-426614174000" })
   @ApiOkResponse({ description: "OK" })
-  public remove(@Param("id") id: string): void {
-    this.agenciesService.remove(id);
+  public async remove(@Param("id") id: string): Promise<void> {
+    await this.agenciesService.remove(id);
   }
 }

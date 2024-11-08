@@ -1,17 +1,17 @@
 export class Agency {
-  _id: string;
+  public _id: string;
 
-  name: string;
+  public name: string;
 
-  coordinates: number[];
+  public coordinates: number[];
 
-  address: string;
+  public address: string;
 
-  creationYear: number;
+  public creationYear: number;
 
-  services: string[];
+  public services: string[];
 
-  customers: string[];
+  public customers: string[];
 
-  goodPlaces: string[];
+  public goodPlaces: string[];
 }

@@ -16,7 +16,9 @@ export class GipService {
     try {
       return await this.auth.createUser(properties);
     } catch (error) {
-      this.logger.error(error.message);
+      if (error instanceof Error) {
+        this.logger.error(error.message);
+      }
       throw new InternalServerErrorException();
     }
   }
@@ -25,7 +27,9 @@ export class GipService {
     try {
       await this.auth.deleteUser(uid);
     } catch (error) {
-      this.logger.error(error.message);
+      if (error instanceof Error) {
+        this.logger.error(error.message);
+      }
       throw new InternalServerErrorException();
     }
   }

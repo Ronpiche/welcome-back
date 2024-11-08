@@ -4,33 +4,33 @@ import { Expose } from "class-transformer";
 export class OutputAgencyDto {
   @ApiProperty()
   @Expose()
-  _id: string;
+  public _id: string;
 
   @ApiProperty()
   @Expose()
-  name: string;
+  public name: string;
 
   @ApiProperty()
   @Expose()
-  coordinates: number[];
+  public coordinates: number[];
 
   @ApiProperty()
   @Expose()
-  address: string;
+  public address: string;
 
   @ApiProperty()
   @Expose()
-  creationYear: number;
+  public creationYear: number;
 
   @ApiProperty()
   @Expose()
-  services: string[];
+  public services: string[];
 
   @ApiProperty()
   @Expose()
-  customers: string[];
+  public customers: string[];
 
   @ApiProperty()
   @Expose()
-  goodPlaces: string[];
+  public goodPlaces: string[];
 }
