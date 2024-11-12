@@ -150,13 +150,13 @@ export class WelcomeService {
           to: user.email,
           subject: step.unlockEmail.subject,
           html: this.md.render(step.unlockEmail.body, {
-            app_name: APP_NAME,
-            app_url: APP_URL,
-            user_firstName: user.firstName,
-            user_lastName: user.lastName,
-            manager_firstName: user.hrReferent.firstName,
-            manager_lastName: user.hrReferent.lastName,
-            step_id: step._id,
+            appName: APP_NAME,
+            appUrl: APP_URL,
+            userFirstName: user.firstName,
+            userLastName: user.lastName,
+            managerFirstName: user.hrReferent.firstName,
+            managerLastName: user.hrReferent.lastName,
+            stepId: step._id,
           }),
         })
         .then(async() => {
