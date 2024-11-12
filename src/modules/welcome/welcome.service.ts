@@ -10,9 +10,9 @@ import { WelcomeUser } from "@modules/welcome/entities/user.entity";
 import { instanceToPlain } from "class-transformer";
 import { StepService } from "@modules/step/step.service";
 import { MailerService } from "@nestjs-modules/mailer";
+import { GipService } from "@src/services/gip/gip.service";
 import markdownit, { StateCore } from "markdown-it";
 import crypto from "crypto";
-import { GipService } from "@src/services/gip/gip.service";
 
 const APP_NAME = "Welcome";
 const APP_URL = "http://localhost:3000";

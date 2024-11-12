@@ -30,7 +30,7 @@ export class CronService {
     timeZone: "Europe/Paris",
   })
   public async handleCron(): Promise<void> {
-    this.logger.log("[CronService] sending emails...");
+    this.logger.log("[CronService] sending unlocked steps emails...");
     try {
       await this.welcomeService.run(new Date());
     } catch (error) {
