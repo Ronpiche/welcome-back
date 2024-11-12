@@ -1,7 +1,7 @@
 import moment from "moment";
 
 function toISO8601Format(date: Date): string {
-  return moment(date).format("YYYY-MM-DD");
+  return date.toISOString().substring(0, 10);
 }
 
 export { toISO8601Format };
