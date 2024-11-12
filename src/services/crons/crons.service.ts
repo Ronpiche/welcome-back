@@ -29,10 +29,10 @@ export class CronService {
     name: "notifications",
     timeZone: "Europe/Paris",
   })
-  handleCron(): void {
+  public async handleCron(): Promise<void> {
     this.logger.log("[CronService] sending emails...");
     try {
-      this.welcomeService.run(new Date());
+      await this.welcomeService.run(new Date());
     } catch (error) {
       this.logger.error(error?.message);
     }
