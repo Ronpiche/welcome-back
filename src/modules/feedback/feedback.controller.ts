@@ -2,12 +2,13 @@ import { CreateFeedbackDto } from "@modules/feedback/dto/create-feedback.dto";
 import { UpdateFeedbackDto } from "@modules/feedback/dto/update-feedback.dto";
 import { FeedbackService } from "@modules/feedback/feedback.service";
 import { Controller, Get, Post, Body, Param, Delete, HttpStatus, Put, HttpCode } from "@nestjs/common";
-import { ApiConflictResponse, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiConflictResponse, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Feedback } from "@modules/feedback/entities/feedback.entity";
 import { Role, Roles } from "@src/decorators/role";
 
 @ApiTags("Feedback")
 @Controller("feedbacks")
+@ApiBearerAuth()
 export class FeedbackController {
   public constructor(private readonly feedbackService: FeedbackService) { }
 
