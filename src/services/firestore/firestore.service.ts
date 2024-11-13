@@ -5,7 +5,7 @@ import {
   Logger,
   NotFoundException,
 } from "@nestjs/common";
-import { Filter, Firestore, Query } from "@google-cloud/firestore";
+import { DocumentReference, Filter, Firestore, Query } from "@google-cloud/firestore";
 import { FIRESTORE_COLLECTIONS, FirestoreDocumentType, FirestoreErrorCode } from "@src/configs/types/Firestore.types";
 
 @Injectable()
@@ -15,18 +15,27 @@ export class FirestoreService {
     private readonly logger: Logger,
   ) {}
 
+  public getDoc(
+    collection: FIRESTORE_COLLECTIONS,
+    documentId: string,
+    parentDoc: DocumentReference | Firestore = this.firestore,
+  ): DocumentReference {
+    return parentDoc.collection(collection).doc(documentId);
+  }
+
   public async getAllDocuments<T extends FirestoreDocumentType>(
     collection: FIRESTORE_COLLECTIONS,
     filter?: Filter,
+    parentDoc: DocumentReference | Firestore = this.firestore,
   ): Promise<T[]> {
     const documents: T[] = [];
     try {
-      const query = this.firestore.collection(collection);
+      const query = parentDoc.collection(collection);
       const filteredQuery = filter !== undefined ? query.where(filter) : query;
       const querySnapshot = await filteredQuery.get();
-      querySnapshot.forEach(doc => {
+      querySnapshot.forEach(docData => {
         documents.push({
-          ...(doc.data() as T),
+          ...(docData.data() as T),
         });
       });
 
@@ -40,9 +49,10 @@ export class FirestoreService {
   public async getDocument<T extends FirestoreDocumentType>(
     collection: FIRESTORE_COLLECTIONS,
     documentId: string,
+    parentDoc: DocumentReference | Firestore = this.firestore,
   ): Promise<T> {
     try {
-      const documentSnapshot = await this.firestore.collection(collection).doc(documentId).get();
+      const documentSnapshot = await parentDoc.collection(collection).doc(documentId).get();
       if (!documentSnapshot.exists) {
         throw new NotFoundException("Document not found in DB");
       }
@@ -59,19 +69,16 @@ export class FirestoreService {
   public async saveDocument<T extends FirestoreDocumentType>(
     collection: FIRESTORE_COLLECTIONS,
     data: Record<string, unknown>,
+    parentDoc: DocumentReference | Firestore = this.firestore,
   ): Promise<T> {
     try {
-      let id = typeof data._id === "string" ? data._id : undefined;
-      if (id === undefined) {
-        const documentRef = await this.firestore.collection(collection).add(data);
-        id = documentRef.id;
-      } else {
-        const documentRef = this.firestore.collection(collection).doc(id);
-        await documentRef.create(data);
-      }
+      let id = typeof data._id === "string" ? data._id : "";
+      const documentRef = id !== "" ? parentDoc.collection(collection).doc(id) : parentDoc.collection(collection).doc();
+      id = documentRef.id;
+      await documentRef.create({ ...data, _id: id });
       this.logger.log(`[saveDocument] - data saved to database, id:${id}`);
 
-      return await this.getDocument(collection, id);
+      return await this.getDocument(collection, id, parentDoc);
     } catch (error) {
       if (error instanceof Error) {
         if ("code" in error && error.code === FirestoreErrorCode.ALREADY_EXISTS) {
@@ -87,9 +94,10 @@ export class FirestoreService {
     collection: FIRESTORE_COLLECTIONS,
     documentId: string,
     data: Record<string, unknown>,
+    parentDoc: DocumentReference | Firestore = this.firestore,
   ): Promise<T> {
     try {
-      await this.firestore
+      await parentDoc
         .collection(collection)
         .doc(documentId)
         .update({ ...data });
@@ -101,9 +109,22 @@ export class FirestoreService {
     }
   }
 
-  public async deleteDocument(collection: FIRESTORE_COLLECTIONS, documentId: string): Promise<void> {
+  public async deleteDocument(
+    collection: FIRESTORE_COLLECTIONS,
+    documentId: string,
+    parentDoc: DocumentReference | Firestore = this.firestore,
+  ): Promise<void> {
     try {
-      await this.firestore.collection(collection).doc(documentId).delete();
+      await parentDoc.collection(collection).doc(documentId).delete();
+    } catch (error) {
+      this.logger.error(error);
+      throw new InternalServerErrorException();
+    }
+  }
+
+  public async deleteRecursive(doc: DocumentReference): Promise<void> {
+    try {
+      await this.firestore.recursiveDelete(doc);
     } catch (error) {
       this.logger.error(error);
       throw new InternalServerErrorException();

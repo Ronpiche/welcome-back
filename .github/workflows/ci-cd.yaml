@@ -104,5 +104,4 @@ jobs:
           env_vars: |
             NODE_ENV=production
             NAME_PROJECT=projects/222796272532
-            COGNITO_BY_PASS=true
             NAME_BUCKET_STATIC_CONTENT=daveo-gcp-welcome-sbx-cs-static-content

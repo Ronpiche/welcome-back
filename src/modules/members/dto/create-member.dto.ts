@@ -5,39 +5,39 @@ import { IsArray, IsBoolean, IsIn, IsOptional, IsString, ValidateNested } from "
 class RoleMember {
   @ApiProperty({ example: "Lille" })
   @IsString()
-  scope: string;
+  public scope: string;
 
   @ApiProperty({ example: "agency" })
   @IsString()
   @IsOptional()
-  subscope?: string;
+  public subscope?: string;
 
   @ApiProperty({ example: "BusinessOwner" })
   @IsString()
-  role: string;
+  public role: string;
 }
 
 export class CreateMemberDto {
   @ApiProperty({ example: "John" })
   @IsString()
-  firstname: string;
+  public firstname: string;
 
   @ApiProperty({ example: "Doe" })
   @IsString()
-  lastname: string;
+  public lastname: string;
 
   @ApiProperty({ example: "male" })
   @IsIn(["male", "female"], { message: "Gender must be either male or female" })
-  gender: "male" | "female";
+  public gender: "male" | "female";
 
   @ApiProperty({ required: false })
   @IsBoolean()
   @IsOptional()
-  executiveCommittee: boolean;
+  public executiveCommittee: boolean;
 
   @ApiProperty({ isArray: true, type: RoleMember })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => RoleMember)
-  roles: RoleMember[];
+  public roles: RoleMember[];
 }

@@ -2,7 +2,6 @@ import type { TestingModule } from "@nestjs/testing";
 import { Test } from "@nestjs/testing";
 import { CloudStorageService } from "@src/modules/cloud-storage/cloud-storage.service";
 import type { Storage } from "@google-cloud/storage";
-import { getImageFullExtension } from "@src/modules/cloud-storage/cloud-storage.helper";
 import { ConfigService } from "@nestjs/config";
 import { BadRequestException } from "@nestjs/common";
 
@@ -80,17 +79,6 @@ describe("CloudStorageService", () => {
     it("should return correct content type for svg", () => {
       const result = service.getExtension("test.svg");
       expect(result).toBe("image/svg+xml");
-    });
-  });
-
-  describe("getImageFullExtension", () => {
-    it("should return correct format for svg", () => {
-      expect(getImageFullExtension("svg")).toBe("image/svg+xml");
-    });
-
-    it("should return correct format for other extensions", () => {
-      expect(getImageFullExtension("jpg")).toBe("image/jpg");
-      expect(getImageFullExtension("png")).toBe("image/png");
     });
   });
 });
