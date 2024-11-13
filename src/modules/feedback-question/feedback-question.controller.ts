@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Param, Delete, HttpStatus, Put, HttpCode } from "@nestjs/common";
-import { ApiConflictResponse, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiConflictResponse, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Role, Roles } from "@src/decorators/role";
 import { CreateFeedbackQuestionDto } from "@modules/feedback-question/dto/create-feedback-question.dto";
 import { UpdateFeedbackQuestionDto } from "@modules/feedback-question/dto/update-feedback-question.dto";
@@ -8,6 +8,7 @@ import { FeedbackQuestion } from "@modules/feedback-question/entities/feedback-q
 
 @ApiTags("Feedback")
 @Controller("feedbacks")
+@ApiBearerAuth()
 export class FeedbackQuestionController {
   public constructor(private readonly feedbackQuestionService: FeedbackQuestionService) { }
 

@@ -1,12 +1,13 @@
 import { FeedbackAnswerService } from "@modules/feedback-answer/feedback-answer.service";
 import { Controller, Get, Post, Body, Param, Delete, HttpStatus, Put, HttpCode, Request, NotFoundException } from "@nestjs/common";
-import { ApiConflictResponse, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiConflictResponse, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { FeedbackAnswer } from "@modules/feedback-answer/entities/feedback-answer.entity";
 import { Role, Roles } from "@src/decorators/role";
 import { UserRequest } from "@src/guards/jwt.guard";
 
 @ApiTags("Feedback")
 @Controller("feedbacks")
+@ApiBearerAuth()
 export class FeedbackAnswerController {
   public constructor(private readonly feedbackAnswerService: FeedbackAnswerService) { }
 
@@ -47,7 +48,7 @@ export class FeedbackAnswerController {
   }
 
   @Get(":id/questions/:questionId/answers/me")
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.USER)
   @ApiOperation({ summary: "Find my feedback answer", description: "Returns a feedback answer or 404" })
   @ApiOkResponse({ description: "Ok", type: FeedbackAnswer })
   @ApiNotFoundResponse({ description: "Not found" })
