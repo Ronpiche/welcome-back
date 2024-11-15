@@ -53,9 +53,9 @@ describe("testing welcome", () => {
   });
 
   describe("create user", () => {
-    it("api/welcome/users (POST) - should create one user", async() => {
+    it("api/welcome/users (POST) - should create one user when calling test", async() => {
       const res = await request(http).post(`/welcome/users`).send(user);
-      expect(res.body.id).toEqual(id);
+      expect(res.body?.id).toStrictEqual(id);
       expect(res.status).toBe(201);
     });
 
