@@ -63,7 +63,6 @@
   "devDependencies": {
     "@commitlint/config-conventional": "^19.2.2",
     "@eslint/config-inspector": "^0.5.4",
-    "@nestjs/schedule": "^4.1.1",
     "@stryker-mutator/core": "^8.5.0",
     "@stryker-mutator/jest-runner": "^8.5.0",
     "@stryker-mutator/typescript-checker": "^8.5.0",
