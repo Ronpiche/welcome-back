@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, InternalServerErrorException, Logger, NotFoundException } from "@nestjs/common";
 import type { TestingModule } from "@nestjs/testing";
 import { Test } from "@nestjs/testing";
-import { MailerService } from "@nestjs-modules/mailer";
+import { EmailService } from "@src/services/email/email.service";
 import { Timestamp } from "@google-cloud/firestore";
 import { WelcomeService } from "@modules/welcome/welcome.service";
 import { FirestoreService } from "@src/services/firestore/firestore.service";
@@ -84,7 +84,7 @@ describe("UsersService", () => {
       providers: [
         WelcomeService,
         {
-          provide: MailerService,
+          provide: EmailService,
           useValue: {
             sendMail: jest.fn().mockResolvedValue(undefined),
           },
@@ -153,7 +153,7 @@ describe("UsersService", () => {
     });
 
     it("should throw an InternalServerError when mailer fails.", async() => {
-      jest.spyOn(service["mailerService"], "sendMail").mockImplementation().mockRejectedValue(new Error());
+      jest.spyOn(service["emailService"], "sendMail").mockImplementation().mockRejectedValue(new Error());
       const error: InternalServerErrorException = await getError(async() => service.createUser(createUserDto));
       expect(error).not.toBeInstanceOf(NoErrorThrownError);
       expect(error).toBeInstanceOf(InternalServerErrorException);
@@ -256,7 +256,7 @@ describe("UsersService", () => {
     });
 
     it("should return rejected when emails cannot be send.", async() => {
-      jest.spyOn(service["mailerService"], "sendMail").mockImplementation().mockRejectedValue(new Error("test"));
+      jest.spyOn(service["emailService"], "sendMail").mockImplementation().mockRejectedValue(new Error("test"));
       const run = await service.run(new Date());
       expect(run).toStrictEqual([{ status: "rejected", reason: { _id: user._id, message: "test" } }]);
     });

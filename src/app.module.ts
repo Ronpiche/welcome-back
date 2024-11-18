@@ -4,7 +4,6 @@ import { ConfigModule } from "@nestjs/config";
 import { FirestoreModule } from "@src/services/firestore/firestore.module";
 import { AuthorizationModule } from "@modules/authorization/authorization.module";
 import { APP_GUARD } from "@nestjs/core";
-import { MailerModule } from "@nestjs-modules/mailer";
 import { WelcomeModule } from "@modules/welcome/welcome.module";
 import { JwtCognito } from "@modules/cognito/jwtCognito.service";
 import { ContentModule } from "@modules/content/content.module";
@@ -20,26 +19,12 @@ import { FeedbackQuestionModule } from "@modules/feedback-question/feedback-ques
 import { FeedbackAnswerModule } from "@modules/feedback-answer/feedback-answer.module";
 import { JwtGuard } from "@src/guards/jwt.guard";
 import { RoleGuard } from "@src/guards/role.guard";
+import { EmailModule } from "@src/services/email/email.module";
 import { GipModule } from "@src/services/gip/gip.module";
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MailerModule.forRoot({
-      transport: process.env.SMTP_HOST ? {
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT) || undefined,
-        auth: process.env.SMTP_AUTH_USERNAME ? {
-          user: process.env.SMTP_AUTH_USERNAME,
-          pass: process.env.SMTP_AUTH_PASSWORD,
-        } : undefined,
-      } : {
-        jsonTransport: true,
-      },
-      defaults: {
-        from: process.env.MAIL_FROM || "noreply@localhost",
-      },
-    }),
     JwtModule.registerAsync({
       global: true,
       useFactory: () => ({
@@ -47,6 +32,7 @@ import { GipModule } from "@src/services/gip/gip.module";
         signOptions: { expiresIn: "2h", algorithm: "HS256" },
       }),
     }),
+    EmailModule,
     FirestoreModule,
     AuthorizationModule,
     WelcomeModule,

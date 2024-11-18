@@ -1,0 +1,28 @@
+import {
+  Injectable,
+  Logger,
+} from "@nestjs/common";
+import { MailDataRequired, default as SendGrid } from "@sendgrid/mail";
+
+@Injectable()
+export class EmailService {
+  public constructor(private readonly logger: Logger) {}
+  
+  public async sendMail(mailRequirement: { to: string; subject: string; html: string }): Promise<void> {
+    try {
+      const mail: MailDataRequired = {
+        to: mailRequirement.to,
+        subject: mailRequirement.subject,
+        html: mailRequirement.html,
+        from: process.env.MAIL_FROM,
+      };
+
+      await SendGrid.send(mail);
+      this.logger.log(`Email successfully dispatched to ${mail.to as string}`);
+    } catch (error) {
+      // you can do more with the error
+      this.logger.error("Error while sending email", error);
+      throw error;
+    }
+  }
+}
