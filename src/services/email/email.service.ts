@@ -3,10 +3,16 @@ import {
   Logger,
 } from "@nestjs/common";
 import { MailDataRequired, default as SendGrid } from "@sendgrid/mail";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class EmailService {
-  public constructor(private readonly logger: Logger) {}
+  public constructor(
+    private readonly logger: Logger,
+    private readonly config: ConfigService,
+  ) {
+    SendGrid.setApiKey(config.get("SENDGRID_API_KEY"));
+  }
   
   public async sendMail(mailRequirement: { to: string; subject: string; html: string }): Promise<void> {
     try {
