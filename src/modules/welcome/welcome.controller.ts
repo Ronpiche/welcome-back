@@ -31,6 +31,7 @@ import {
 import { instanceToPlain, plainToInstance } from "class-transformer";
 import { WelcomeUser } from "@modules/welcome/entities/user.entity";
 import { EmailRunKO, EmailRunOK } from "@modules/welcome/dto/output/email-run.dto";
+import { WelcomeStepDto } from "@modules/welcome/dto/output/welcome-step.dto";
 import { Response } from "express";
 import { Role, Roles } from "@src/decorators/role";
 import { UserRequest } from "@src/guards/jwt.guard";
@@ -157,15 +158,17 @@ export class WelcomeController {
     return results;
   }
 
-  @Post("users/me/steps/:stepId/:subStepId")
+  @Post("users/me/steps/:stepId")
   @Roles(Role.USER)
   @ApiParam({ name: "stepId", type: String, example: "1" })
-  @ApiParam({ name: "subStepId", type: String, example: "1" })
   @ApiOperation({
     summary: "Complete my user sub step",
   })
-  public async completeMyStep(@Request() { user }: UserRequest, @Param("stepId") stepId: string, @Param("subStepId") subStepId: string): Promise<void> {
-    return this.welcomeService.completeSubStep(user.id, stepId, subStepId);
+  @ApiCreatedResponse({ description: "Sub step completed", type: WelcomeStepDto, isArray: true })
+  public async incrementMySubStep(@Request() { user }: UserRequest, @Param("stepId") stepId: string): Promise<WelcomeStepDto[]> {
+    const steps = await this.welcomeService.incrementSubStep(user.id, stepId);
+
+    return steps.map(step => plainToInstance(WelcomeStepDto, instanceToPlain(step), { excludeExtraneousValues: true }));
   }
 
   @Post("users/:userId/steps/:stepId")
@@ -173,7 +176,10 @@ export class WelcomeController {
   @ApiOperation({
     summary: "Complete an user sub step",
   })
-  public async completeSubStep(@Param("userId") userId: string, @Param("stepId") stepId: string, @Param("subStepId") subStepId: string): Promise<void> {
-    return this.welcomeService.completeSubStep(userId, stepId, subStepId);
+  @ApiCreatedResponse({ description: "Sub step completed", type: WelcomeStepDto, isArray: true })
+  public async incrementSubStep(@Param("userId") userId: string, @Param("stepId") stepId: string): Promise<WelcomeStepDto[]> {
+    const steps = await this.welcomeService.incrementSubStep(userId, stepId);
+
+    return steps.map(step => plainToInstance(WelcomeStepDto, instanceToPlain(step), { excludeExtraneousValues: true }));
   }
 }

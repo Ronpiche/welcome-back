@@ -2,7 +2,7 @@ import { HrReferentDto } from "@modules/welcome/dto/output/hr-referent.dto";
 import { ApiProperty } from "@nestjs/swagger";
 import { Expose, Transform, Type } from "class-transformer";
 import { Timestamp } from "@google-cloud/firestore";
-import { WelcomeStepDto } from "./welcome-step.dto";
+import { WelcomeStepDto } from "@modules/welcome/dto/output/welcome-step.dto";
 
 export class WelcomeUserDto {
   @ApiProperty()

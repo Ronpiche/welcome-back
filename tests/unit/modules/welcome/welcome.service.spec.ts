@@ -38,17 +38,17 @@ const user: WelcomeUser = {
     {
       _id: "1",
       unlockDate: Timestamp.fromDate(new Date(2022, 4, 25, 13, 24, 6)),
-      subStep: [{ _id: "1", isCompleted: true }],
+      subStepsCompleted: 1,
     },
     {
       _id: "2",
       unlockDate: Timestamp.fromDate(new Date(2022, 4, 25, 13, 24, 6)),
-      subStep: [{ _id: "1", isCompleted: false }],
+      subStepsCompleted: 0,
     },
     {
       _id: "3",
       unlockDate: Timestamp.fromDate(new Date(2022, 4, 25, 13, 24, 6)),
-      subStep: [{ _id: "1", isCompleted: false }],
+      subStepsCompleted: 0,
     },
   ],
 };
@@ -71,9 +71,9 @@ const createUserDto: CreateUserDto = {
   practice: PRACTICE.PRODUCT,
 };
 const steps: Step[] = [
-  { _id: "0", cutAt: 0.25, unlockEmail: { subject: "Test", body: "1234" }, maxDays: 90, minDays: 30, subStep: [{ _id: "1", isCompleted: false }] },
-  { _id: "1", cutAt: 0.5, unlockEmail: { subject: "Test", body: "1234" }, maxDays: 90, minDays: 30, subStep: [{ _id: "1", isCompleted: false }] },
-  { _id: "2", cutAt: 0.7, unlockEmail: { subject: "Test", body: "1234" }, maxDays: 90, minDays: 30, subStep: [{ _id: "1", isCompleted: false }] },
+  { _id: "1", cutAt: 0.25, unlockEmail: { subject: "Test", body: "1234" }, maxDays: 90, minDays: 30, subSteps: 1 },
+  { _id: "2", cutAt: 0.5, unlockEmail: { subject: "Test", body: "1234" }, maxDays: 90, minDays: 30, subSteps: 1 },
+  { _id: "3", cutAt: 0.7, unlockEmail: { subject: "Test", body: "1234" }, maxDays: 90, minDays: 30, subSteps: 1 },
 ];
 
 describe("UsersService", () => {
@@ -280,15 +280,14 @@ describe("UsersService", () => {
     });
   });
 
-  describe("completeSubStep", () => {
+  describe("incrementSubStep", () => {
     it("should complete user sub step when completeStep is called.", async() => {
-      await service.completeSubStep("1", "2", "1");
-
+      await service.incrementSubStep(user._id, steps[1]._id);
       expect(service["firestoreService"].updateDocument).toHaveBeenCalledWith(
         FIRESTORE_COLLECTIONS.WELCOME_USERS,
-        "1",
+        user._id,
         {
-          steps: [user.steps[0], { ...user.steps[1], subStep: [{ _id: "1", isCompleted: true }], completedAt: Timestamp.now() }, user.steps[2]],
+          steps: [user.steps[0], { ...user.steps[1], subStepsCompleted: 1, completedAt: Timestamp.now() }, user.steps[2]],
         },
       );
     });

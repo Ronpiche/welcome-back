@@ -1,12 +1,12 @@
-import { HttpException, Injectable, InternalServerErrorException } from "@nestjs/common";
-import { CreateStepDto } from "@src/modules/step/dto/create-step.dto";
-import { UpdateStepDto } from "@src/modules/step/dto/update-step.dto";
+import { Injectable } from "@nestjs/common";
+import { CreateStepDto } from "@modules/step/dto/create-step.dto";
+import { UpdateStepDto } from "@modules/step/dto/update-step.dto";
 import { FirestoreService } from "@src/services/firestore/firestore.service";
 import { FIRESTORE_COLLECTIONS } from "@src/configs/types/Firestore.types";
-import { Step } from "@src/modules/step/entities/step.entity";
+import { Step } from "@modules/step/entities/step.entity";
 import { instanceToPlain } from "class-transformer";
-import { generateStepDates } from "@src/modules/step/step.utils";
-import { HOLIDAY_COUNTRY } from "@src/modules/step/step.constants";
+import { generateStepDates } from "@modules/step/step.utils";
+import { HOLIDAY_COUNTRY } from "@modules/step/step.constants";
 
 @Injectable()
 export class StepService {
@@ -28,8 +28,7 @@ export class StepService {
   }
 
   public async update(id: string, updateStepDto: UpdateStepDto): Promise<Step> {
-    const stepToUpdate: Record<string, any> = instanceToPlain(updateStepDto);
-    await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.STEPS, id, stepToUpdate);
+    await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.STEPS, id, instanceToPlain(updateStepDto));
     
     return this.findOne(id);
   }

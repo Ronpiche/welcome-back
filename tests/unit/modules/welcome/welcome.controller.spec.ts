@@ -8,7 +8,16 @@ import { GRADE, PRACTICE } from "@src/modules/welcome/types/user.enum";
 import type { CreateUserDto } from "@src/modules/welcome/dto/input/create-user.dto";
 import { WelcomeUserDto } from "@src/modules/welcome/dto/output/welcome-user.dto";
 import type { WelcomeUser } from "@src/modules/welcome/entities/user.entity";
+import { Role } from "@src/decorators/role";
+import type { UserRequest } from "@src/guards/jwt.guard";
 
+const userReq: UserRequest = {
+  user: {
+    id: "1",
+    email: "",
+    role: Role.USER,
+  },
+};
 const user: WelcomeUser = {
   _id: "1",
   note: "",
@@ -33,17 +42,17 @@ const user: WelcomeUser = {
     {
       _id: "1",
       unlockDate: Timestamp.fromDate(new Date(2022, 4, 25, 13, 24, 6)),
-      subStep: [{ _id: "1", isCompleted: true }],
+      subStepsCompleted: 1,
     },
     {
       _id: "2",
       unlockDate: Timestamp.fromDate(new Date(2022, 4, 25, 13, 24, 6)),
-      subStep: [{ _id: "1", isCompleted: false }],
+      subStepsCompleted: 0,
     },
     {
       _id: "3",
       unlockDate: Timestamp.fromDate(new Date(2022, 4, 25, 13, 24, 6)),
-      subStep: [{ _id: "1", isCompleted: false }],
+      subStepsCompleted: 0,
     },
   ],
 };
@@ -71,17 +80,17 @@ const userDto = plainToInstance(WelcomeUserDto, {
     {
       _id: "1",
       unlockDate: new Date(2022, 4, 25, 13, 24, 6),
-      subStep: [{ _id: "1", isCompleted: true }],
+      subStepsCompleted: 1,
     },
     {
       _id: "2",
       unlockDate: new Date(2022, 4, 25, 13, 24, 6),
-      subStep: [{ _id: "1", isCompleted: false }],
+      subStepsCompleted: 0,
     },
     {
       _id: "3",
       unlockDate: new Date(2022, 4, 25, 13, 24, 6),
-      subStep: [{ _id: "1", isCompleted: false }],
+      subStepsCompleted: 0,
     },
   ],
 });
@@ -131,7 +140,7 @@ describe("Welcome controller", () => {
             remove: jest.fn().mockResolvedValue(undefined),
             update: jest.fn().mockResolvedValue(user),
             run: jest.fn().mockResolvedValue([{ status: "fulfilled", value: { _id: "1" } }]),
-            completeSubStep: jest.fn().mockResolvedValue({ status: "ok" }),
+            incrementSubStep: jest.fn().mockResolvedValue(user.steps),
           },
         },
       ],
@@ -197,10 +206,18 @@ describe("Welcome controller", () => {
     });
   });
 
-  describe("completeSubStep", () => {
-    it("should complete the user step when completeSubStep is called.", async() => {
-      const spy = jest.spyOn(controller["welcomeService"], "completeSubStep");
-      await controller.completeSubStep("1", "2", "3");
+  describe("incrementMySubStep", () => {
+    it("should complete the user step when incrementMySubStep is called.", async() => {
+      const spy = jest.spyOn(controller["welcomeService"], "incrementSubStep");
+      await controller.incrementMySubStep(userReq, "1");
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("incrementSubStep", () => {
+    it("should complete the user step when incrementSubStep is called.", async() => {
+      const spy = jest.spyOn(controller["welcomeService"], "incrementSubStep");
+      await controller.incrementSubStep(user._id, "1");
       expect(spy).toHaveBeenCalledTimes(1);
     });
   });
