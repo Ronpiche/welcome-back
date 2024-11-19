@@ -7,6 +7,7 @@ import { FirestoreService } from "@src/services/firestore/firestore.service";
 import { FIRESTORE_COLLECTIONS } from "@src/configs/types/Firestore.types";
 import { Filter, Timestamp } from "@google-cloud/firestore";
 import { WelcomeUser } from "@modules/welcome/entities/user.entity";
+import { UserStep } from "@modules/welcome/entities/user-step.entity";
 import { instanceToPlain } from "class-transformer";
 import { StepService } from "@modules/step/step.service";
 import { MailerService } from "@nestjs-modules/mailer";
@@ -168,12 +169,12 @@ export class WelcomeService {
   }
 
   /**
-   * update the completion of a sub step for an user.
+   * increment the completion of a step for an user.
    * @param userId - The id of the user
    * @param stepId - The id of the step completed
    * @param subStepId - The id of the sub step completed
    */
-  public async completeSubStep(userId: WelcomeUser["_id"], stepId: Step["_id"], subStepId: string): Promise<void> {
+  public async incrementSubStep(userId: WelcomeUser["_id"], stepId: Step["_id"]): Promise<UserStep[]> {
     const completedAt = Timestamp.now();
     const user = await this.findOne(userId);
     const step = await this.stepService.findOne(stepId);
@@ -183,15 +184,10 @@ export class WelcomeService {
       }
       return {
         ...s,
-        subStep: s.subStep.map(sub => {
-          if (sub._id !== subStepId) {
-            return sub;
-          }
-          return { ...sub, isCompleted: true };
-        }),
+        subStepsCompleted: s.subStepsCompleted + 1,
       };
     });
-    const isStepCompleted = newSteps.find(s => s._id === stepId).subStep.every(sub => sub.isCompleted);
+    const isStepCompleted = newSteps.find(s => s._id === stepId).subStepsCompleted === step.subSteps;
     if (isStepCompleted) {
       newSteps.find(s => s._id === stepId).completedAt = completedAt;
     }
@@ -199,6 +195,7 @@ export class WelcomeService {
     if (isStepCompleted) {
       await this.notifyCompletedStep(user, step);
     }
+    return newSteps;
   }
 
   /**
@@ -252,7 +249,7 @@ export class WelcomeService {
       steps: steps.map(s => ({
         _id: s.step._id,
         unlockDate: Timestamp.fromDate(s.dt),
-        subStep: s.step.subStep,
+        subStepsCompleted: 0,
       })),
       creationDate: now,
       lastUpdate: now,

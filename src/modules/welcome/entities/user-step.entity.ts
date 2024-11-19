@@ -1,6 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
 import type { Timestamp } from "@google-cloud/firestore";
-import { UserSubStep } from "./user-sub-step.entity";
 
 export class UserStep {
   @ApiProperty()
@@ -15,6 +14,6 @@ export class UserStep {
   @ApiProperty()
   public completedAt?: Timestamp;
 
-  @ApiProperty({ isArray: true, type: UserSubStep })
-  public subStep: UserSubStep[];
+  @ApiProperty()
+  public subStepsCompleted: number;
 }
