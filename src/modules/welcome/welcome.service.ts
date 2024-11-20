@@ -9,7 +9,7 @@ import { Filter, Timestamp } from "@google-cloud/firestore";
 import { WelcomeUser } from "@modules/welcome/entities/user.entity";
 import { instanceToPlain } from "class-transformer";
 import { StepService } from "@modules/step/step.service";
-import { EmailService } from "@src/services/email/email.service";
+import { MailService } from "@src/services/mail/mail.service";
 import { GipService } from "@src/services/gip/gip.service";
 import markdownit, { StateCore } from "markdown-it";
 import crypto from "crypto";
@@ -28,7 +28,7 @@ export class WelcomeService {
     private readonly firestoreService: FirestoreService,
     private readonly gipService: GipService,
     private readonly stepService: StepService,
-    private readonly emailService: EmailService,
+    private readonly mailService: MailService,
     private readonly logger: Logger,
   ) {
     this.md.core.ruler.after("normalize", "variables", WelcomeService.markdownVariable);
@@ -62,7 +62,7 @@ export class WelcomeService {
   public async createUser(createUserDto: CreateUserDto): Promise<WelcomeUser> {
     const password = WelcomeService.generatePassword();
     try {
-      await this.emailService
+      await this.mailService
         .sendMail({
           to: createUserDto.email,
           subject: NEW_ACCOUNT_EMAIL_SUBJECT,
@@ -145,7 +145,7 @@ export class WelcomeService {
 
   async getStepEmailPromiseThenSaveState(user: WelcomeUser, unlockedSteps: string[], step: Step): Promise<any> {
     return new Promise((resolve, reject) => {
-      this.emailService
+      this.mailService
         .sendMail({
           to: user.email,
           subject: step.unlockEmail.subject,
@@ -225,14 +225,14 @@ export class WelcomeService {
       stepId: step._id,
     };
     if (step.completionEmailManager !== undefined) {
-      await this.emailService.sendMail({
+      await this.mailService.sendMail({
         to: user.hrReferent.email,
         subject: step.completionEmailManager.subject,
         html: this.md.render(step.completionEmailManager.body, env),
       });
     }
     if (step.completionEmail !== undefined) {
-      await this.emailService.sendMail({
+      await this.mailService.sendMail({
         to: user.email,
         subject: step.completionEmail.subject,
         html: this.md.render(step.completionEmail.body, env),

@@ -3,7 +3,7 @@ import { Logger, Module } from "@nestjs/common";
 import { WelcomeService } from "@modules/welcome/welcome.service";
 import { WelcomeController } from "@modules/welcome/welcome.controller";
 import { FirestoreModule } from "@src/services/firestore/firestore.module";
-import { EmailService } from "@src/services/email/email.service";
+import { MailService } from "@src/services/mail/mail.service";
 
 @Module({
   imports: [FirestoreModule],
@@ -12,7 +12,7 @@ import { EmailService } from "@src/services/email/email.service";
     Logger,
     WelcomeService,
     StepService,
-    EmailService,
+    MailService,
   ],
 })
 export class WelcomeModule {}

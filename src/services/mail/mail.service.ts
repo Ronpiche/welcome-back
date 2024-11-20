@@ -4,9 +4,10 @@ import {
 } from "@nestjs/common";
 import { MailDataRequired, default as SendGrid } from "@sendgrid/mail";
 import { ConfigService } from "@nestjs/config";
+import { MAIL_FROM } from "@src/services/mail/mail.constants";
 
 @Injectable()
-export class EmailService {
+export class MailService {
   public constructor(
     private readonly logger: Logger,
     private readonly config: ConfigService,
@@ -20,7 +21,7 @@ export class EmailService {
         to: mailRequirement.to,
         subject: mailRequirement.subject,
         html: mailRequirement.html,
-        from: process.env.MAIL_FROM,
+        from: MAIL_FROM,
       };
 
       await SendGrid.send(mail);

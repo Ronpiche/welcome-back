@@ -19,7 +19,7 @@ import { FeedbackQuestionModule } from "@modules/feedback-question/feedback-ques
 import { FeedbackAnswerModule } from "@modules/feedback-answer/feedback-answer.module";
 import { JwtGuard } from "@src/guards/jwt.guard";
 import { RoleGuard } from "@src/guards/role.guard";
-import { EmailModule } from "@src/services/email/email.module";
+import { MailModule } from "@src/services/mail/mail.module";
 import { GipModule } from "@src/services/gip/gip.module";
 
 @Module({
@@ -32,7 +32,7 @@ import { GipModule } from "@src/services/gip/gip.module";
         signOptions: { expiresIn: "2h", algorithm: "HS256" },
       }),
     }),
-    EmailModule,
+    MailModule,
     FirestoreModule,
     AuthorizationModule,
     WelcomeModule,
