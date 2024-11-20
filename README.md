@@ -89,6 +89,16 @@ gantt
         Arrival  :milestone, mc2, 2024-06-01, 0
 ```
 
+## <a name="env-variables">🌿 Environment variables</a>
+
+| Name                       | Description                                                     | Default value | Required |
+|----------------------------|-----------------------------------------------------------------|---------------|----------|
+| HUB_FRONT_URL              | The URL of the front application, used in sent email            | -             | `true`   |
+| BYPASS_GUARD               | If true, the guard is bypassed on all endpoints                 | `false`       | `false`  |
+| SERVICE_ACCOUNT_BASE64     | The base64 encoded service account key file for google services | -             | `true`   |
+| NAME_BUCKET_STATIC_CONTENT | The name of the GCP bucket where the static content is stored   | -             | `true`   |
+
+
 ## <a name="how-to-contribute">🚀 How to contribute</a>
 
 ### 🔄 Pull requests
