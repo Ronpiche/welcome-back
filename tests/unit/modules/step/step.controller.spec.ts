@@ -14,12 +14,7 @@ const step: Step = {
     subject: "Test",
     body: "1234",
   },
-  subStep: [
-    {
-      _id: "1",
-      isCompleted: false,
-    },
-  ],
+  subSteps: 1,
 };
 
 describe("StepController", () => {

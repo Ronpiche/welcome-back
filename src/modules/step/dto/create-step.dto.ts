@@ -1,36 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min, ValidateNested } from "class-validator";
-
-class SubStepDto {
-  @ApiProperty({ example: "1" })
-  @IsString()
-  @IsOptional()
-  _id: string;
-
-  @ApiProperty({ example: false })
-  @IsBoolean()
-  @IsOptional()
-  isCompleted: boolean;
-}
-
-class EmailDto {
-  @ApiProperty({ example: "New step available" })
-  @IsString()
-  @IsNotEmpty()
-  subject: string;
-
-  @ApiProperty({ example: "Hello, you have unlocked a new step." })
-  @IsString()
-  @IsNotEmpty()
-  body: string;
-}
+import { IsNotEmpty, IsNumber, IsString, Max, Min, ValidateNested } from "class-validator";
+import { StepEmailDto } from "@modules/step/dto/step-email.dto";
 
 export class CreateStepDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  _id: string;
+  public _id: string;
 
   @ApiProperty({
     example: 0.5,
@@ -39,7 +16,7 @@ export class CreateStepDto {
   @IsNumber()
   @Min(0)
   @Max(1)
-  cutAt: number;
+  public cutAt: number;
 
   @ApiProperty({
     example: 90,
@@ -48,7 +25,7 @@ export class CreateStepDto {
   })
   @IsNumber()
   @Min(0)
-  maxDays: number;
+  public maxDays: number;
 
   @ApiProperty({
     example: 30,
@@ -57,25 +34,27 @@ export class CreateStepDto {
   })
   @IsNumber()
   @Min(0)
-  minDays: number;
+  public minDays: number;
 
-  @ApiProperty()
+  @ApiProperty({ description: "Email sent to the user when a step is unlocked." })
   @ValidateNested()
-  @Type(() => EmailDto)
-  unlockEmail?: EmailDto;
+  @Type(() => StepEmailDto)
+  public unlockEmail?: StepEmailDto;
 
-  @ApiProperty()
+  @ApiProperty({ description: "Email sent to the user when a step is completed." })
   @ValidateNested()
-  @Type(() => EmailDto)
-  completionEmail?: EmailDto;
+  @Type(() => StepEmailDto)
+  public completionEmail?: StepEmailDto;
 
-  @ApiProperty()
+  @ApiProperty({ description: "Email sent to the user's manager when a step is completed." })
   @ValidateNested()
-  @Type(() => EmailDto)
-  completionEmailManager?: EmailDto;
+  @Type(() => StepEmailDto)
+  public completionEmailManager?: StepEmailDto;
 
-  @ApiProperty()
-  @ValidateNested()
-  @Type(() => SubStepDto)
-  subStep: SubStepDto[];
+  @ApiProperty({
+    example: 4,
+    description: "Number of sub steps",
+  })
+  @IsNumber()
+  public subSteps: number;
 }

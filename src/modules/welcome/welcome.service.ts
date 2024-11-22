@@ -1,22 +1,25 @@
 import { Step } from "@modules/step/entities/step.entity";
+import { toISO8601Format } from "@src/helpers/date.helpers";
 import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
 import { CreateUserDto } from "@modules/welcome/dto/input/create-user.dto";
 import { UpdateUserDto } from "@modules/welcome/dto/input/update-user.dto";
 import { FirestoreService } from "@src/services/firestore/firestore.service";
 import { FIRESTORE_COLLECTIONS } from "@src/configs/types/Firestore.types";
 import { Filter, Timestamp } from "@google-cloud/firestore";
-import { WelcomeUser } from "./entities/user.entity";
+import { WelcomeUser } from "@modules/welcome/entities/user.entity";
+import { UserStep } from "@modules/welcome/entities/user-step.entity";
 import { instanceToPlain } from "class-transformer";
 import { StepService } from "@modules/step/step.service";
-import { MailerService } from "@nestjs-modules/mailer";
+import { MailService } from "@src/services/mail/mail.service";
+import { GipService } from "@src/services/gip/gip.service";
 import markdownit, { StateCore } from "markdown-it";
 import crypto from "crypto";
-import { GipService } from "@src/services/gip/gip.service";
 
 const APP_NAME = "Welcome";
 const APP_URL = "http://localhost:3000";
 const NEW_ACCOUNT_EMAIL_SUBJECT = "Compte créé";
-const NEW_ACCOUNT_EMAIL_BODY = "Bonjour {{userFirstName}},\n\nTu peux désormais accéder à l'application [{{appName}}]({{appUrl}}) (sur desktop, tablette ou mobile) en te connectant avec ces identifiants :\n\n\n\n*Email :* {{email}}\n\n*Mot de passe :* {{password}}\n\n\n\nÀ très bientôt,\n\n{{managerFirstName}} {{managerLastName}}.";
+const NEW_ACCOUNT_EMAIL_BODY = "Bonjour {{userFirstName}},\n\nTu peux désormais accéder à l'application [{{appName}}]({{appUrl}}) (sur desktop, tablette ou mobile)" +
+  " en te connectant avec ces identifiants :\n\n\n\n*Email :* {{email}}\n\n*Mot de passe :* {{password}}\n\n\n\nÀ très bientôt,\n\n{{managerFirstName}} {{managerLastName}}.";
 
 @Injectable()
 export class WelcomeService {
@@ -26,17 +29,17 @@ export class WelcomeService {
     private readonly firestoreService: FirestoreService,
     private readonly gipService: GipService,
     private readonly stepService: StepService,
-    private readonly mailerService: MailerService,
+    private readonly mailService: MailService,
     private readonly logger: Logger,
   ) {
     this.md.core.ruler.after("normalize", "variables", WelcomeService.markdownVariable);
   }
 
   private static markdownVariable(state: StateCore): void {
-    state.src = state.src.replaceAll(/{{\s?(\w+)\s?}}/g, (_, name) => state.env[name] || "".padStart(name.length, "█"));
+    state.src = state.src.replaceAll(/{{\s?(\w+)\s?}}/g, (_, name: string) => state.env[name] || "".padStart(name.length, "█"));
   }
 
-  private static generatePassord(length = 12, characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789?.:/!@"): string {
+  private static generatePassword(length = 12, characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789?.:/!@"): string {
     return Array.from(crypto.randomFillSync(new Uint32Array(length)))
       .map(x => characters[x % characters.length])
       .join("");
@@ -58,9 +61,9 @@ export class WelcomeService {
   }
 
   public async createUser(createUserDto: CreateUserDto): Promise<WelcomeUser> {
-    const password = WelcomeService.generatePassord();
+    const password = WelcomeService.generatePassword();
     try {
-      await this.mailerService
+      await this.mailService
         .sendMail({
           to: createUserDto.email,
           subject: NEW_ACCOUNT_EMAIL_SUBJECT,
@@ -85,10 +88,10 @@ export class WelcomeService {
   public async findAll(arrivalDateStart?: Date, arrivalDateEnd?: Date): Promise<WelcomeUser[]> {
     const filters: Filter[] = [];
     if (arrivalDateStart !== undefined) {
-      filters.push(Filter.where("arrivalDate", ">=", arrivalDateStart));
+      filters.push(Filter.where("arrivalDate", ">=", toISO8601Format(arrivalDateStart)));
     }
     if (arrivalDateEnd !== undefined) {
-      filters.push(Filter.where("arrivalDate", "<", arrivalDateEnd));
+      filters.push(Filter.where("arrivalDate", "<", toISO8601Format(arrivalDateEnd)));
     }
     return this.firestoreService.getAllDocuments<WelcomeUser>(FIRESTORE_COLLECTIONS.WELCOME_USERS, Filter.and(...filters));
   }
@@ -111,7 +114,7 @@ export class WelcomeService {
   }
 
   /**
-   * launch a task that search all of the newcomers and send them an email if they have unloked a step.
+   * launch a task that search all of the newcomers and send them an email if they have unlocked a step.
    * If an user have multiple steps unlocked at once, we only notify him once by taking the email content of the first unlocked step.
    * @param now - The actual date
    * @returns List of email sent with status
@@ -120,44 +123,58 @@ export class WelcomeService {
     const steps = await this.stepService.findAll();
     const users = await this.findAll(now);
     const userEmails = [];
+    
+    this.logger.debug(`User count : ${users.length}`);
+
+    // for each User
     users.forEach(user => {
+      // we get all the new Steps unlocked
       const unlockedSteps = WelcomeService.getNewlyUnlockedSteps(user, now);
+      // selecting the most recent step in the list (fallback case : undefined)
       const step = unlockedSteps[0] !== undefined ? steps.find(s => s._id === unlockedSteps[0]) : undefined;
+
+      this.logger.debug(user.firstName);
+
+      // if the Step is valid, generate a Promise for an email and for store the state in db
       if (step?.unlockEmail !== undefined) {
-        userEmails.push(new Promise((resolve, reject) => {
-          this.mailerService
-            .sendMail({
-              to: user.email,
-              subject: step.unlockEmail.subject,
-              html: this.md.render(step.unlockEmail.body, {
-                appName: APP_NAME,
-                appUrl: APP_URL,
-                userFirstName: user.firstName,
-                userLastName: user.lastName,
-                managerFirstName: user.hrReferent.firstName,
-                managerLastName: user.hrReferent.lastName,
-                stepId: step._id,
-              }),
-            })
-            .then(async() => {
-              await this.updateEmailSteps(user, unlockedSteps);
-              resolve({ _id: user._id });
-            })
-            .catch(({ message }) => reject({ _id: user._id, message }));
-        }));
+        userEmails.push(this.getStepEmailPromiseThenSaveState(user, unlockedSteps, step));
       }
     });
 
     return Promise.allSettled(userEmails);
   }
 
+  async getStepEmailPromiseThenSaveState(user: WelcomeUser, unlockedSteps: string[], step: Step): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.mailService
+        .sendMail({
+          to: user.email,
+          subject: step.unlockEmail.subject,
+          html: this.md.render(step.unlockEmail.body, {
+            appName: APP_NAME,
+            appUrl: APP_URL,
+            userFirstName: user.firstName,
+            userLastName: user.lastName,
+            managerFirstName: user.hrReferent.firstName,
+            managerLastName: user.hrReferent.lastName,
+            stepId: step._id,
+          }),
+        })
+        .then(async() => {
+          await this.updateEmailSteps(user, unlockedSteps);
+          resolve({ _id: user._id });
+        })
+        .catch(({ message }) => reject({ _id: user._id, message }));
+    });
+  }
+
   /**
-   * update the completion of a sub step for an user.
+   * increment the completion of a step for an user.
    * @param userId - The id of the user
    * @param stepId - The id of the step completed
    * @param subStepId - The id of the sub step completed
    */
-  public async completeSubStep(userId: WelcomeUser["_id"], stepId: Step["_id"], subStepId: string): Promise<void> {
+  public async incrementSubStep(userId: WelcomeUser["_id"], stepId: Step["_id"]): Promise<UserStep[]> {
     const completedAt = Timestamp.now();
     const user = await this.findOne(userId);
     const step = await this.stepService.findOne(stepId);
@@ -167,15 +184,10 @@ export class WelcomeService {
       }
       return {
         ...s,
-        subStep: s.subStep.map(sub => {
-          if (sub._id !== subStepId) {
-            return sub;
-          }
-          return { ...sub, isCompleted: true };
-        }),
+        subStepsCompleted: s.subStepsCompleted + 1,
       };
     });
-    const isStepCompleted = newSteps.find(s => s._id === stepId).subStep.every(sub => sub.isCompleted);
+    const isStepCompleted = newSteps.find(s => s._id === stepId).subStepsCompleted === step.subSteps;
     if (isStepCompleted) {
       newSteps.find(s => s._id === stepId).completedAt = completedAt;
     }
@@ -183,6 +195,7 @@ export class WelcomeService {
     if (isStepCompleted) {
       await this.notifyCompletedStep(user, step);
     }
+    return newSteps;
   }
 
   /**
@@ -209,14 +222,14 @@ export class WelcomeService {
       stepId: step._id,
     };
     if (step.completionEmailManager !== undefined) {
-      await this.mailerService.sendMail({
+      await this.mailService.sendMail({
         to: user.hrReferent.email,
         subject: step.completionEmailManager.subject,
         html: this.md.render(step.completionEmailManager.body, env),
       });
     }
     if (step.completionEmail !== undefined) {
-      await this.mailerService.sendMail({
+      await this.mailService.sendMail({
         to: user.email,
         subject: step.completionEmail.subject,
         html: this.md.render(step.completionEmail.body, env),
@@ -236,7 +249,7 @@ export class WelcomeService {
       steps: steps.map(s => ({
         _id: s.step._id,
         unlockDate: Timestamp.fromDate(s.dt),
-        subStep: s.step.subStep,
+        subStepsCompleted: 0,
       })),
       creationDate: now,
       lastUpdate: now,
