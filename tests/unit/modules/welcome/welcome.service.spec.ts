@@ -80,7 +80,8 @@ describe("UsersService", () => {
         {
           provide: MailService,
           useValue: {
-            sendMail: jest.fn().mockResolvedValue(undefined),
+            inviteNewUserMail: jest.fn().mockResolvedValue(undefined),
+            sendStepMail: jest.fn().mockResolvedValue(undefined),
           },
         },
         {
@@ -140,6 +141,12 @@ describe("UsersService", () => {
       expect(createUser).toStrictEqual(user);
     });
 
+    it("should generate a 12 characters password when generatePassword is called.", () => {
+      const password = WelcomeService["generatePassword"]();
+
+      expect(password).toHaveLength(12);
+    });
+
     it("should throw an HttpException when generateSteps fails.", async() => {
       jest.spyOn(service["stepService"], "generateSteps").mockImplementation().mockRejectedValue(new HttpException("Invalid parameter: startDate > endDate", HttpStatus.BAD_REQUEST));
       const error: HttpException = await getError(async() => service.createUser(createUserDto));
@@ -149,7 +156,7 @@ describe("UsersService", () => {
     });
 
     it("should throw an InternalServerError when mailer fails.", async() => {
-      jest.spyOn(service["mailService"], "sendMail").mockImplementation().mockRejectedValue(new Error());
+      jest.spyOn(service["mailService"], "inviteNewUserMail").mockImplementation().mockRejectedValue(new Error());
       const error: InternalServerErrorException = await getError(async() => service.createUser(createUserDto));
 
       expect(error).not.toBeInstanceOf(NoErrorThrownError);
@@ -267,7 +274,7 @@ describe("UsersService", () => {
     });
 
     it("should return rejected when emails cannot be send.", async() => {
-      jest.spyOn(service["mailService"], "sendMail").mockImplementation().mockRejectedValue(new Error("test"));
+      jest.spyOn(service["mailService"], "sendStepMail").mockImplementation().mockRejectedValue(new Error("test"));
       const run = await service.run(new Date());
 
       expect(run).toStrictEqual([{ status: "rejected", reason: { _id: user._id, message: "test" } }]);
