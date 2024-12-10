@@ -53,6 +53,7 @@
     "express-session": "^1.18.1",
     "firebase-admin": "^12.2.0",
     "markdown-it": "^14.1.0",
+    "memorystore": "^1.6.7",
     "msw": "^2.2.13",
     "nestjs-session": "^3.0.1",
     "node-cache": "^5.1.2",

@@ -6,7 +6,9 @@ import cookieParser from "cookie-parser";
 import { AppModule } from "src/app.module";
 import session from "express-session";
 import { ConfigService } from "@nestjs/config";
+import memoryStore from "memorystore";
 
+const DAY_IN_MS = 86400000;
 const DEFAULT_HTTP_PORT = 3337;
 
 const swaggerSetup = (app: INestApplication): void => {
@@ -30,6 +32,7 @@ const swaggerSetup = (app: INestApplication): void => {
 
 const bootstrap = async(): Promise<void> => {
   const app = await NestFactory.create(AppModule);
+  const MemoryStore = memoryStore(session);
   const configService = app.get<ConfigService>(ConfigService);
   const port = Number(configService.get("PORT")) || DEFAULT_HTTP_PORT;
 
@@ -37,24 +40,13 @@ const bootstrap = async(): Promise<void> => {
 
   app.use(cookieParser());
   app.use(session({
+    cookie: { maxAge: DAY_IN_MS },
     secret: configService.get("SESSION_SECRET"),
+    store: new MemoryStore({ checkPeriod: DAY_IN_MS }),
     resave: false,
     saveUninitialized: false,
   }));
   app.enableCors({ origin: [configService.get("HUB_FRONT_URL")], credentials: true });
-  /*
-   * app.enableCors({
-   *   origin: [
-   *     'https://daveo-gcp-welcome-sbx-cr-front-hub-s5fhodvgxa-od.a.run.app',
-   *     'https://dev-hub.daveo.fr',
-   *     'https://daveo-gcp-welcome-sbx-cr-front-s5fhodvgxa-od.a.run.app',
-   *   ],
-   *   credentials: true,
-   * });
-   * if (process.env.NODE_ENV === 'dev') {
-   *   app.enableCors();
-   * }
-   */
 
   swaggerSetup(app);
 
