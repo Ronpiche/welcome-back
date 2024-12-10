@@ -13,7 +13,7 @@ import { MembersService } from "@modules/members/members.service";
 import { CreateMemberDto } from "@modules/members/dto/create-member.dto";
 import { UpdateMemberDto } from "@modules/members/dto/update-member.dto";
 import { plainToInstance } from "class-transformer";
-import { OutputMembersDto } from "@modules/members/dto/output-members.dto";
+import { OutputMembersDto } from "@modules/members/dto/output-member.dto";
 import { Member } from "@modules/members/entities/member.entity";
 import { ApiOperation, ApiBody, ApiOkResponse, ApiTags, ApiParam, ApiBearerAuth } from "@nestjs/swagger";
 import { Role, Roles } from "@src/decorators/role";

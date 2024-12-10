@@ -2,7 +2,7 @@ import type { TestingModule } from "@nestjs/testing";
 import { Test } from "@nestjs/testing";
 import { MembersController } from "@src/modules/members/members.controller";
 import { MembersService } from "@src/modules/members/members.service";
-import type { OutputMembersDto } from "@src/modules/members/dto/output-members.dto";
+import type { OutputMembersDto } from "@src/modules/members/dto/output-member.dto";
 import { createMemberMock, OutputMembersDtoMock } from "@tests/unit/__mocks__/members/members.entity.mock";
 
 describe("MembersController", () => {

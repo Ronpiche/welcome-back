@@ -1,43 +1,34 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsArray, IsBoolean, IsIn, IsOptional, IsString, ValidateNested } from "class-validator";
-
-class RoleMember {
-  @ApiProperty({ example: "Lille" })
-  @IsString()
-  public scope: string;
-
-  @ApiProperty({ example: "agency" })
-  @IsString()
-  @IsOptional()
-  public subscope?: string;
-
-  @ApiProperty({ example: "BusinessOwner" })
-  @IsString()
-  public role: string;
-}
+import { CreateRoleDto } from "@modules/members/dto/create-role.dto";
 
 export class CreateMemberDto {
   @ApiProperty({ example: "John" })
   @IsString()
-  public firstname: string;
+  public firstName: string;
 
   @ApiProperty({ example: "Doe" })
   @IsString()
-  public lastname: string;
+  public lastName: string;
 
   @ApiProperty({ example: "male" })
   @IsIn(["male", "female"], { message: "Gender must be either male or female" })
-  public gender: "male" | "female";
+  @IsOptional()
+  public gender?: "male" | "female";
+
+  @ApiProperty({ example: "john.doe@127.0.0.1" })
+  @IsString()
+  public email: string;
 
   @ApiProperty({ required: false })
   @IsBoolean()
   @IsOptional()
-  public executiveCommittee: boolean;
+  public isExecutiveCommittee?: boolean;
 
-  @ApiProperty({ isArray: true, type: RoleMember })
+  @ApiProperty({ isArray: true, type: CreateRoleDto })
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => RoleMember)
-  public roles: RoleMember[];
+  @Type(() => CreateRoleDto)
+  public roles: CreateRoleDto[];
 }

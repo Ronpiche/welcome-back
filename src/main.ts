@@ -4,6 +4,8 @@ import type { INestApplication } from "@nestjs/common";
 import { Logger, ValidationPipe } from "@nestjs/common";
 import cookieParser from "cookie-parser";
 import { AppModule } from "src/app.module";
+import session from "express-session";
+import { ConfigService } from "@nestjs/config";
 
 const DEFAULT_HTTP_PORT = 3337;
 
@@ -28,11 +30,18 @@ const swaggerSetup = (app: INestApplication): void => {
 
 const bootstrap = async(): Promise<void> => {
   const app = await NestFactory.create(AppModule);
+  const configService = app.get<ConfigService>(ConfigService);
+  const port = Number(configService.get("PORT")) || DEFAULT_HTTP_PORT;
 
   app.setGlobalPrefix("api");
 
   app.use(cookieParser());
-  app.enableCors();
+  app.use(session({
+    secret: configService.get("SESSION_SECRET"),
+    resave: false,
+    saveUninitialized: false,
+  }));
+  app.enableCors({ origin: [configService.get("HUB_FRONT_URL")], credentials: true });
   /*
    * app.enableCors({
    *   origin: [
@@ -57,14 +66,12 @@ const bootstrap = async(): Promise<void> => {
     whitelist: true,
   }));
 
-  await app.listen(process.env.PORT || DEFAULT_HTTP_PORT);
+  await app.listen(port);
+  Logger.log(`Application running on port ${port}`);
 };
 
 ((): void => {
-  const logger = new Logger("welcome-back");
-  bootstrap().then(() => {
-    logger.log(`Application running on port ${process.env.PORT || DEFAULT_HTTP_PORT}`);
-  }).catch((err: unknown) => {
-    logger.error(err);
+  bootstrap().catch((err: unknown) => {
+    Logger.error(err);
   });
 })();
