@@ -169,12 +169,12 @@ export class WelcomeService {
   }
 
   /**
-   * increment the completion of a step for an user.
+   * update the completion of a step for an user.
    * @param userId - The id of the user
    * @param stepId - The id of the step completed
-   * @param subStepId - The id of the sub step completed
+   * @param subStep - The index of the sub step completed
    */
-  public async incrementSubStep(userId: WelcomeUser["_id"], stepId: Step["_id"]): Promise<UserStep[]> {
+  public async updateSubStep(userId: WelcomeUser["_id"], stepId: Step["_id"], subStep: Step["subSteps"]): Promise<UserStep[]> {
     const completedAt = Timestamp.now();
     const user = await this.findOne(userId);
     const step = await this.stepService.findOne(stepId);
@@ -184,7 +184,7 @@ export class WelcomeService {
       }
       return {
         ...s,
-        subStepsCompleted: s.subStepsCompleted + 1,
+        subStepsCompleted: subStep,
       };
     });
     const isStepCompleted = newSteps.find(s => s._id === stepId).subStepsCompleted === step.subSteps;
@@ -192,8 +192,14 @@ export class WelcomeService {
       newSteps.find(s => s._id === stepId).completedAt = completedAt;
     }
     await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.WELCOME_USERS, user._id, { steps: newSteps });
-    if (isStepCompleted) {
-      await this.notifyCompletedStep(user, step);
+    try {
+      if (isStepCompleted) {
+        await this.notifyCompletedStep(user, step);
+      }
+    } catch (err) {
+      Logger.error(err);
+
+      return newSteps;
     }
     return newSteps;
   }

@@ -158,27 +158,27 @@ export class WelcomeController {
     return results;
   }
 
-  @Post("users/me/steps/:stepId")
+  @Put("users/me/steps/:stepId/:subStep")
   @Roles(Role.USER)
   @ApiParam({ name: "stepId", type: String, example: "1" })
   @ApiOperation({
     summary: "Complete my user sub step",
   })
   @ApiCreatedResponse({ description: "Sub step completed", type: WelcomeStepDto, isArray: true })
-  public async incrementMySubStep(@Request() { user }: UserRequest, @Param("stepId") stepId: string): Promise<WelcomeStepDto[]> {
-    const steps = await this.welcomeService.incrementSubStep(user.id, stepId);
+  public async updateMySubStep(@Request() { user }: UserRequest, @Param("stepId") stepId: string, @Param("subStep") subStep: number): Promise<WelcomeStepDto[]> {
+    const steps = await this.welcomeService.updateSubStep(user.id, stepId, subStep);
 
     return steps.map(step => plainToInstance(WelcomeStepDto, instanceToPlain(step), { excludeExtraneousValues: true }));
   }
 
-  @Post("users/:userId/steps/:stepId")
+  @Put("users/:userId/steps/:stepId/:subStep")
   @Roles(Role.ADMIN)
   @ApiOperation({
-    summary: "Complete an user sub step",
+    summary: "Update an user sub step",
   })
   @ApiCreatedResponse({ description: "Sub step completed", type: WelcomeStepDto, isArray: true })
-  public async incrementSubStep(@Param("userId") userId: string, @Param("stepId") stepId: string): Promise<WelcomeStepDto[]> {
-    const steps = await this.welcomeService.incrementSubStep(userId, stepId);
+  public async updateSubStep(@Param("userId") userId: string, @Param("stepId") stepId: string, @Param("subStep") subStep: number): Promise<WelcomeStepDto[]> {
+    const steps = await this.welcomeService.updateSubStep(userId, stepId, subStep);
 
     return steps.map(step => plainToInstance(WelcomeStepDto, instanceToPlain(step), { excludeExtraneousValues: true }));
   }
