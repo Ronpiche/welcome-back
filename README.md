@@ -119,6 +119,10 @@ gantt
 | NAME_BUCKET_STATIC_CONTENT | The name of the GCP bucket where the static content is stored   | -             | `true`   |
 | SENDGRID_API_KEY           | The API key required by Sendgrid to send emails                 | -             | `true`   |
 | SESSION_SECRET             | Used to sign the session ID cookie                              | -             | `true`   |
+| COGNITO_REGION             | Region of Cognito                                               | -             | `true`   |
+| COGNITO_USER_POOL_ID       | User pool ID of Cognito                                         | -             | `true`   |
+| COGNITO_CLIENT_ID          | Client ID of Cognito                                            | -             | `true`   |
+| COGNITO_CLIENT_SECRET      | Client secret of Cognito                                        | -             | `true`   |
 
 
 ## <a name="how-to-contribute">🚀 How to contribute</a>
