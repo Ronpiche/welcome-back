@@ -131,7 +131,7 @@ describe("Welcome controller", () => {
             remove: jest.fn().mockResolvedValue(undefined),
             update: jest.fn().mockResolvedValue(user),
             run: jest.fn().mockResolvedValue([{ status: "fulfilled", value: { _id: "1" } }]),
-            incrementSubStep: jest.fn().mockResolvedValue(user.steps),
+            updateSubStep: jest.fn().mockResolvedValue(user.steps),
           },
         },
       ],
@@ -197,18 +197,18 @@ describe("Welcome controller", () => {
     });
   });
 
-  describe("incrementMySubStep", () => {
-    it("should complete the user step when incrementMySubStep is called.", async() => {
-      const spy = jest.spyOn(controller["welcomeService"], "incrementSubStep");
-      await controller.incrementMySubStep(userReq, "1");
+  describe("updateMySubStep", () => {
+    it("should update the user step when updateMySubStep is called.", async() => {
+      const spy = jest.spyOn(controller["welcomeService"], "updateSubStep");
+      await controller.updateMySubStep(userReq, "1", 2);
       expect(spy).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe("incrementSubStep", () => {
-    it("should complete the user step when incrementSubStep is called.", async() => {
-      const spy = jest.spyOn(controller["welcomeService"], "incrementSubStep");
-      await controller.incrementSubStep(user._id, "1");
+  describe("updateSubStep", () => {
+    it("should update the user step when updateSubStep is called.", async() => {
+      const spy = jest.spyOn(controller["welcomeService"], "updateSubStep");
+      await controller.updateSubStep(user._id, "1", 2);
       expect(spy).toHaveBeenCalledTimes(1);
     });
   });

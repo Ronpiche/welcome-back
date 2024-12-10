@@ -274,14 +274,14 @@ describe("UsersService", () => {
     });
   });
 
-  describe("incrementSubStep", () => {
+  describe("updateSubStep", () => {
     it("should complete user sub step when completeStep is called.", async() => {
-      await service.incrementSubStep(user._id, steps[1]._id);
+      await service.updateSubStep(user._id, steps[1]._id, steps[1].subSteps);
       expect(service["firestoreService"].updateDocument).toHaveBeenCalledWith(
         FIRESTORE_COLLECTIONS.WELCOME_USERS,
         user._id,
         {
-          steps: [user.steps[0], { ...user.steps[1], subStepsCompleted: 1, completedAt: Timestamp.now() }, user.steps[2]],
+          steps: [user.steps[0], { ...user.steps[1], subStepsCompleted: steps[1].subSteps, completedAt: Timestamp.now() }, user.steps[2]],
         },
       );
     });
