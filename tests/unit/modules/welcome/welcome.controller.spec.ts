@@ -4,7 +4,7 @@ import { Test } from "@nestjs/testing";
 import type { Response } from "express";
 import { plainToInstance } from "class-transformer";
 import { Timestamp } from "@google-cloud/firestore";
-import { GRADE, PRACTICE } from "@src/modules/welcome/types/user.enum";
+import { Practice } from "@src/modules/welcome/types/user.enum";
 import type { CreateUserDto } from "@src/modules/welcome/dto/input/create-user.dto";
 import { WelcomeUserDto } from "@src/modules/welcome/dto/output/welcome-user.dto";
 import type { WelcomeUser } from "@src/modules/welcome/entities/user.entity";
@@ -25,19 +25,16 @@ const user: WelcomeUser = {
   signupDate: "2022-04-24 22:00:00",
   firstName: "John",
   lastName: "Doe",
-  civility: "M",
   agency: "Any",
   creationDate: Timestamp.fromDate(new Date("2022-04-25 13:24:06.627")),
   hrReferent: {
-    _id: "abcd-1234",
     firstName: "Joe",
     lastName: "Bloggs",
     email: "joe.bloggs@127.0.0.1",
   },
   arrivalDate: "2023-02-01 22:00:00",
   lastUpdate: Timestamp.fromDate(new Date("2023-02-01 22:00:00")),
-  grade: GRADE.PRACTIONNER,
-  practice: PRACTICE.PRODUCT,
+  practices: [Practice.PRODUCT],
   steps: [
     {
       _id: "1",
@@ -63,19 +60,16 @@ const userDto = plainToInstance(WelcomeUserDto, {
   signupDate: "2022-04-24 22:00:00",
   firstName: "John",
   lastName: "Doe",
-  civility: "M",
   agency: "Any",
   creationDate: new Date("2022-04-25 13:24:06.627"),
   hrReferent: {
-    _id: "abcd-1234",
     firstName: "Joe",
     lastName: "Bloggs",
     email: "joe.bloggs@127.0.0.1",
   },
   arrivalDate: "2023-02-01 22:00:00",
   lastUpdate: new Date("2023-02-01 22:00:00"),
-  grade: GRADE.PRACTIONNER,
-  practice: PRACTICE.PRODUCT,
+  practices: [Practice.PRODUCT],
   steps: [
     {
       _id: "1",
@@ -100,17 +94,14 @@ const createUserDto: CreateUserDto = {
   signupDate: "2022-04-24 22:00:00",
   firstName: "John",
   lastName: "Doe",
-  civility: "M",
   agency: "Any",
   hrReferent: {
-    _id: "abcd-1234",
     firstName: "Joe",
     lastName: "Bloggs",
     email: "joe.bloggs@127.0.0.1",
   },
   arrivalDate: "2023-02-01 22:00:00",
-  grade: GRADE.PRACTIONNER,
-  practice: PRACTICE.PRODUCT,
+  practices: [Practice.PRODUCT],
 };
 
 describe("Welcome controller", () => {

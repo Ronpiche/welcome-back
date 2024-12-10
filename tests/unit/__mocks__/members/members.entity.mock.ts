@@ -1,13 +1,14 @@
 import type { CreateMemberDto } from "@src/modules/members/dto/create-member.dto";
-import type { OutputMembersDto } from "@src/modules/members/dto/output-members.dto";
+import type { OutputMembersDto } from "@src/modules/members/dto/output-member.dto";
 import type { Member } from "@src/modules/members/entities/member.entity";
 
 export const OutputMembersDtoMock: OutputMembersDto = {
   _id: "test-id",
-  firstname: "testFirstName",
-  lastname: "testLastName",
+  firstName: "testFirstName",
+  lastName: "testLastName",
+  email: "t.t@localhost",
   gender: "male",
-  executiveCommittee: true,
+  isExecutiveCommittee: true,
   roles: [
     {
       scope: "agency",
@@ -19,10 +20,11 @@ export const OutputMembersDtoMock: OutputMembersDto = {
 
 export const MemberMock: Member = {
   _id: "test-id",
-  firstname: "testFirstName",
-  lastname: "testLastName",
+  firstName: "testFirstName",
+  lastName: "testLastName",
+  email: "t.t@localhost",
   gender: "male",
-  executiveCommittee: true,
+  isExecutiveCommittee: true,
   roles: [
     {
       scope: "agency",
@@ -33,10 +35,11 @@ export const MemberMock: Member = {
 };
 
 export const createMemberMock: CreateMemberDto = {
-  firstname: "createFirstName",
-  lastname: "createLastName",
+  firstName: "createFirstName",
+  lastName: "createLastName",
+  email: "t.t@localhost",
   gender: "male",
-  executiveCommittee: true,
+  isExecutiveCommittee: true,
   roles: [
     {
       scope: "agency",

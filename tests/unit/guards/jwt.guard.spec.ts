@@ -5,13 +5,15 @@ import { JwtGuard } from "@src/guards/jwt.guard";
 import { Reflector } from "@nestjs/core";
 import { ConfigService } from "@nestjs/config";
 import type { ExecutionContextHost } from "@nestjs/core/helpers/execution-context-host";
-import { JwtCognito } from "@src/modules/cognito/jwtCognito.service";
+import { CognitoService } from "@src/services/cognito/cognito.service";
 import { IS_PUBLIC_METADATA_SYMBOL } from "@src/decorators/isPublic";
 import { UnauthorizedException } from "@nestjs/common";
 import type { DecodedIdToken } from "firebase-admin/auth";
 
-const authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJqb2huLmRvZUBsb2NhbGhvc3QifQ.0_El0Y1KZ2WaE7aYsXI3IxaaFaW_8v00BJTCFmJm9mc";
-const tokenResult = { sub: "1", email: "john.doe@localhost" };
+const authorizationGip = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJqb2huLmRvZUBsb2NhbGhvc3QiLCJpc3MiOiJnaXAifQ.9-Hb_aZdm2xA_CBqm4r_YczADyvKeSyQHRIQl8g8sgQ";
+const tokenResultGip = { sub: "1", email: "john.doe@localhost", iss: "gip" };
+const authorizationCognito = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJqb2huLmRvZUBsb2NhbGhvc3QiLCJpc3MiOiJjb2duaXRvIn0.5YzAwPZPiiLowXoHaoIeC-qgRpyHMFRjMww7120aSp0";
+const tokenResultCognito = { sub: "1", email: "john.doe@localhost", iss: "cognito" };
 
 describe("JwtGuard", () => {
   let guard: JwtGuard;
@@ -32,12 +34,14 @@ describe("JwtGuard", () => {
           provide: GipService,
           useValue: {
             verifyIdToken: jest.fn().mockRejectedValue(new Error()),
+            issuerUrl: "gip",
           },
         },
         {
-          provide: JwtCognito,
+          provide: CognitoService,
           useValue: {
             verifyIdToken: jest.fn().mockRejectedValue(new Error()),
+            issuerUrl: "cognito",
           },
         },
       ],
@@ -72,21 +76,21 @@ describe("JwtGuard", () => {
     });
 
     it("should return true when Gip token is valid.", async() => {
-      jest.spyOn(context.switchToHttp(), "getRequest").mockReturnValue({ headers: { authorization } });
-      jest.spyOn(guard["gipService"], "verifyIdToken").mockResolvedValue(tokenResult as DecodedIdToken);
+      jest.spyOn(context.switchToHttp(), "getRequest").mockReturnValue({ headers: { authorization: authorizationGip } });
+      jest.spyOn(guard["gipService"], "verifyIdToken").mockResolvedValue(tokenResultGip as DecodedIdToken);
       const canActivate = await guard.canActivate(context);
       expect(canActivate).toBe(true);
     });
 
     it("should return true when Cognito token is valid.", async() => {
-      jest.spyOn(context.switchToHttp(), "getRequest").mockReturnValue({ headers: { authorization } });
-      jest.spyOn(guard["jwtCognito"], "verifyIdToken").mockResolvedValue(tokenResult as unknown as ReturnType<typeof guard["jwtCognito"]["verifyIdToken"]>);
+      jest.spyOn(context.switchToHttp(), "getRequest").mockReturnValue({ headers: { authorization: authorizationCognito } });
+      jest.spyOn(guard["cognitoService"], "verifyIdToken").mockResolvedValue(tokenResultCognito as unknown as ReturnType<typeof guard["cognitoService"]["verifyIdToken"]>);
       const canActivate = await guard.canActivate(context);
       expect(canActivate).toBe(true);
     });
 
     it("should throw UnauthorizedException when token is invalid.", async() => {
-      jest.spyOn(context.switchToHttp(), "getRequest").mockReturnValue({ headers: { authorization } });
+      jest.spyOn(context.switchToHttp(), "getRequest").mockReturnValue({ headers: { authorization: "test" } });
       const error: UnauthorizedException = await getError(async() => guard.canActivate(context));
       expect(error).not.toBeInstanceOf(NoErrorThrownError);
       expect(error).toBeInstanceOf(UnauthorizedException);

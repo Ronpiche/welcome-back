@@ -1,7 +1,7 @@
-import { HrReferentDto } from "@modules/welcome/dto/output/hr-referent.dto";
 import { ApiProperty } from "@nestjs/swagger";
 import { Expose, Transform, Type } from "class-transformer";
 import { Timestamp } from "@google-cloud/firestore";
+import { Practice } from "@modules/welcome/types/user.enum";
 import { WelcomeStepDto } from "@modules/welcome/dto/output/welcome-step.dto";
 
 export class WelcomeUserDto {
@@ -23,10 +23,6 @@ export class WelcomeUserDto {
 
   @ApiProperty()
   @Expose()
-  public civility: string;
-
-  @ApiProperty()
-  @Expose()
   public agency: string;
 
   @ApiProperty()
@@ -36,8 +32,7 @@ export class WelcomeUserDto {
 
   @ApiProperty()
   @Expose()
-  @Type(() => HrReferentDto)
-  public hrReferent: HrReferentDto;
+  public hrReferent: string;
 
   @ApiProperty()
   @Expose()
@@ -56,13 +51,9 @@ export class WelcomeUserDto {
   @Expose()
   public email: string;
 
-  @ApiProperty()
+  @ApiProperty({ isArray: true, enum: Practice, enumName: "Practice" })
   @Expose()
-  public grade: string;
-
-  @ApiProperty()
-  @Expose()
-  public practice: string;
+  public practices: Practice[];
 
   @ApiProperty()
   @Expose()

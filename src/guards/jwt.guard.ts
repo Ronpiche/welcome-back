@@ -1,9 +1,9 @@
-import { JwtCognito } from "@src/modules/cognito/jwtCognito.service";
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { Request } from "express";
 import { ConfigService } from "@nestjs/config";
 import { GipService } from "@src/services/gip/gip.service";
+import { CognitoService } from "@src/services/cognito/cognito.service";
 import { Role } from "@src/decorators/role";
 import { IS_PUBLIC_METADATA_SYMBOL } from "@src/decorators/isPublic";
 
@@ -20,7 +20,7 @@ export class JwtGuard implements CanActivate {
   public constructor(
     private readonly reflector: Reflector,
     private readonly gipService: GipService,
-    private readonly jwtCognito: JwtCognito,
+    private readonly cognitoService: CognitoService,
     private readonly configService: ConfigService,
   ) { }
 
@@ -60,13 +60,17 @@ export class JwtGuard implements CanActivate {
       throw new UnauthorizedException();
     }
     try {
-      return await this.verifyGipToken(token);
-    } catch {
-      try {
-        return await this.verifyCognitoToken(token);
-      } catch {
-        throw new UnauthorizedException();
+      const [, payloadStr] = token.split(".");
+      const payload = JSON.parse(globalThis.atob(payloadStr)) as Record<string, unknown>;
+      if (payload.iss === this.gipService.issuerUrl) {
+        return await this.verifyGipToken(token);
       }
+      if (payload.iss === this.cognitoService.issuerUrl) {
+        return await this.verifyCognitoToken(token);
+      }
+      throw new Error();
+    } catch {
+      throw new UnauthorizedException();
     }
   }
 
@@ -83,7 +87,7 @@ export class JwtGuard implements CanActivate {
   }
 
   private async verifyCognitoToken(token: string): Promise<UserRequest> {
-    const payload = await this.jwtCognito.verifyIdToken(token);
+    const payload = await this.cognitoService.verifyIdToken(token);
 
     return {
       user: {

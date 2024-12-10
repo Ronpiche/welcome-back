@@ -9,7 +9,7 @@ import { StepService } from "@modules/step/step.service";
 import type { WelcomeUser } from "@modules/welcome/entities/user.entity";
 import { FIRESTORE_COLLECTIONS } from "@src/configs/types/Firestore.types";
 import type { CreateUserDto } from "@src/modules/welcome/dto/input/create-user.dto";
-import { GRADE, PRACTICE } from "@src/modules/welcome/types/user.enum";
+import { Practice } from "@src/modules/welcome/types/user.enum";
 import { NoErrorThrownError, getError } from "@tests/unit/utils";
 import { GipService } from "@src/services/gip/gip.service";
 import type { Step } from "@src/modules/step/entities/step.entity";
@@ -21,19 +21,16 @@ const user: WelcomeUser = {
   signupDate: "2022-04-24 22:00:00",
   firstName: "John",
   lastName: "Doe",
-  civility: "M",
   agency: "Any",
   creationDate: Timestamp.fromDate(new Date("2022-04-25 13:24:06.627")),
   hrReferent: {
-    _id: "abcd-1234",
     firstName: "Joe",
     lastName: "Bloggs",
     email: "joe.bloggs@127.0.0.1",
   },
   arrivalDate: "2023-02-01 22:00:00",
   lastUpdate: Timestamp.fromDate(new Date("2023-02-01 22:00:00")),
-  grade: GRADE.PRACTIONNER,
-  practice: PRACTICE.PRODUCT,
+  practices: [Practice.PRODUCT],
   steps: [
     {
       _id: "1",
@@ -58,17 +55,14 @@ const createUserDto: CreateUserDto = {
   signupDate: "2022-04-24 22:00:00",
   firstName: "John",
   lastName: "Doe",
-  civility: "M",
   agency: "Any",
   hrReferent: {
-    _id: "abcd-1234",
     firstName: "Joe",
     lastName: "Bloggs",
     email: "joe.bloggs@127.0.0.1",
   },
   arrivalDate: "2023-02-01 22:00:00",
-  grade: GRADE.PRACTIONNER,
-  practice: PRACTICE.PRODUCT,
+  practices: [Practice.PRODUCT],
 };
 const steps: Step[] = [
   { _id: "1", cutAt: 0.25, unlockEmail: { subject: "Test", body: "1234" }, maxDays: 90, minDays: 30, subSteps: 1 },

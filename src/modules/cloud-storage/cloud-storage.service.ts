@@ -8,9 +8,9 @@ export class CloudStorageService {
 
   private readonly bucket: string;
 
-  public constructor(private readonly config: ConfigService) {
+  public constructor(private readonly configService: ConfigService) {
     this.storage = new Storage();
-    this.bucket = config.get("NAME_BUCKET_STATIC_CONTENT");
+    this.bucket = this.configService.get("NAME_BUCKET_STATIC_CONTENT");
   }
 
   public async getContent(filename: string): Promise<Buffer> {

@@ -1,16 +1,16 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
-export class HrReferentDto {
+export class OutputRoleDto {
   @ApiProperty()
   @Expose()
-  public firstName: string;
+  public scope: string;
 
   @ApiProperty()
   @Expose()
-  public lastName: string;
+  public subscope?: string;
 
   @ApiProperty()
   @Expose()
-  public email: string;
+  public role: string;
 }

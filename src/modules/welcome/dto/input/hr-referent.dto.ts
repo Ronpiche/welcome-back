@@ -2,11 +2,6 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsString } from "class-validator";
 
 export class HrReferentDto {
-  @ApiProperty({ example: "abcd-1234" })
-  @IsString()
-  @IsNotEmpty()
-  public _id: string;
-
   @ApiProperty({ example: "Joe" })
   @IsString()
   @IsNotEmpty()

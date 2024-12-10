@@ -1,13 +1,7 @@
-export enum GRADE {
-  PRACTIONNER = "Practionner",
-  ASSOCIATE = "Associate",
-  SPECIALIST = "Specialist",
-  SENIOR_LEADER = "Senior leader",
-}
-
-export enum PRACTICE {
+export enum Practice {
   PRODUCT = "Product",
   TECH = "Tech",
-  CLOUD = "Cloud",
+  CLOUD_AWS = "Cloud AWS",
+  CLOUD_GCP = "Cloud GCP",
   DATA = "IA/Data",
 }

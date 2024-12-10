@@ -1,5 +1,6 @@
 import { InternalServerErrorException, Logger } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
+import { ConfigService } from "@nestjs/config";
 import { Auth } from "firebase-admin/auth";
 import { GipService } from "@src/services/gip/gip.service";
 import { NoErrorThrownError, getError } from "@tests/unit/utils";
@@ -19,6 +20,7 @@ describe("GipService", () => {
     const module = await Test.createTestingModule({
       providers: [
         GipService,
+        ConfigService,
         {
           provide: Auth,
           useValue: {

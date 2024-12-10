@@ -1,8 +1,8 @@
-import { GRADE, PRACTICE } from "@modules/welcome/types/user.enum";
-import { IsEnum, IsNotEmpty, IsString, ValidateNested } from "class-validator";
+import { Practice } from "@modules/welcome/types/user.enum";
+import { IsArray, IsNotEmpty, IsString, ValidateNested } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { HrReferentDto } from "./hr-referent.dto";
+import { HrReferentDto } from "@modules/welcome/dto/input/hr-referent.dto";
 
 export class CreateUserDto {
   @ApiProperty({ example: "john.doe@127.0.0.1" })
@@ -20,33 +20,22 @@ export class CreateUserDto {
   @IsNotEmpty()
   public lastName: string;
 
-  @ApiProperty({ enum: GRADE, enumName: "Grade" })
-  @IsEnum(GRADE)
+  @ApiProperty({ example: new Date().toISOString().substring(0, 10) })
   @IsNotEmpty()
-  public grade: GRADE;
-
-  @ApiProperty({ enum: PRACTICE, enumName: "Practice" })
-  @IsEnum(PRACTICE)
-  @IsNotEmpty()
-  public practice: PRACTICE;
+  public signupDate: string;
 
   @ApiProperty({ example: new Date(new Date().setDate(new Date().getDate() + 75)).toISOString().substring(0, 10) })
   @IsNotEmpty()
   public arrivalDate: string;
 
-  @ApiProperty({ example: new Date().toISOString().substring(0, 10) })
-  @IsNotEmpty()
-  public signupDate: string;
+  @ApiProperty({ isArray: true, enum: Practice, enumName: "Practice" })
+  @IsArray()
+  public practices: Practice[];
 
   @ApiProperty()
   @ValidateNested()
   @Type(() => HrReferentDto)
   public hrReferent: HrReferentDto;
-
-  @ApiProperty({ example: "M" })
-  @IsString()
-  @IsNotEmpty()
-  public civility: string;
 
   @ApiProperty({ example: "Lille" })
   @IsString()

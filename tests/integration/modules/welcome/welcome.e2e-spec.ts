@@ -1,4 +1,3 @@
-import { GRADE } from "@modules/welcome/types/user.enum";
 import type { INestApplication } from "@nestjs/common";
 import { HttpException, InternalServerErrorException } from "@nestjs/common";
 import type { TestingModule } from "@nestjs/testing";
@@ -26,7 +25,6 @@ const user: Record<string, any> = {
   },
   civility: "M",
   agency: "Lille",
-  grade: GRADE.ASSOCIATE,
 };
 describe("testing welcome", () => {
   beforeAll(async() => {

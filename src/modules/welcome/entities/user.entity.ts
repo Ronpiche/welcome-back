@@ -1,7 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
 import type { Timestamp } from "@google-cloud/firestore";
-import { HrReferent } from "./hr-referent.entity";
-import { UserStep } from "./user-step.entity";
+import { UserStep } from "@modules/welcome/entities/user-step.entity";
+import { Practice } from "@modules/welcome/types/user.enum";
+import { HrReferent } from "@modules/welcome/entities/hr-referent.entity";
 
 export class WelcomeUser {
   @ApiProperty()
@@ -18,9 +19,6 @@ export class WelcomeUser {
 
   @ApiProperty()
   public lastName: string;
-
-  @ApiProperty()
-  public civility: string;
 
   @ApiProperty()
   public agency: string;
@@ -40,11 +38,8 @@ export class WelcomeUser {
   @ApiProperty()
   public lastUpdate: Timestamp;
 
-  @ApiProperty()
-  public grade: string;
-
-  @ApiProperty()
-  public practice: string;
+  @ApiProperty({ isArray: true, enum: Practice, enumName: "Practice" })
+  public practices: Practice[];
 
   @ApiProperty({ isArray: true, type: UserStep })
   public steps: UserStep[];

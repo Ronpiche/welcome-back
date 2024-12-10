@@ -1,4 +1,3 @@
-import { JwtCognito } from "@modules/cognito/jwtCognito.service";
 import { CacheService } from "@modules/shared/cache/cache.service";
 import { Logger, Module } from "@nestjs/common";
 import { AuthorizationController } from "./authorization.controller";
@@ -8,6 +7,6 @@ import { FirestoreModule } from "@src/services/firestore/firestore.module";
 @Module({
   imports: [FirestoreModule],
   controllers: [AuthorizationController],
-  providers: [AuthorizationService, CacheService, Logger, JwtCognito],
+  providers: [AuthorizationService, CacheService, Logger],
 })
 export class AuthorizationModule {}
