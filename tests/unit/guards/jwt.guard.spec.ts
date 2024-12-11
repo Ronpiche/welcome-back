@@ -14,6 +14,7 @@ const authorizationGip = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOi
 const tokenResultGip = { sub: "1", email: "john.doe@localhost", iss: "gip" };
 const authorizationCognito = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJqb2huLmRvZUBsb2NhbGhvc3QiLCJpc3MiOiJjb2duaXRvIn0.5YzAwPZPiiLowXoHaoIeC-qgRpyHMFRjMww7120aSp0";
 const tokenResultCognito = { sub: "1", email: "john.doe@localhost", iss: "cognito" };
+const authorizationUnknown = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJqb2huLmRvZUBsb2NhbGhvc3QiLCJpc3MiOiJ1bmtub3duIn0.YNL0upufTr9LYOkcaEuriSM2MgJXeYzJxFAS1iWkUUw";
 
 describe("JwtGuard", () => {
   let guard: JwtGuard;
@@ -91,6 +92,13 @@ describe("JwtGuard", () => {
 
     it("should throw UnauthorizedException when token is invalid.", async() => {
       jest.spyOn(context.switchToHttp(), "getRequest").mockReturnValue({ headers: { authorization: "test" } });
+      const error: UnauthorizedException = await getError(async() => guard.canActivate(context));
+      expect(error).not.toBeInstanceOf(NoErrorThrownError);
+      expect(error).toBeInstanceOf(UnauthorizedException);
+    });
+
+    it("should throw UnauthorizedException when token is valid but has unknown issuer.", async() => {
+      jest.spyOn(context.switchToHttp(), "getRequest").mockReturnValue({ headers: { authorization: authorizationUnknown } });
       const error: UnauthorizedException = await getError(async() => guard.canActivate(context));
       expect(error).not.toBeInstanceOf(NoErrorThrownError);
       expect(error).toBeInstanceOf(UnauthorizedException);
