@@ -116,6 +116,8 @@ export class WelcomeService {
         userEmails.push(this.getStepEmailPromiseThenSaveState(user, unlockedSteps, step));
       }
     });
+
+    return Promise.allSettled(userEmails);
   }
 
   async getStepEmailPromiseThenSaveState(user: WelcomeUser, unlockedSteps: string[], step: Step): Promise<any> {
