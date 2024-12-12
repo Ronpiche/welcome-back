@@ -2,7 +2,8 @@ import { HttpException, HttpStatus } from "@nestjs/common";
 import Holidays from "date-holidays";
 import type { Step } from "./entities/step.entity";
 
-const DAY_IN_MS = 24 * 60 * 60 * 1000;
+// is the result of 24h * 60min * 60sec * 1000
+const DAY_IN_MS = 86400000;
 
 /**
  * get the difference between 2 dates (date1 - date2) in days.

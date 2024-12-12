@@ -158,3 +158,8 @@ npm run script:create-git-branch
 ```shell
 npm run script:create-pull-request
 ```
+
+### 🆗 Run the linter, analyzes and correct source code about stylistic issues to improve code quality
+```shell
+npm run lint:fix
+```

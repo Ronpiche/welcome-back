@@ -12,19 +12,10 @@ import { instanceToPlain } from "class-transformer";
 import { StepService } from "@modules/step/step.service";
 import { MailService } from "@src/services/mail/mail.service";
 import { GipService } from "@src/services/gip/gip.service";
-import markdownit, { StateCore } from "markdown-it";
 import crypto from "crypto";
-
-const APP_NAME = "Welcome";
-const APP_URL = "http://localhost:3000";
-const NEW_ACCOUNT_EMAIL_SUBJECT = "Compte créé";
-const NEW_ACCOUNT_EMAIL_BODY = "Bonjour {{userFirstName}},\n\nTu peux désormais accéder à l'application [{{appName}}]({{appUrl}}) (sur desktop, tablette ou mobile)" +
-  " en te connectant avec ces identifiants :\n\n\n\n*Email :* {{email}}\n\n*Mot de passe :* {{password}}\n\n\n\nÀ très bientôt,\n\n{{managerFirstName}} {{managerLastName}}.";
 
 @Injectable()
 export class WelcomeService {
-  private readonly md = markdownit();
-
   public constructor(
     private readonly firestoreService: FirestoreService,
     private readonly gipService: GipService,
@@ -32,17 +23,6 @@ export class WelcomeService {
     private readonly mailService: MailService,
     private readonly logger: Logger,
   ) {
-    this.md.core.ruler.after("normalize", "variables", WelcomeService.markdownVariable);
-  }
-
-  private static markdownVariable(state: StateCore): void {
-    state.src = state.src.replaceAll(/{{\s?(\w+)\s?}}/g, (_, name: string) => state.env[name] || "".padStart(name.length, "█"));
-  }
-
-  private static generatePassword(length = 12, characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789?.:/!@"): string {
-    return Array.from(crypto.randomFillSync(new Uint32Array(length)))
-      .map(x => characters[x % characters.length])
-      .join("");
   }
 
   /**
@@ -60,26 +40,22 @@ export class WelcomeService {
     }, []) : [];
   }
 
+  private static generatePassword(length = 12, characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789?.:/!@"): string {
+    return Array.from(crypto.randomFillSync(new Uint32Array(length)))
+      .map(x => characters[x % characters.length])
+      .join("");
+  }
+
   public async createUser(createUserDto: CreateUserDto): Promise<WelcomeUser> {
     const password = WelcomeService.generatePassword();
+
     try {
-      await this.mailService
-        .sendMail({
-          to: createUserDto.email,
-          subject: NEW_ACCOUNT_EMAIL_SUBJECT,
-          html: this.md.render(NEW_ACCOUNT_EMAIL_BODY, {
-            appName: APP_NAME,
-            appUrl: APP_URL,
-            userFirstName: createUserDto.firstName,
-            userLastName: createUserDto.lastName,
-            email: createUserDto.email,
-            password,
-          }),
-        });
+      await this.mailService.inviteNewUserMail(createUserDto, password);
     } catch (error) {
       this.logger.error(error);
       throw new InternalServerErrorException();
     }
+
     const gip = await this.gipService.createUser({ email: createUserDto.email, password, displayName: `${createUserDto.firstName} ${createUserDto.lastName}` });
 
     return this.createDbUser(Object.assign(createUserDto, { _id: gip.uid }));
@@ -146,20 +122,7 @@ export class WelcomeService {
 
   async getStepEmailPromiseThenSaveState(user: WelcomeUser, unlockedSteps: string[], step: Step): Promise<any> {
     return new Promise((resolve, reject) => {
-      this.mailService
-        .sendMail({
-          to: user.email,
-          subject: step.unlockEmail.subject,
-          html: this.md.render(step.unlockEmail.body, {
-            appName: APP_NAME,
-            appUrl: APP_URL,
-            userFirstName: user.firstName,
-            userLastName: user.lastName,
-            managerFirstName: user.hrReferent.firstName,
-            managerLastName: user.hrReferent.lastName,
-            stepId: step._id,
-          }),
-        })
+      this.mailService.sendStepMail(user, step.unlockEmail, step._id)
         .then(async() => {
           await this.updateEmailSteps(user, unlockedSteps);
           resolve({ _id: user._id });
@@ -218,28 +181,12 @@ export class WelcomeService {
   }
 
   private async notifyCompletedStep(user: WelcomeUser, step: Step): Promise<void> {
-    const env = {
-      appName: APP_NAME,
-      appUrl: APP_URL,
-      userFirstName: user.firstName,
-      userLastName: user.lastName,
-      managerFirstName: user.hrReferent.firstName,
-      managerLastName: user.hrReferent.lastName,
-      stepId: step._id,
-    };
     if (step.completionEmailManager !== undefined) {
-      await this.mailService.sendMail({
-        to: user.hrReferent.email,
-        subject: step.completionEmailManager.subject,
-        html: this.md.render(step.completionEmailManager.body, env),
-      });
+      await this.mailService.sendStepMail(user, step.completionEmailManager, step._id);
     }
+
     if (step.completionEmail !== undefined) {
-      await this.mailService.sendMail({
-        to: user.email,
-        subject: step.completionEmail.subject,
-        html: this.md.render(step.completionEmail.body, env),
-      });
+      await this.mailService.sendStepMail(user, step.completionEmail, step._id);
     }
   }
 
