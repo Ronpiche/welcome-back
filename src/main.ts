@@ -1,12 +1,13 @@
 import { NestFactory } from "@nestjs/core";
-import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
-import type { INestApplication } from "@nestjs/common";
 import { Logger, ValidationPipe } from "@nestjs/common";
-import cookieParser from "cookie-parser";
-import { AppModule } from "src/app.module";
-import session from "express-session";
+import type { INestApplication } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import type { NestExpressApplication } from "@nestjs/platform-express";
+import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
+import cookieParser from "cookie-parser";
+import session from "express-session";
 import memoryStore from "memorystore";
+import { AppModule } from "src/app.module";
 
 const DAY_IN_MS = 86400000;
 const DEFAULT_HTTP_PORT = 3337;
@@ -31,16 +32,16 @@ const swaggerSetup = (app: INestApplication): void => {
 };
 
 const bootstrap = async(): Promise<void> => {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const MemoryStore = memoryStore(session);
   const configService = app.get<ConfigService>(ConfigService);
   const port = Number(configService.get("PORT")) || DEFAULT_HTTP_PORT;
 
+  app.set("trust proxy", true);
   app.setGlobalPrefix("api");
-
   app.use(cookieParser());
   app.use(session({
-    cookie: { maxAge: DAY_IN_MS },
+    cookie: { maxAge: DAY_IN_MS, sameSite: "none", secure: true },
     secret: configService.get("SESSION_SECRET"),
     store: new MemoryStore({ checkPeriod: DAY_IN_MS }),
     resave: false,
