@@ -29,10 +29,10 @@ const config: Config.InitialOptions = {
   coverageDirectory: "tests/unit/coverage",
   coverageThreshold: {
     global: {
-      statements: 80,
-      branches: 80,
-      lines: 80,
-      functions: 80,
+      statements: 81,
+      branches: 81,
+      lines: 81,
+      functions: 84,
     },
   },
 };

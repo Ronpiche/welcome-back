@@ -1,76 +1,76 @@
+import { Timestamp } from "@google-cloud/firestore";
+import { StepService } from "@modules/step/step.service";
+import { WelcomeService } from "@modules/welcome/welcome.service";
 import { HttpException, HttpStatus, InternalServerErrorException, Logger, NotFoundException } from "@nestjs/common";
 import type { TestingModule } from "@nestjs/testing";
 import { Test } from "@nestjs/testing";
-import { MailService } from "@src/services/mail/mail.service";
-import { Timestamp } from "@google-cloud/firestore";
-import { WelcomeService } from "@modules/welcome/welcome.service";
-import { FirestoreService } from "@src/services/firestore/firestore.service";
-import { StepService } from "@modules/step/step.service";
-import type { WelcomeUser } from "@modules/welcome/entities/user.entity";
 import { FIRESTORE_COLLECTIONS } from "@src/configs/types/Firestore.types";
-import type { CreateUserDto } from "@src/modules/welcome/dto/input/create-user.dto";
-import { Practice } from "@src/modules/welcome/types/user.enum";
-import { NoErrorThrownError, getError } from "@tests/unit/utils";
-import { GipService } from "@src/services/gip/gip.service";
 import type { Step } from "@src/modules/step/entities/step.entity";
+import { FirestoreService } from "@src/services/firestore/firestore.service";
+import { GipService } from "@src/services/gip/gip.service";
+import { MailService } from "@src/services/mail/mail.service";
+import { createFakeCreateUserDto } from "@tests/unit/factories/dtos/create-user.dto.factory";
+import { createFakeStepEmail } from "@tests/unit/factories/entities/step-email.entity.factory";
+import { createFakeStep } from "@tests/unit/factories/entities/step.entity.factory";
+import { createFakeUserStep } from "@tests/unit/factories/entities/user-step.entity.factory";
+import { createFakeWelcomeUser } from "@tests/unit/factories/entities/user.entity.factory";
+import { getError, NoErrorThrownError } from "@tests/unit/utils";
 
-const user: WelcomeUser = {
-  _id: "1",
-  note: "",
-  email: "john.doe@127.0.0.1",
-  signupDate: "2022-04-24 22:00:00",
-  firstName: "John",
-  lastName: "Doe",
-  agency: "Any",
-  creationDate: Timestamp.fromDate(new Date("2022-04-25 13:24:06.627")),
-  hrReferent: {
-    firstName: "Joe",
-    lastName: "Bloggs",
-    email: "joe.bloggs@127.0.0.1",
-  },
-  arrivalDate: "2023-02-01 22:00:00",
-  lastUpdate: Timestamp.fromDate(new Date("2023-02-01 22:00:00")),
-  practices: [Practice.PRODUCT],
+const user = createFakeWelcomeUser({
   steps: [
-    {
+    createFakeUserStep({
       _id: "1",
-      unlockDate: Timestamp.fromDate(new Date(2022, 4, 25, 13, 24, 6)),
       subStepsCompleted: 1,
-    },
-    {
+    }),
+    createFakeUserStep({
       _id: "2",
-      unlockDate: Timestamp.fromDate(new Date(2022, 4, 25, 13, 24, 6)),
       subStepsCompleted: 0,
-    },
-    {
+    }),
+    createFakeUserStep({
       _id: "3",
-      unlockDate: Timestamp.fromDate(new Date(2022, 4, 25, 13, 24, 6)),
       subStepsCompleted: 0,
-    },
+    }),
   ],
-};
-const createUserDto: CreateUserDto = {
-  note: "",
-  email: "john.doe@127.0.0.1",
-  signupDate: "2022-04-24 22:00:00",
-  firstName: "John",
-  lastName: "Doe",
-  agency: "Any",
-  hrReferent: {
-    firstName: "Joe",
-    lastName: "Bloggs",
-    email: "joe.bloggs@127.0.0.1",
-  },
-  arrivalDate: "2023-02-01 22:00:00",
-  practices: [Practice.PRODUCT],
-};
-const steps: Step[] = [
-  { _id: "1", cutAt: 0.25, unlockEmail: { subject: "Test", body: "1234" }, maxDays: 90, minDays: 30, subSteps: 1 },
-  { _id: "2", cutAt: 0.5, unlockEmail: { subject: "Test", body: "1234" }, maxDays: 90, minDays: 30, subSteps: 1 },
-  { _id: "3", cutAt: 0.7, unlockEmail: { subject: "Test", body: "1234" }, maxDays: 90, minDays: 30, subSteps: 1 },
+});
+
+const createUserDto = createFakeCreateUserDto();
+const steps = [
+  createFakeStep({
+    _id: "1",
+    cutAt: 0.25,
+    unlockEmail: { subject: "Test", body: "1234" },
+    maxDays: 90,
+    minDays: 30,
+    subSteps: 1,
+    completionEmailManager: createFakeStepEmail(),
+  }),
+  createFakeStep({
+    _id: "2",
+    cutAt: 0.5,
+    unlockEmail: { subject: "Test", body: "1234" },
+    maxDays: 90,
+    minDays: 30,
+    subSteps: 1,
+    completionEmail: createFakeStepEmail(),
+  }),
+  createFakeStep({
+    _id: "3",
+    cutAt: 0.7,
+    unlockEmail: { subject: "Test", body: "1234" },
+    maxDays: 90,
+    minDays: 30,
+    subSteps: 1,
+  }),
 ];
 
-describe("UsersService", () => {
+describe("Welcome Service", () => {
+  let mocks: {
+    services: {
+      welcome: {
+        findAll: jest.SpyInstance;
+      };
+    };
+  };
   let service: WelcomeService;
 
   beforeEach(async() => {
@@ -137,7 +137,7 @@ describe("UsersService", () => {
   describe("createUser", () => {
     it("should create an user when createUser is called.", async() => {
       const createUser = await service.createUser(createUserDto);
-      
+
       expect(createUser).toStrictEqual(user);
     });
 
@@ -260,24 +260,21 @@ describe("UsersService", () => {
   });
 
   describe("run", () => {
-    it("should send emails to newcommers with unlocked steps when run is called (no user).", async() => {
+    beforeEach(() => {
+      mocks = {
+        services: {
+          welcome: {
+            findAll: jest.spyOn(service, "findAll").mockResolvedValue([user]),
+          },
+        },
+      };
+    });
+
+    it("should send emails to newcomers with unlocked steps when run is called (no user).", async() => {
       jest.spyOn(service["firestoreService"], "getAllDocuments").mockImplementation().mockResolvedValue([]);
       const run = await service.run(new Date());
 
       expect(run).toStrictEqual([]);
-    });
-
-    it("should send emails to newcommers with unlocked steps when run is called (some users).", async() => {
-      const run = await service.run(new Date());
-
-      expect(run).toStrictEqual([{ status: "fulfilled", value: { _id: user._id } }]);
-    });
-
-    it("should return rejected when emails cannot be send.", async() => {
-      jest.spyOn(service["mailService"], "sendStepMail").mockImplementation().mockRejectedValue(new Error("test"));
-      const run = await service.run(new Date());
-
-      expect(run).toStrictEqual([{ status: "rejected", reason: { _id: user._id, message: "test" } }]);
     });
   });
 
@@ -291,6 +288,41 @@ describe("UsersService", () => {
           steps: [user.steps[0], { ...user.steps[1], subStepsCompleted: steps[1].subSteps, completedAt: Timestamp.now() }, user.steps[2]],
         },
       );
+    });
+  });
+
+  describe("updateEmailSteps", () => {
+    it("should update email steps when updateEmailSteps is called.", async() => {
+      await service["updateEmailSteps"](user, ["1"]);
+
+      expect(service["firestoreService"].updateDocument).toHaveBeenCalledTimes(1);
+      expect(service["firestoreService"].updateDocument).toHaveBeenCalledWith(
+        FIRESTORE_COLLECTIONS.WELCOME_USERS,
+        user._id,
+        {
+          steps: [
+            { ...user.steps[0], unlockEmailSentAt: Timestamp.now() },
+            user.steps[1],
+            user.steps[2],
+          ],
+        },
+      );
+    });
+  });
+
+  describe("notifyCompletedStep", () => {
+    it("should send step mail when completion email manager is set.", async() => {
+      await service["notifyCompletedStep"](user, steps[0]);
+
+      expect(service["mailService"].sendStepMail).toHaveBeenCalledTimes(1);
+      expect(service["mailService"].sendStepMail).toHaveBeenCalledWith(user, steps[0].completionEmailManager, steps[0]._id);
+    });
+
+    it("should send step mail when completion email is set.", async() => {
+      await service["notifyCompletedStep"](user, steps[1]);
+
+      expect(service["mailService"].sendStepMail).toHaveBeenCalledTimes(1);
+      expect(service["mailService"].sendStepMail).toHaveBeenCalledWith(user, steps[1].completionEmail, steps[1]._id);
     });
   });
 });

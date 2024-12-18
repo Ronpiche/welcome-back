@@ -117,7 +117,7 @@ gantt
 | BYPASS_GUARD               | If true, the guard is bypassed on all endpoints                 | `false`       | `false`  |
 | SERVICE_ACCOUNT_BASE64     | The base64 encoded service account key file for google services | -             | `true`   |
 | NAME_BUCKET_STATIC_CONTENT | The name of the GCP bucket where the static content is stored   | -             | `true`   |
-| SENDGRID_API_KEY           | The API key required by Sendgrid to send emails                 | -             | `true`   |
+| BREVO_API_KEY              | The API key required by Brevo to send emails                    | -             | `true`   |
 | SESSION_SECRET             | Used to sign the session ID cookie                              | -             | `true`   |
 | COGNITO_REGION             | Region of Cognito                                               | -             | `true`   |
 | COGNITO_USER_POOL_ID       | User pool ID of Cognito                                         | -             | `true`   |

@@ -1,85 +1,76 @@
-import {
-  Injectable,
-  Logger,
-} from "@nestjs/common";
-import { MailDataRequired, default as SendGrid } from "@sendgrid/mail";
+import { TransactionalEmailsApi, TransactionalEmailsApiApiKeys, SendSmtpEmail } from "@getbrevo/brevo";
+import { StepEmail } from "@modules/step/entities/step-email.entity";
+import { CreateUserDto } from "@modules/welcome/dto/input/create-user.dto";
+import { WelcomeUser } from "@modules/welcome/entities/user.entity";
+import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { MAIL_FROM } from "@src/services/mail/mail.constants";
-import { StepEmail } from "@src/modules/step/entities/step-email.entity";
-import { CreateUserDto } from "@src/modules/welcome/dto/input/create-user.dto";
-import { WelcomeUser } from "@src/modules/welcome/entities/user.entity";
-import markdownit, { StateCore } from "markdown-it";
-
-const APP_NAME = "Welcome";
-const NEW_ACCOUNT_EMAIL_SUBJECT = "Compte créé";
-const NEW_ACCOUNT_EMAIL_BODY = "Bonjour {{userFirstName}},\n\nTu peux désormais accéder à l'application [{{appName}}]({{appUrl}}) (sur desktop, tablette ou mobile)" +
-  " en te connectant avec ces identifiants :\n\n\n\n*Email :* {{email}}\n\n*Mot de passe :* {{password}}\n\n\n\nÀ très bientôt,\n\n{{managerFirstName}} {{managerLastName}}.";
+import { MAIL_FROM, MAIL_FROM_NAME } from "@src/services/mail/mail.constants";
+import { MailRequirement } from "@src/services/mail/mail.types";
 
 @Injectable()
 export class MailService {
-  private readonly md = markdownit();
+  private readonly brevoMailingInstance = new TransactionalEmailsApi();
 
   public constructor(
     private readonly logger: Logger,
     private readonly config: ConfigService,
   ) {
-    SendGrid.setApiKey(config.get("SENDGRID_API_KEY"));
-    this.md.core.ruler.after("normalize", "variables", MailService.markdownVariable);
+    const brevoApiKey = this.config.get<string>("BREVO_API_KEY");
+    this.brevoMailingInstance.setApiKey(TransactionalEmailsApiApiKeys.apiKey, brevoApiKey);
   }
 
-  private static markdownVariable(state: StateCore): void {
-    state.src = state.src.replaceAll(/{{\s?(\w+)\s?}}/g, (_, name: string) => state.env[name] || "".padStart(name.length, "█"));
+  public async sendStepMail(user: WelcomeUser, stepUnlockEmail: StepEmail, stepId: string): Promise<void> {
+    /**
+     * TODO: The following lines are temporary. Implement the logic to send an email to the user when a step is unlocked in PR https://github.com/we-are-daveo/welcome-hub-back/pull/75
+     */
+    void user;
+    void stepUnlockEmail;
+    void stepId;
+    const dummyMailRequirement: MailRequirement = {
+      to: "john@doe.com",
+      subject: "Welcome to the next step",
+      html: "<p>Hey John, you've unlocked the next step!</p>",
+    };
+
+    return this.sendMail(dummyMailRequirement);
   }
 
   public async inviteNewUserMail(createUserDto: CreateUserDto, password: string): Promise<void> {
-    const mailbody = this.md.render(NEW_ACCOUNT_EMAIL_BODY, {
-      appName: APP_NAME,
-      appUrl: this.config.get<string>("HUB_FRONT_URL"),
-      userFirstName: createUserDto.firstName,
-      userLastName: createUserDto.lastName,
-      email: createUserDto.email,
-      password,
-    });
-
-    await this.sendMail({
-      to: createUserDto.email,
-      subject: NEW_ACCOUNT_EMAIL_SUBJECT,
-      html: mailbody,
-    });
-  }
-
-  public async sendStepMail(user: WelcomeUser, stepEmail: StepEmail, stepId: string): Promise<void> {
-    const env = {
-      appName: this.config.get<string>("APP_NAME"),
-      appUrl: this.config.get<string>("HUB_FRONT_URL"),
-      userFirstName: user.firstName,
-      userLastName: user.lastName,
-      managerFirstName: user.hrReferent.firstName,
-      managerLastName: user.hrReferent.lastName,
-      stepId,
+    /**
+     * TODO: The following lines are temporary. Implement the logic to send an email to the user when a step is unlocked in PR https://github.com/we-are-daveo/welcome-hub-back/pull/75
+     */
+    void createUserDto;
+    void password;
+    const dummyMailRequirement: MailRequirement = {
+      to: "john@doe.com",
+      subject: "Welcome to the platform",
+      html: "<p>Hey John, welcome to the platform!</p>",
     };
 
-    await this.sendMail({
-      to: user.email,
-      subject: stepEmail.subject,
-      html: this.md.render(stepEmail.body, env),
-    });
+    return this.sendMail(dummyMailRequirement);
   }
 
-  private async sendMail(mailRequirement: { to: string; subject: string; html: string }): Promise<void> {
+  private async sendMail(mailRequirement: MailRequirement): Promise<void> {
     try {
-      const mail: MailDataRequired = {
-        to: mailRequirement.to,
-        subject: mailRequirement.subject,
-        html: mailRequirement.html,
-        from: MAIL_FROM,
-      };
-
-      await SendGrid.send(mail);
-      this.logger.log(`Email successfully dispatched to ${mail.to as string}`);
+      const mail = this.getSmtpMailFromRequirement(mailRequirement);
+      await this.brevoMailingInstance.sendTransacEmail(mail);
+      this.logger.log(`Email successfully dispatched to ${mailRequirement.to}`);
     } catch (error) {
       this.logger.error("Error while sending email", error);
       throw error;
     }
+  }
+
+  private getSmtpMailFromRequirement(mailRequirement: MailRequirement): SendSmtpEmail {
+    const mail = new SendSmtpEmail();
+    mail.to = [{ email: mailRequirement.to }];
+    mail.sender = {
+      name: MAIL_FROM_NAME,
+      email: MAIL_FROM,
+    };
+    mail.subject = mailRequirement.subject;
+    mail.htmlContent = mailRequirement.html;
+
+    return mail;
   }
 }

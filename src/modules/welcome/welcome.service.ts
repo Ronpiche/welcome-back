@@ -99,7 +99,7 @@ export class WelcomeService {
     const steps = await this.stepService.findAll();
     const users = await this.findAll(now);
     const userEmails = [];
-    
+
     this.logger.debug(`User count : ${users.length}`);
 
     // for each User
@@ -120,15 +120,9 @@ export class WelcomeService {
     return Promise.allSettled(userEmails);
   }
 
-  async getStepEmailPromiseThenSaveState(user: WelcomeUser, unlockedSteps: string[], step: Step): Promise<any> {
-    return new Promise((resolve, reject) => {
-      this.mailService.sendStepMail(user, step.unlockEmail, step._id)
-        .then(async() => {
-          await this.updateEmailSteps(user, unlockedSteps);
-          resolve({ _id: user._id });
-        })
-        .catch(({ message }) => reject({ _id: user._id, message }));
-    });
+  public async getStepEmailPromiseThenSaveState(user: WelcomeUser, unlockedSteps: string[], step: Step): Promise<void> {
+    await this.updateEmailSteps(user, unlockedSteps);
+    await this.mailService.sendStepMail(user, step.unlockEmail, step._id);
   }
 
   /**
