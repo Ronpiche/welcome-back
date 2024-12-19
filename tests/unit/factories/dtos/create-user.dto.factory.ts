@@ -5,14 +5,16 @@ import { createFakeHrReferent } from "@tests/unit/factories/entities/hr-referent
 import { FAKE_USER_AGENCIES } from "@tests/unit/factories/factory.constants";
 import { plainToInstance } from "class-transformer";
 
-function createFakeCreateUserDto(createUserDto: Partial<CreateUserDto> = {}): CreateUserDto {
-  return plainToInstance(CreateUserDto, {
+type T = CreateUserDto;
+
+function createFakeCreateUserDto(createUserDto: Partial<T> = {}): T {
+  return plainToInstance<T, T>(CreateUserDto, {
     email: createUserDto.email ?? faker.internet.email(),
     firstName: createUserDto.firstName ?? faker.person.firstName(),
     lastName: createUserDto.lastName ?? faker.person.lastName(),
     signupDate: createUserDto.signupDate ?? faker.date.past().toISOString(),
     arrivalDate: createUserDto.arrivalDate ?? faker.date.past().toISOString(),
-    practices: createUserDto.practices ?? [faker.helpers.arrayElements(Object.values(Practice))],
+    practices: createUserDto.practices ?? faker.helpers.arrayElements(Object.values(Practice)),
     hrReferent: createUserDto.hrReferent ?? createFakeHrReferent(),
     agency: createUserDto.agency ?? faker.helpers.arrayElement(FAKE_USER_AGENCIES),
     note: createUserDto.note ?? faker.lorem.sentence(),

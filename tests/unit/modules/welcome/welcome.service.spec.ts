@@ -5,7 +5,6 @@ import { HttpException, HttpStatus, InternalServerErrorException, Logger, NotFou
 import type { TestingModule } from "@nestjs/testing";
 import { Test } from "@nestjs/testing";
 import { FIRESTORE_COLLECTIONS } from "@src/configs/types/Firestore.types";
-import type { Step } from "@src/modules/step/entities/step.entity";
 import { FirestoreService } from "@src/services/firestore/firestore.service";
 import { GipService } from "@src/services/gip/gip.service";
 import { MailService } from "@src/services/mail/mail.service";

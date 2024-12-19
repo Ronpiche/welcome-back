@@ -21,11 +21,13 @@ export enum UserRoles {
 export enum FIRESTORE_COLLECTIONS {
   ROLES = "AuthorizationDatabase_roles",
   AUTHORIZED_USERS = "AuthorizationDatabase_users",
+  CLIENTS = "WelcomeDatabase_clients",
   FEEDBACKS = "WelcomeDatabase_feedbacks",
   FEEDBACKS_QUESTIONS = "Feedback_questions",
   FEEDBACKS_ANSWERS = "Feedback_answers",
   QUIZZES = "WelcomeDatabase_quizzes",
   STEPS = "WelcomeDatabase_steps",
+  PRACTICES = "WelcomeDatabase_practices",
   WELCOME_USERS = "WelcomeDatabase_users",
   WELCOME_CONTENT = "WelcomeDatabase_content",
   WELCOME_AGENCIES = "WelcomeDatabase_agencies",

@@ -11,11 +11,13 @@ import { AppController } from "@src/app.controller";
 import { AppService } from "@src/app.service";
 import { AgenciesModule } from "@modules/agencies/agencies.module";
 import { MembersModule } from "@modules/members/members.module";
+import { ClientModule } from "@modules/client/client.module";
 import { CloudStorageModule } from "@modules/cloud-storage/cloud-storage.module";
 import { QuizModule } from "@modules/quiz/quiz.module";
 import { FeedbackModule } from "@modules/feedback/feedback.module";
 import { FeedbackQuestionModule } from "@modules/feedback-question/feedback-question.module";
 import { FeedbackAnswerModule } from "@modules/feedback-answer/feedback-answer.module";
+import { PracticeModule } from "@modules/practice/practice.module";
 import { AuthModule } from "@modules/auth/auth.module";
 import { JwtGuard } from "@src/guards/jwt.guard";
 import { RoleGuard } from "@src/guards/role.guard";
@@ -47,7 +49,9 @@ import { CognitoModule } from "@src/services/cognito/cognito.module";
     StepModule,
     AgenciesModule,
     MembersModule,
+    ClientModule,
     CloudStorageModule,
+    PracticeModule,
     QuizModule,
   ],
   controllers: [AppController],
