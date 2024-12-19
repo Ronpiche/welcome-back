@@ -1,11 +1,13 @@
-import { TransactionalEmailsApi, TransactionalEmailsApiApiKeys, SendSmtpEmail } from "@getbrevo/brevo";
+import { SendSmtpEmail, TransactionalEmailsApi, TransactionalEmailsApiApiKeys } from "@getbrevo/brevo";
 import { StepEmail } from "@modules/step/entities/step-email.entity";
 import { CreateUserDto } from "@modules/welcome/dto/input/create-user.dto";
 import { WelcomeUser } from "@modules/welcome/entities/user.entity";
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { MAIL_FROM, MAIL_FROM_NAME } from "@src/services/mail/mail.constants";
-import { MailRequirement } from "@src/services/mail/mail.types";
+import { MAIL_APP_NAME, MAIL_FROM, MAIL_FROM_NAME } from "@src/services/mail/mail.constants";
+import { CommonMailData, InviteNewUserMailData, MailRequirement, MailTemplateName, StepMailData } from "@src/services/mail/mail.types";
+import { renderFile } from "ejs";
+import path from "path";
 
 @Injectable()
 export class MailService {
@@ -19,35 +21,49 @@ export class MailService {
     this.brevoMailingInstance.setApiKey(TransactionalEmailsApiApiKeys.apiKey, brevoApiKey);
   }
 
-  public async sendStepMail(user: WelcomeUser, stepUnlockEmail: StepEmail, stepId: string): Promise<void> {
-    /**
-     * TODO: The following lines are temporary. Implement the logic to send an email to the user when a step is unlocked in PR https://github.com/we-are-daveo/welcome-hub-back/pull/75
-     */
-    void user;
-    void stepUnlockEmail;
-    void stepId;
-    const dummyMailRequirement: MailRequirement = {
-      to: "john@doe.com",
-      subject: "Welcome to the next step",
-      html: "<p>Hey John, you've unlocked the next step!</p>",
+  public async sendStepMail(user: WelcomeUser, stepEmail: StepEmail, stepId: string): Promise<void> {
+    const data: StepMailData = {
+      ...this.getCommonMailData(user),
+      managerFirstName: user.hrReferent.firstName,
+      managerLastName: user.hrReferent.lastName,
+      stepId,
     };
+    const templateName = `step-${stepId}` as MailTemplateName;
+    const templatePath = this.getMailTemplatePath(templateName);
 
-    return this.sendMail(dummyMailRequirement);
+    await this.sendMail({
+      to: user.email,
+      subject: stepEmail.subject,
+      html: await renderFile(templatePath, data),
+    });
   }
 
   public async inviteNewUserMail(createUserDto: CreateUserDto, password: string): Promise<void> {
-    /**
-     * TODO: The following lines are temporary. Implement the logic to send an email to the user when a step is unlocked in PR https://github.com/we-are-daveo/welcome-hub-back/pull/75
-     */
-    void createUserDto;
-    void password;
-    const dummyMailRequirement: MailRequirement = {
-      to: "john@doe.com",
-      subject: "Welcome to the platform",
-      html: "<p>Hey John, welcome to the platform!</p>",
+    const data: InviteNewUserMailData = {
+      ...this.getCommonMailData(createUserDto),
+      email: createUserDto.email,
+      password,
     };
+    const templatePath = this.getMailTemplatePath("new-user");
 
-    return this.sendMail(dummyMailRequirement);
+    await this.sendMail({
+      to: createUserDto.email,
+      subject: "Sujet [Welcome] Tes identifiants de connexion",
+      html: await renderFile(templatePath, data),
+    });
+  }
+
+  private getMailTemplatePath(templateName: MailTemplateName): string {
+    return path.join(__dirname, "/templates/", `${templateName}.mail-template.ejs`);
+  }
+
+  private getCommonMailData(user: { firstName: string; lastName: string }): CommonMailData {
+    return {
+      appName: MAIL_APP_NAME,
+      appUrl: this.config.get<string>("HUB_FRONT_URL"),
+      userFirstName: user.firstName,
+      userLastName: user.lastName,
+    };
   }
 
   private async sendMail(mailRequirement: MailRequirement): Promise<void> {

@@ -5,7 +5,9 @@ import { ConfigService } from "@nestjs/config";
 import type { TestingModule } from "@nestjs/testing";
 import { Test } from "@nestjs/testing";
 import { MailService } from "@src/services/mail/mail.service";
-import type { MailRequirement } from "@src/services/mail/mail.types";
+import type { InviteNewUserMailData, MailRequirement, StepMailData } from "@src/services/mail/mail.types";
+import { createFakeHrReferent } from "@tests/unit/factories/entities/hr-referent.entity.factory";
+import Ejs from "ejs";
 import { LoggerMock } from "@tests/unit/__mocks__/logger.mock";
 import { createFakeCreateUserDto } from "@tests/unit/factories/dtos/create-user.dto.factory";
 import { createFakeWelcomeUser } from "@tests/unit/factories/entities/user.entity.factory";
@@ -33,6 +35,9 @@ describe("Mail Service Service", () => {
         getSmtpMailFromRequirement: jest.SpyInstance;
       };
     };
+    ejs: {
+      renderFile: jest.SpyInstance;
+    };
   };
 
   beforeEach(async() => {
@@ -45,6 +50,9 @@ describe("Mail Service Service", () => {
           sendMail: jest.fn(),
           getSmtpMailFromRequirement: jest.fn(),
         },
+      },
+      ejs: {
+        renderFile: jest.spyOn(Ejs, "renderFile").mockResolvedValue("<h1>Mocked HTML</h1>"),
       },
     };
     const module: TestingModule = await Test.createTestingModule({
@@ -83,10 +91,49 @@ describe("Mail Service Service", () => {
   describe("sendStepMail", () => {
     beforeEach(() => {
       mocks.services.mail.sendMail = jest.spyOn(services.mail as unknown as { sendMail }, "sendMail").mockResolvedValue(undefined);
+      mocks.services.config.get.mockReturnValueOnce("https://daveo.fr");
+    });
+
+    it("should render mail template when called.", async() => {
+      const user = createFakeWelcomeUser({
+        firstName: "John",
+        lastName: "Doe",
+        email: "john@doe.com",
+        hrReferent: createFakeHrReferent({
+          firstName: "Jane",
+          lastName: "Doe",
+        }),
+      });
+      const stepUnlockEmail = {
+        subject: "Welcome to the next step",
+        body: "Hey John, you've unlocked the next step!",
+      };
+      const stepId = "456";
+      await services.mail.sendStepMail(user, stepUnlockEmail, stepId);
+      const expectedStepMailData: StepMailData = {
+        appName: "Daveo",
+        appUrl: "https://daveo.fr",
+        userFirstName: "John",
+        userLastName: "Doe",
+        managerFirstName: "Jane",
+        managerLastName: "Doe",
+        stepId,
+      };
+
+      expect(mocks.ejs.renderFile).toHaveBeenCalledTimes(1);
+      expect(mocks.ejs.renderFile).toHaveBeenCalledWith(expect.any(String), expectedStepMailData);
     });
 
     it("should send mail when called.", async() => {
-      const user = createFakeWelcomeUser();
+      const user = createFakeWelcomeUser({
+        firstName: "John",
+        lastName: "Doe",
+        email: "john@doe.com",
+        hrReferent: createFakeHrReferent({
+          firstName: "Jane",
+          lastName: "Doe",
+        }),
+      });
       const stepUnlockEmail = {
         subject: "Welcome to the next step",
         body: "Hey John, you've unlocked the next step!",
@@ -96,7 +143,7 @@ describe("Mail Service Service", () => {
       const dummyMailRequirement: MailRequirement = {
         to: "john@doe.com",
         subject: "Welcome to the next step",
-        html: "<p>Hey John, you've unlocked the next step!</p>",
+        html: "<h1>Mocked HTML</h1>",
       };
 
       expect(services.mail["sendMail"]).toHaveBeenCalledTimes(1);
@@ -107,20 +154,83 @@ describe("Mail Service Service", () => {
   describe("inviteNewUserMail", () => {
     beforeEach(() => {
       mocks.services.mail.sendMail = jest.spyOn(services.mail as unknown as { sendMail }, "sendMail").mockResolvedValue(undefined);
+      mocks.services.config.get.mockReturnValueOnce("https://daveo.fr");
+    });
+
+    it("should render mail template when called.", async() => {
+      const createUserDto = createFakeCreateUserDto({
+        firstName: "John",
+        lastName: "Doe",
+        email: "john@doe.com",
+        hrReferent: createFakeHrReferent({
+          firstName: "Jane",
+          lastName: "Doe",
+        }),
+      });
+      const password = "password";
+      await services.mail.inviteNewUserMail(createUserDto, password);
+      const expectedInviteNewUserMailData: InviteNewUserMailData = {
+        appName: "Daveo",
+        appUrl: "https://daveo.fr",
+        userFirstName: "John",
+        userLastName: "Doe",
+        email: "john@doe.com",
+        password: "password",
+      };
+
+      expect(mocks.ejs.renderFile).toHaveBeenCalledTimes(1);
+      expect(mocks.ejs.renderFile).toHaveBeenCalledWith(expect.any(String), expectedInviteNewUserMailData);
     });
 
     it("should send mail when called.", async() => {
-      const createUserDto = createFakeCreateUserDto();
+      const createUserDto = createFakeCreateUserDto({
+        firstName: "John",
+        lastName: "Doe",
+        email: "john@doe.com",
+        hrReferent: createFakeHrReferent({
+          firstName: "Jane",
+          lastName: "Doe",
+        }),
+      });
       const password = "password";
       await services.mail.inviteNewUserMail(createUserDto, password);
       const dummyMailRequirement: MailRequirement = {
         to: "john@doe.com",
-        subject: "Welcome to the platform",
-        html: "<p>Hey John, welcome to the platform!</p>",
+        subject: "Sujet [Welcome] Tes identifiants de connexion",
+        html: "<h1>Mocked HTML</h1>",
       };
 
       expect(services.mail["sendMail"]).toHaveBeenCalledTimes(1);
       expect(services.mail["sendMail"]).toHaveBeenCalledWith(dummyMailRequirement);
+    });
+  });
+
+  describe("getMailTemplatePath", () => {
+    it("should return mail template path when called.", () => {
+      const templateName = "new-user";
+      const mailTemplatePath = services.mail["getMailTemplatePath"](templateName);
+      const expectedResult = `src/services/mail/templates/new-user.mail-template.ejs`;
+
+      expect(mailTemplatePath).toContain(expectedResult);
+    });
+  });
+
+  describe("getCommonMailData", () => {
+    it("should return common mail data when called.", () => {
+      mocks.services.config.get.mockReturnValueOnce("https://daveo.fr");
+      const user = {
+        firstName: "John",
+        lastName: "Doe",
+      };
+      const commonMailData = services.mail["getCommonMailData"](user);
+      const expectedResult = {
+        appName: "Daveo",
+        appUrl: "https://daveo.fr",
+        userFirstName: user.firstName,
+        userLastName: user.lastName,
+      };
+
+      expect(commonMailData).toStrictEqual(expectedResult);
     });
   });
 

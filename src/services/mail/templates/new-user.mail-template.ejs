@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <title>[Welcome] Bienvenue, ton parcours de pré-boarding commence ici !</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>[Welcome] Tes identifiants de connexion </title>
+
+    <style>
+      body {
+        color: #156082;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        text-align: left;
+      }
+
+      h3 {
+        color: #1c7aa5;
+      }
+
+      a {
+        color: #000000;
+        text-decoration: underline;
+      }
+
+      ol, p {
+        color: #156082;
+        margin-bottom: 20px;
+      }
+
+      strong {
+        color: #114b67;
+      }
+    </style>
+</head>
+
+<body>
+<h3>[Welcome!]</h3><br>
+<p>
+    Bonjour <%= userFirstName ;%>,<br><br>
+    Tu peux désormais accéder à l'application [<%= appName ;%>](<%= appName ;%>appUrl}}) (sur desktop, tablette ou mobile) en te connectant avec tes identifiants :
+</p>
+
+<ol>
+    <li><p>Email : <%= email ;%></p></li>
+    <li><p>Mot de passe : <strong><%= password ;%></strong></p></li>
+</ol>
+
+<p>
+    Tu as dû recevoir parallèlement à celui-ci un email qui te donne toutes les informations pour ta première connexion.
+</p>
+
+<p>À très bientôt,<br>
+    <%= managerFirstName ;%> <%= managerLastName ;%>.<br>
+</p>
+
+</body>
+</html>
