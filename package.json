@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "nest build",
-    "postbuild": "cp src/services/mail/templates/*.ejs dist",
+    "postbuild": "mkdir dist/src/services/mail/templates && cp src/services/mail/templates/*.ejs dist/src/services/mail/templates",
     "start:dev": "cross-env NODE_ENV=dev nest start --watch",
     "start": "nest start",
     "start:prod": "node dist/src/main",
