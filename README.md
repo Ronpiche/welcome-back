@@ -123,6 +123,7 @@ gantt
 | COGNITO_USER_POOL_ID       | User pool ID of Cognito                                         | -             | `true`   |
 | COGNITO_CLIENT_ID          | Client ID of Cognito                                            | -             | `true`   |
 | COGNITO_CLIENT_SECRET      | Client secret of Cognito                                        | -             | `true`   |
+| CRON_API_KEY                    | Api key used for some endpoints (`welcome/run` for instance)    | -             | `true`   |
 
 
 ## <a name="how-to-contribute">🚀 How to contribute</a>

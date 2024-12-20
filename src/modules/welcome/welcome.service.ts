@@ -126,7 +126,7 @@ export class WelcomeService {
   }
 
   /**
-   * update the completion of a step for an user.
+   * update the completion of a step for a user.
    * @param userId - The id of the user
    * @param stepId - The id of the step completed
    * @param subStep - The index of the sub step completed

@@ -10,6 +10,7 @@
   },
   "scripts": {
     "build": "nest build",
+    "postbuild": "cp src/services/mail/templates/*.ejs dist",
     "start:dev": "cross-env NODE_ENV=dev nest start --watch",
     "start": "nest start",
     "start:prod": "node dist/src/main",

@@ -1,15 +1,5 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Delete,
-  Put,
-  Query,
-  Res,
-  HttpStatus,
-  Request,
+  Controller, Get, Post, Body, Param, Delete, Put, Query, Res, HttpStatus, Request, UseGuards,
 } from "@nestjs/common";
 import { WelcomeService } from "@modules/welcome/welcome.service";
 import { CreateUserDto } from "@modules/welcome/dto/input/create-user.dto";
@@ -28,6 +18,7 @@ import {
   ApiTags,
   getSchemaPath,
 } from "@nestjs/swagger";
+import { ApiKeyGuard } from "@src/guards/api-key.guard";
 import { instanceToPlain, plainToInstance } from "class-transformer";
 import { WelcomeUser } from "@modules/welcome/entities/user.entity";
 import { EmailRunKO, EmailRunOK } from "@modules/welcome/dto/output/email-run.dto";
@@ -132,8 +123,8 @@ export class WelcomeController {
     });
   }
 
+  @UseGuards(ApiKeyGuard)
   @Post("run")
-  @Roles(Role.ADMIN)
   @ApiOperation({
     summary: "Notify users by email",
     description:
