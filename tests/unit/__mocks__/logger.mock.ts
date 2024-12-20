@@ -1,15 +1,15 @@
 export class LoggerMock {
-  log = jest.fn();
+  public log = jest.fn();
 
-  error = jest.fn();
+  public error = jest.fn();
 
-  debug = jest.fn();
+  public debug = jest.fn();
 
-  warn = jest.fn();
+  public warn = jest.fn();
 
-  info = jest.fn();
+  public info = jest.fn();
 
-  secure = jest.fn();
+  public secure = jest.fn();
 
-  isLevelEnabled = jest.fn(() => false);
+  public isLevelEnabled = jest.fn(() => false);
 }

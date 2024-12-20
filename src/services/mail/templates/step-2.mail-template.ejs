@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <title>[Welcome] La 2e étape est accessible ! </title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>[Welcome] La 2e étape est accessible ! </title>
+
+    <style>
+      body {
+        color: #156082;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        text-align: left;
+      }
+
+      h3 {
+        color: #1c7aa5;
+      }
+
+      a {
+        color: #000000;
+        text-decoration: underline;
+      }
+
+      ol, p {
+        color: #156082;
+        margin-bottom: 20px;
+      }
+
+      strong {
+        color: #114b67;
+      }
+
+      button {
+        border: 0;
+        line-height: 2.5;
+        padding: 0 20px;
+        font-size: 1rem;
+        text-align: center;
+
+        color: #fff;
+        text-shadow: 1px 1px 1px #000;
+        border-radius: 10px;
+        background-color: #156082;
+        background-image: linear-gradient(
+          to top left,
+          rgba(0, 0, 0, 0.2),
+          rgba(0, 0, 0, 0.2) 30%,
+          rgba(0, 0, 0, 0)
+        );
+      }
+
+      .centre{
+        text-align: center;
+      }
+    </style>
+</head>
+
+<body>
+<h3>[Welcome!]</h3><br>
+<p>
+    Bonjour <%= userFirstName; %> ! 👋<br><br>
+    Waouh, bravo à toi ! 🎉 Tu as brillamment terminé la première étape de Welcome. Nous espérons que tu apprécies la plateforme et son contenu ! <br>
+    <strong>Prêt(e) pour la suite de l'aventure ?</strong> 🚀 On a encore plein de choses passionnantes à te faire découvrir, notamment <strong>nos practices, les formations et l'évolution de carrière</strong> chez Daveo. <br>
+    Allez, on y va ?
+</p>
+
+<br>
+
+<div class="centre">
+  <a href="<%= appUrl; %>"><button>Accède à la 2ème étape</button></a>
+</div>
+
+<br>
+
+<p>À très vite pour la suite,<br>
+    <%= managerFirstName; %> <%= managerLastName; %> 😊<br>
+</p>
+
+</body>
+</html>

@@ -1,6 +1,8 @@
 import { WelcomeController } from "@modules/welcome/welcome.controller";
 import { WelcomeService } from "@modules/welcome/welcome.service";
+import { ConfigService } from "@nestjs/config";
 import { Test } from "@nestjs/testing";
+import { ApiKeyGuard } from "@src/guards/api-key.guard";
 import type { Response } from "express";
 import { plainToInstance } from "class-transformer";
 import { Timestamp } from "@google-cloud/firestore";
@@ -134,6 +136,8 @@ describe("Welcome controller", () => {
             updateSubStep: jest.fn().mockResolvedValue(user.steps),
           },
         },
+        ConfigService,
+        ApiKeyGuard,
       ],
     }).compile();
 

@@ -117,12 +117,13 @@ gantt
 | BYPASS_GUARD               | If true, the guard is bypassed on all endpoints                 | `false`       | `false`  |
 | SERVICE_ACCOUNT_BASE64     | The base64 encoded service account key file for google services | -             | `true`   |
 | NAME_BUCKET_STATIC_CONTENT | The name of the GCP bucket where the static content is stored   | -             | `true`   |
-| SENDGRID_API_KEY           | The API key required by Sendgrid to send emails                 | -             | `true`   |
+| BREVO_API_KEY              | The API key required by Brevo to send emails                    | -             | `true`   |
 | SESSION_SECRET             | Used to sign the session ID cookie                              | -             | `true`   |
 | COGNITO_REGION             | Region of Cognito                                               | -             | `true`   |
 | COGNITO_USER_POOL_ID       | User pool ID of Cognito                                         | -             | `true`   |
 | COGNITO_CLIENT_ID          | Client ID of Cognito                                            | -             | `true`   |
 | COGNITO_CLIENT_SECRET      | Client secret of Cognito                                        | -             | `true`   |
+| CRON_API_KEY                    | Api key used for some endpoints (`welcome/run` for instance)    | -             | `true`   |
 
 
 ## <a name="how-to-contribute">🚀 How to contribute</a>
@@ -157,4 +158,9 @@ npm run script:create-git-branch
 ### ⤴️ Create pull request against the `develop` branch from current branch
 ```shell
 npm run script:create-pull-request
+```
+
+### 🆗 Run the linter, analyzes and correct source code about stylistic issues to improve code quality
+```shell
+npm run lint:fix
 ```

@@ -16,6 +16,7 @@ const ESLINT_GLOBAL_CONFIG = Object.freeze({
       afterAll: READONLY,
       beforeEach: READONLY,
       afterEach: READONLY,
+      __dirname: READONLY,
     },
   },
   ignores: ESLINT_IGNORES,

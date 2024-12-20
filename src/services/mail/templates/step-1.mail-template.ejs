@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <title>[Welcome] Bienvenue, ton parcours de pré-boarding commence ici !</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>[Welcome] Bienvenue, ton parcours de pré-boarding commence ici !</title>
+
+    <style>
+      body {
+        color: #156082;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        text-align: left;
+      }
+
+      h3 {
+        color: #1c7aa5;
+      }
+
+      a {
+        color: #000000;
+        text-decoration: underline;
+      }
+
+      ol, p {
+        color: #156082;
+        margin-bottom: 20px;
+      }
+
+      strong {
+        color: #114b67;
+      }
+
+      button {
+        border: 0;
+        line-height: 2.5;
+        padding: 0 20px;
+        font-size: 1rem;
+        text-align: center;
+
+        color: #fff;
+        text-shadow: 1px 1px 1px #000;
+        border-radius: 10px;
+        background-color: #156082;
+        background-image: linear-gradient(
+          to top left,
+          rgba(0, 0, 0, 0.2),
+          rgba(0, 0, 0, 0.2) 30%,
+          rgba(0, 0, 0, 0)
+        );
+      }
+
+      .centre{
+        text-align: center;
+      }
+    </style>
+</head>
+
+<body>
+<h3>[Welcome!]</h3><br>
+<p>
+    Bonjour <%= userFirstName; %> ! 👋<br><br>
+    Bienvenue dans la team Daveo ! Nous sommes vraiment ravis de t'accueillir parmi nous. 🎉 <br>
+    Avant même le début de ta première mission, nous avons préparé <strong>une super expérience de pré-boarding</strong> rien que pour toi et les autres nouveaux arrivants, via notre application
+    interne Welcome ! <br>
+</p>
+
+<p>
+    🚀 <strong>Au programme</strong> : des vidéos, des quiz, des jeux... Une façon fun de découvrir la culture Daveo, nos practices, la formation, ton agence, et aussi pour nous de mieux te
+    connaître ! <br>
+    Chacune des <strong>4 étapes</strong> ne prendra qu'une quinzaine de minutes. ⏱
+</p>
+
+<p>
+    Tu peux dès maintenant <strong>commencer la première étape sur notre application Welcome</strong> ! <strong>Connecte-toi avec ton mail personnel</strong> (celui que tu as donné à ton Talent Manager) et profite du contenu qu'on a préparé pour toi.<br>
+    L'app fonctionne sur ordinateur, tablette ou mobile, à toi de choisir ! <br>
+    D'ici ton premier jour chez Daveo, tu recevras au fil des semaines des emails (toujours sur cette adresse) pour t'informer de l'ouverture de chaque nouvelle étape sur Welcome, si tu as bien franchi les précédentes avant. 📧 <br>
+</p>
+
+<p>
+    <strong>Cette version est en bêta</strong>, certains éléments sont encore en cours de création. On espère que tu passeras quand même un bon moment ! C'est le début de ton parcours d'intégration
+    et nous sommes fiers de t'avoir dans l'équipe. 💪 <br>
+    Amuse-toi bien et bonne découverte ! 🌟
+</p>
+
+<div class="centre">
+  <a href="<%= appUrl; %>"><button>Connexion</button></a>
+</div>
+
+<br>
+
+<p>
+    Tu as dû recevoir parallèlement à celui-ci un email qui te donne toutes les informations pour ta première connexion.
+</p>
+
+<p>À très bientôt,<br>
+    <%= managerFirstName; %> <%= managerLastName; %>.<br>
+</p>
+
+<p>
+    P.-S. : En cas de problème de connexion, je reste à ton écoute !
+</p>
+
+</body>
+</html>

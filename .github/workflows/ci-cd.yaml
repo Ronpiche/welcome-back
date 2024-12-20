@@ -104,3 +104,5 @@ jobs:
           env_vars: |
             NODE_ENV=production
             NAME_BUCKET_STATIC_CONTENT=daveo-gcp-welcome-sbx-cs-static-content
+            BREVO_API_KEY=${{ secrets.PRODUCTION_BREVO_API_KEY }}
+            CRON_API_KEY=${{ secrets.PRODUCTION_CRON_API_KEY }}
