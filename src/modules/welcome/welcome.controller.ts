@@ -18,6 +18,7 @@ import {
   ApiTags,
   getSchemaPath,
 } from "@nestjs/swagger";
+import { IsPublic } from "@src/decorators/isPublic";
 import { ApiKeyGuard } from "@src/guards/api-key.guard";
 import { instanceToPlain, plainToInstance } from "class-transformer";
 import { WelcomeUser } from "@modules/welcome/entities/user.entity";
@@ -124,6 +125,7 @@ export class WelcomeController {
   }
 
   // @UseGuards(ApiKeyGuard)
+  @IsPublic(true)
   @Post("run")
   @ApiOperation({
     summary: "Notify users by email",
@@ -142,6 +144,7 @@ export class WelcomeController {
     },
   })
   public async run(@Res({ passthrough: true }) response: Response): Promise<PromiseSettledResult<{ _id: WelcomeUser["_id"] }>[]> {
+    console.log("coucou");
     const results = await this.welcomeService.run(new Date());
     if (results.some(result => result.status === "rejected")) {
       response.status(HttpStatus.INTERNAL_SERVER_ERROR);
