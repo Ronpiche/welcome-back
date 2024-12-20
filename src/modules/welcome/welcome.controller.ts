@@ -123,7 +123,7 @@ export class WelcomeController {
     });
   }
 
-  @UseGuards(ApiKeyGuard)
+  // @UseGuards(ApiKeyGuard)
   @Post("run")
   @ApiOperation({
     summary: "Notify users by email",
