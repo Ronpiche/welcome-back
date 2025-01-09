@@ -1,3 +1,4 @@
+import path from "path";
 import type { SendSmtpEmail, TransactionalEmailsApi } from "@getbrevo/brevo";
 import * as Brevo from "@getbrevo/brevo";
 import { Logger } from "@nestjs/common";
@@ -209,7 +210,7 @@ describe("Mail Service Service", () => {
     it("should return mail template path when called.", () => {
       const templateName = "new-user";
       const mailTemplatePath = services.mail["getMailTemplatePath"](templateName);
-      const expectedResult = `src/services/mail/templates/new-user.mail-template.ejs`;
+      const expectedResult = path.join("src/services/mail/templates/new-user.mail-template.ejs");
 
       expect(mailTemplatePath).toContain(expectedResult);
     });

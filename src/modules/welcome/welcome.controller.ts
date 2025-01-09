@@ -97,19 +97,6 @@ export class WelcomeController {
     await this.welcomeService.remove(id);
   }
 
-  @Put("users/me")
-  @Roles(Role.USER)
-  @ApiBody({ type: UpdateUserDto })
-  @ApiOperation({ summary: "Update my user", description: "Update my user" })
-  @ApiOkResponse({ description: "OK", type: WelcomeUserDto })
-  public async updateMe(@Request() { user }: UserRequest, @Body() updateUserDto: UpdateUserDto): Promise<WelcomeUserDto> {
-    const myUser = await this.welcomeService.update(user.id, updateUserDto);
-
-    return plainToInstance(WelcomeUserDto, instanceToPlain(myUser), {
-      excludeExtraneousValues: true,
-    });
-  }
-
   @Put("users/:id")
   @Roles(Role.ADMIN)
   @ApiParam({ name: "id", type: String, required: false, example: "123e4567-e89b-12d3-a456-426614174000" })
@@ -144,7 +131,6 @@ export class WelcomeController {
     },
   })
   public async run(@Res({ passthrough: true }) response: Response): Promise<PromiseSettledResult<{ _id: WelcomeUser["_id"] }>[]> {
-    console.log("coucou");
     const results = await this.welcomeService.run(new Date());
     if (results.some(result => result.status === "rejected")) {
       response.status(HttpStatus.INTERNAL_SERVER_ERROR);
