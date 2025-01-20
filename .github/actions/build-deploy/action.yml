@@ -1,0 +1,78 @@
+name: Build and deploy
+description: Build and push Hub Backend to GCP
+inputs:
+  project_id:
+    description: GCP project id
+    required: true
+  project_zone:
+    description: GCP project zone
+    required: true
+  registry_url:
+    description: GCP registry url to push image
+    required: true
+  service_account:
+    description: GCP service account
+    required: true
+  service_name:
+    description: GCP Cloud Run service name
+    required: true
+  workload_identity_provider:
+    description: GCP workload identity provider
+    required: true
+  image_name:
+    description: GCP registry image name
+    required: false
+    default: hub-backend
+runs:
+  using: 'composite'
+  steps:
+    - name: Get Sha 🔎
+      shell: bash
+      run: echo "GITHUB_SHA_SHORT=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
+    - name: Google Auth 🔗
+      id: auth
+      uses: google-github-actions/auth@v2
+      with:
+        token_format: access_token
+        project_id: ${{ inputs.project_id }}
+        service_account: ${{ inputs.service_account }}
+        workload_identity_provider: ${{ inputs.workload_identity_provider }}
+
+    - name: Docker Auth 🔗
+      id: docker-auth
+      uses: docker/login-action@v3
+      with:
+        username: 'oauth2accesstoken'
+        password: '${{ steps.auth.outputs.access_token }}'
+        registry: '${{ inputs.project_zone }}-docker.pkg.dev'
+
+    - name: Set up Cloud SDK ✨
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Build and Push Container 🐳
+      shell: bash
+      run: |-
+        docker build -t "${{ inputs.registry_url }}/${{ inputs.image_name }}:${{ env.GITHUB_SHA_SHORT }}" ./
+        docker push "${{ inputs.registry_url }}/${{ inputs.image_name }}:${{ env.GITHUB_SHA_SHORT }}"
+
+    - name: Deploy on Cloud Run 🚀
+      id: deploy
+      uses: google-github-actions/deploy-cloudrun@v2
+      with:
+        image: ${{ inputs.registry_url }}/${{ inputs.image_name }}:${{ env.GITHUB_SHA_SHORT }}
+        service: ${{ inputs.service_name }}
+        region: ${{ inputs.project_zone }}
+        env_vars: |-
+          PROJECT_ID=${{ inputs.project_id }}
+        secrets: |-
+          BREVO_API_KEY=BREVO_API_KEY:latest
+          COGNITO_CLIENT_ID=COGNITO_CLIENT_ID:latest
+          COGNITO_CLIENT_SECRET=COGNITO_CLIENT_SECRET:latest
+          COGNITO_REGION=COGNITO_REGION:latest
+          COGNITO_USER_POOL_ID=COGNITO_USER_POOL_ID:latest
+          CRON_API_KEY=CRON_API_KEY:latest
+          HUB_FRONT_URL=HUB_FRONT_URL:latest
+          NAME_BUCKET_STATIC_CONTENT=NAME_BUCKET_STATIC_CONTENT:latest
+          SERVICE_ACCOUNT_BASE64=SERVICE_ACCOUNT_BASE64:latest
+          SESSION_SECRET=SESSION_SECRET:latest
