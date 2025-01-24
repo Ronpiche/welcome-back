@@ -3,6 +3,7 @@ FROM node:18-alpine
 
 # Add environment variable
 ENV NODE_ENV=production
+ENV PORT=8080
 
 # Set the working directory
 WORKDIR /code

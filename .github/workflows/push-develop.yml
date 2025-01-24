@@ -1,0 +1,45 @@
+name: Build and push Hub Backend to GCP (develop)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - develop
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout GitHub repository 📡
+        uses: actions/checkout@v4
+
+      - name: Setup NodeJS ✨
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install project dependencies 📦
+        run: npm ci
+
+      - name: Unit tests 🧪
+        run: npm run test:unit
+  build-deploy:
+    needs: test
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout GitHub repository 📡
+        uses: actions/checkout@v4
+
+      - name: build-deploy action 🚀
+        uses: ./.github/actions/build-deploy
+        with:
+          project_id: ${{ vars.DEVELOP_PROJECT_ID }}
+          project_zone: ${{ vars.DEVELOP_PROJECT_ZONE }}
+          registry_url: ${{ vars.DEVELOP_REGISTRY_URL }}
+          service_account: ${{ vars.DEVELOP_SERVICE_ACCOUNT }}
+          service_name: ${{ vars.DEVELOP_SERVICE_NAME }}
+          workload_identity_provider: ${{ vars.DEVELOP_WORKLOAD_IDENTITY_PROVIDER }}
