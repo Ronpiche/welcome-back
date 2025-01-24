@@ -10,7 +10,7 @@ import memoryStore from "memorystore";
 import { AppModule } from "src/app.module";
 
 const DAY_IN_MS = 86400000;
-const DEFAULT_HTTP_PORT = 3337;
+const DEFAULT_HTTP_PORT = 8080;
 
 const swaggerSetup = (app: INestApplication): void => {
   const config = new DocumentBuilder()
