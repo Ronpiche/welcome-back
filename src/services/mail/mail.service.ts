@@ -24,8 +24,6 @@ export class MailService {
   public async sendStepMail(user: WelcomeUser, stepEmail: StepEmail, stepId: string): Promise<void> {
     const data: StepMailData = {
       ...this.getCommonMailData(user),
-      managerFirstName: user.hrReferent.firstName,
-      managerLastName: user.hrReferent.lastName,
       stepId,
     };
     const templateName = `step-${stepId}` as MailTemplateName;
@@ -57,12 +55,14 @@ export class MailService {
     return path.join(__dirname, "/templates/", `${templateName}.mail-template.ejs`);
   }
 
-  private getCommonMailData(user: { firstName: string; lastName: string }): CommonMailData {
+  private getCommonMailData(user: WelcomeUser | CreateUserDto): CommonMailData {
     return {
       appName: MAIL_APP_NAME,
       appUrl: this.config.get<string>("HUB_FRONT_URL"),
       userFirstName: user.firstName,
       userLastName: user.lastName,
+      managerFirstName: user.hrReferent.firstName,
+      managerLastName: user.hrReferent.lastName,
     };
   }
 

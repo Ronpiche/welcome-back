@@ -9,6 +9,8 @@ type CommonMailData = {
   appUrl: string;
   userFirstName: string;
   userLastName: string;
+  managerFirstName: string;
+  managerLastName: string;
 };
 
 type InviteNewUserMailData = CommonMailData & {
@@ -17,8 +19,6 @@ type InviteNewUserMailData = CommonMailData & {
 };
 
 type StepMailData = CommonMailData & {
-  managerFirstName: string;
-  managerLastName: string;
   stepId: string;
 };
 

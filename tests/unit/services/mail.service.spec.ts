@@ -177,6 +177,8 @@ describe("Mail Service Service", () => {
         userLastName: "Doe",
         email: "john@doe.com",
         password: "password",
+        managerFirstName: "Jane",
+        managerLastName: "Doe",
       };
 
       expect(mocks.ejs.renderFile).toHaveBeenCalledTimes(1);
@@ -219,16 +221,22 @@ describe("Mail Service Service", () => {
   describe("getCommonMailData", () => {
     it("should return common mail data when called.", () => {
       mocks.services.config.get.mockReturnValueOnce("https://daveo.fr");
-      const user = {
+      const user = createFakeWelcomeUser({
         firstName: "John",
         lastName: "Doe",
-      };
+        hrReferent: createFakeHrReferent({
+          firstName: "Jane",
+          lastName: "Doe",
+        }),
+      });
       const commonMailData = services.mail["getCommonMailData"](user);
       const expectedResult = {
         appName: "Daveo",
         appUrl: "https://daveo.fr",
         userFirstName: user.firstName,
         userLastName: user.lastName,
+        managerFirstName: "Jane",
+        managerLastName: "Doe",
       };
 
       expect(commonMailData).toStrictEqual(expectedResult);
