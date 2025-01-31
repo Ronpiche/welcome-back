@@ -31,14 +31,24 @@ const swaggerSetup = (app: INestApplication): void => {
   SwaggerModule.setup("swagger", app, document);
 };
 
+const addValidationPipes = (app: INestApplication): void => {
+  app.useGlobalPipes(new ValidationPipe({
+    transform: true,
+    disableErrorMessages: false,
+    validationError: { target: false, value: true },
+    whitelist: true,
+  }));
+};
+
 const bootstrap = async(): Promise<void> => {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const MemoryStore = memoryStore(session);
   const configService = app.get<ConfigService>(ConfigService);
   const port = Number(configService.get("PORT")) || DEFAULT_HTTP_PORT;
+  const basePath = new URL(configService.get<string>("PUBLIC_URL") || "/", "http://localhost").pathname;
 
   app.set("trust proxy", true);
-  app.setGlobalPrefix("api");
+  app.setGlobalPrefix(basePath);
   app.use(cookieParser());
   app.use(session({
     cookie: { maxAge: DAY_IN_MS, sameSite: "none", secure: true },
@@ -47,17 +57,11 @@ const bootstrap = async(): Promise<void> => {
     resave: false,
     saveUninitialized: false,
   }));
-  app.enableCors({ origin: [configService.get("HUB_FRONT_URL")], credentials: true });
+  app.enableCors({ origin: [configService.get("FRONT_BASE_URL")], credentials: true });
 
   swaggerSetup(app);
 
-  // validation Pipes
-  app.useGlobalPipes(new ValidationPipe({
-    transform: true,
-    disableErrorMessages: false,
-    validationError: { target: false, value: true },
-    whitelist: true,
-  }));
+  addValidationPipes(app);
 
   await app.listen(port);
   Logger.log(`Application running on port ${port}`);

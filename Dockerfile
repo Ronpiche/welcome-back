@@ -1,5 +1,5 @@
 # Use the official Node.js image as base
-FROM node:18-alpine
+FROM node:20-alpine
 
 # Add environment variable
 ENV NODE_ENV=production

@@ -1,4 +1,4 @@
-name: Build and push Hub Backend to GCP (production)
+name: Build and push Backend to GCP (production)
 
 on:
   workflow_dispatch:

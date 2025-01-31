@@ -15,7 +15,7 @@ export class AuthService {
   private readonly redirectUrl: string;
 
   public constructor(private readonly configService: ConfigService) {
-    this.redirectUrl = `${this.configService.get("HUB_FRONT_URL")}/auth/callback`;
+    this.redirectUrl = `${this.configService.get("FRONT_BASE_URL")}/auth/callback`;
   }
 
   public async getAuthorizationUrl(): Promise<AuthorizationUrl> {

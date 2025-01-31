@@ -1,12 +1,12 @@
 {
-  "name": "hub-back",
+  "name": "back",
   "version": "0.0.1",
-  "description": "the back end service for the HUB dashboard",
+  "description": "The back end service for Welcome",
   "author": "Daveo",
   "private": true,
   "license": "UNLICENSED",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "scripts": {
     "build": "nest build",
@@ -58,7 +58,6 @@
     "memorystore": "^1.6.7",
     "msw": "^2.2.13",
     "nestjs-session": "^3.0.1",
-    "node-cache": "^5.1.2",
     "nodemailer": "^6.9.14",
     "openid-client": "^5.7.0",
     "reflect-metadata": "^0.2.0",

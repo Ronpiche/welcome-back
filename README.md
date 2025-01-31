@@ -111,19 +111,20 @@ gantt
 
 ## <a name="env-variables">🌿 Environment variables</a>
 
-| Name                       | Description                                                     | Default value | Required |
-|----------------------------|-----------------------------------------------------------------|---------------|----------|
-| HUB_FRONT_URL              | The URL of the front application, used in sent email            | -             | `true`   |
-| BYPASS_GUARD               | If true, the guard is bypassed on all endpoints                 | `false`       | `false`  |
-| SERVICE_ACCOUNT_BASE64     | The base64 encoded service account key file for google services | -             | `true`   |
-| NAME_BUCKET_STATIC_CONTENT | The name of the GCP bucket where the static content is stored   | -             | `true`   |
-| BREVO_API_KEY              | The API key required by Brevo to send emails                    | -             | `true`   |
-| SESSION_SECRET             | Used to sign the session ID cookie                              | -             | `true`   |
-| COGNITO_REGION             | Region of Cognito                                               | -             | `true`   |
-| COGNITO_USER_POOL_ID       | User pool ID of Cognito                                         | -             | `true`   |
-| COGNITO_CLIENT_ID          | Client ID of Cognito                                            | -             | `true`   |
-| COGNITO_CLIENT_SECRET      | Client secret of Cognito                                        | -             | `true`   |
-| CRON_API_KEY               | Api key used for some endpoints (`welcome/run` for instance)    | -             | `true`   |
+| Name                           | Description                                                   | Default value | Required |
+|--------------------------------|---------------------------------------------------------------|---------------|----------|
+| BREVO_API_KEY                  | The API key required by Brevo to send emails                  | -             | `true`   |
+| BYPASS_GUARD                   | If true, the guard is bypassed on all endpoints               | `false`       | `false`  |
+| COGNITO_CLIENT_ID              | Client ID of Cognito                                          | -             | `true`   |
+| COGNITO_CLIENT_SECRET          | Client secret of Cognito                                      | -             | `true`   |
+| COGNITO_REGION                 | Region of Cognito                                             | -             | `true`   |
+| COGNITO_USER_POOL_ID           | User pool ID of Cognito                                       | -             | `true`   |
+| CRON_API_KEY                   | Api key used for some endpoints (`welcome/run` for instance)  | -             | `true`   |
+| FRONT_BASE_URL                 | The URL of the front application, used in CORS and sent email | -             | `true`   |
+| GOOGLE_APPLICATION_CREDENTIALS | The service account file for google services                  | -             | `true`   |
+| NAME_BUCKET_STATIC_CONTENT     | The name of the GCP bucket where the static content is stored | -             | `true`   |
+| PUBLIC_URL                     | Base URL of the back                                          | `/`           | `false`  |
+| SESSION_SECRET                 | Used to sign the session ID cookie                            | -             | `true`   |
 
 
 ## <a name="how-to-contribute">🚀 How to contribute</a>

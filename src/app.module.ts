@@ -2,10 +2,8 @@ import { Module } from "@nestjs/common";
 import { JwtModule } from "@nestjs/jwt";
 import { ConfigModule } from "@nestjs/config";
 import { FirestoreModule } from "@src/services/firestore/firestore.module";
-import { AuthorizationModule } from "@modules/authorization/authorization.module";
 import { APP_GUARD } from "@nestjs/core";
 import { WelcomeModule } from "@modules/welcome/welcome.module";
-import { ContentModule } from "@modules/content/content.module";
 import { StepModule } from "@modules/step/step.module";
 import { AppController } from "@src/app.controller";
 import { AppService } from "@src/app.service";
@@ -39,9 +37,7 @@ import { CognitoModule } from "@src/services/cognito/cognito.module";
     FirestoreModule,
     GipModule,
     CognitoModule,
-    AuthorizationModule,
     WelcomeModule,
-    ContentModule,
     FeedbackModule,
     FeedbackQuestionModule,
     FeedbackAnswerModule,
