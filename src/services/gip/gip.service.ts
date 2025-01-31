@@ -1,5 +1,4 @@
 import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
 import { DecodedIdToken, Auth, CreateRequest, UserRecord } from "firebase-admin/auth";
 
 @Injectable()
@@ -9,9 +8,9 @@ export class GipService {
   public constructor(
     private readonly auth: Auth,
     private readonly logger: Logger,
-    private readonly configService: ConfigService,
   ) {
-    this.issuerUrl = `https://securetoken.google.com/${this.configService.get("PROJECT_ID")}`;
+    const projectId = (auth.app as unknown as { options_?: { credential?: { projectId?: string } } })?.options_?.credential?.projectId;
+    this.issuerUrl = `https://securetoken.google.com/${projectId || ""}`;
   }
 
   public async verifyIdToken(token: string): Promise<DecodedIdToken> {

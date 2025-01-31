@@ -1,5 +1,5 @@
 name: Build and deploy
-description: Build and push Hub Backend to GCP
+description: Build and push Backend to GCP
 inputs:
   project_id:
     description: GCP project id
@@ -22,7 +22,7 @@ inputs:
   image_name:
     description: GCP registry image name
     required: false
-    default: hub-backend
+    default: backend
 runs:
   using: 'composite'
   steps:
@@ -63,8 +63,6 @@ runs:
         image: ${{ inputs.registry_url }}/${{ inputs.image_name }}:${{ env.GITHUB_SHA_SHORT }}
         service: ${{ inputs.service_name }}
         region: ${{ inputs.project_zone }}
-        env_vars: |-
-          PROJECT_ID=${{ inputs.project_id }}
         secrets: |-
           BREVO_API_KEY=BREVO_API_KEY:latest
           COGNITO_CLIENT_ID=COGNITO_CLIENT_ID:latest

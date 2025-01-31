@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { Filter } from "@google-cloud/firestore";
-import type { RoleDto } from "@modules/authorization/dto/authorization.dto";
 
 export class FirestoreServiceMock {
   getAllDocuments = jest.fn(async(collection: string, filter?: Filter) => [
@@ -13,11 +12,11 @@ export class FirestoreServiceMock {
     _id: "mockedId",
   }));
 
-  saveDocument = jest.fn(async(collection: string, data: Record<string, unknown> | RoleDto) => ({
+  saveDocument = jest.fn(async(collection: string, data: Record<string, unknown>) => ({
     _id: "mockedId",
   }));
 
-  updateDocument = jest.fn(async(collection: string, documentId: string, data: RoleDto | Record<string, unknown>) => ({
+  updateDocument = jest.fn(async(collection: string, documentId: string, data: Record<string, unknown>) => ({
     _id: "mockedId",
   }));
 

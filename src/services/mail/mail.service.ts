@@ -58,7 +58,7 @@ export class MailService {
   private getCommonMailData(user: WelcomeUser | CreateUserDto): CommonMailData {
     return {
       appName: MAIL_APP_NAME,
-      appUrl: this.config.get<string>("HUB_FRONT_URL"),
+      appUrl: this.config.get<string>("FRONT_BASE_URL"),
       userFirstName: user.firstName,
       userLastName: user.lastName,
       managerFirstName: user.hrReferent.firstName,
