@@ -35,14 +35,14 @@ describe("JwtGuard", () => {
           provide: GipService,
           useValue: {
             verifyIdToken: jest.fn().mockRejectedValue(new Error()),
-            issuerUrl: "gip",
+            isPayloadFrom: jest.fn().mockImplementation((p: Record<string, unknown>) => p.iss === "gip"),
           },
         },
         {
           provide: CognitoService,
           useValue: {
             verifyIdToken: jest.fn().mockRejectedValue(new Error()),
-            issuerUrl: "cognito",
+            isPayloadFrom: jest.fn().mockImplementation((p: Record<string, unknown>) => p.iss === "cognito"),
           },
         },
       ],
