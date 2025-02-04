@@ -12,12 +12,9 @@ type Verifier = CognitoJwtVerifierSingleUserPool<{
 @Injectable()
 @Global()
 export class CognitoService {
-  public readonly issuerUrl: string;
-
   private readonly verifier: Verifier;
 
   public constructor(private readonly configService: ConfigService) {
-    this.issuerUrl = `https://cognito-idp.${this.configService.get("COGNITO_REGION")}.amazonaws.com/${this.configService.get("COGNITO_USER_POOL_ID")}`;
     try {
       this.verifier = CognitoJwtVerifier.create({
         userPoolId: this.configService.get("COGNITO_USER_POOL_ID"),
@@ -27,6 +24,10 @@ export class CognitoService {
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
+  }
+
+  public isPayloadFrom(payload: Record<string, unknown>): boolean {
+    return payload.iss === `https://cognito-idp.${this.configService.get("COGNITO_REGION")}.amazonaws.com/${this.configService.get("COGNITO_USER_POOL_ID")}`;
   }
 
   public async verifyIdToken(token: string): Promise<ReturnType<Verifier["verify"]>> {
