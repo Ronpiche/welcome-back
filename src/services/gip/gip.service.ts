@@ -3,14 +3,21 @@ import { DecodedIdToken, Auth, CreateRequest, UserRecord } from "firebase-admin/
 
 @Injectable()
 export class GipService {
-  public readonly issuerUrl: string;
-
   public constructor(
     private readonly auth: Auth,
     private readonly logger: Logger,
-  ) {
-    const projectId = (auth.app as unknown as { options_?: { credential?: { projectId?: string } } })?.options_?.credential?.projectId;
-    this.issuerUrl = `https://securetoken.google.com/${projectId || ""}`;
+  ) {}
+
+  public isPayloadFrom(payload: Record<string, unknown>): boolean {
+    try {
+      const issuer = payload.iss;
+      if (typeof issuer !== "string") {
+        return false;
+      }
+      return new URL(issuer).host === "securetoken.google.com";
+    } catch {
+      return false;
+    }
   }
 
   public async verifyIdToken(token: string): Promise<DecodedIdToken> {

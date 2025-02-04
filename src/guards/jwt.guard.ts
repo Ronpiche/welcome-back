@@ -62,10 +62,10 @@ export class JwtGuard implements CanActivate {
     try {
       const [, payloadStr] = token.split(".");
       const payload = JSON.parse(globalThis.atob(payloadStr)) as Record<string, unknown>;
-      if (payload.iss === this.gipService.issuerUrl) {
+      if (this.gipService.isPayloadFrom(payload)) {
         return await this.verifyGipToken(token);
       }
-      if (payload.iss === this.cognitoService.issuerUrl) {
+      if (this.cognitoService.isPayloadFrom(payload)) {
         return await this.verifyCognitoToken(token);
       }
       throw new Error();

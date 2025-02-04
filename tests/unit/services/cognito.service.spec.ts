@@ -7,7 +7,7 @@ import { CognitoService } from "src/services/cognito/cognito.service";
 
 jest.mock("aws-jwt-verify", (): unknown => ({ CognitoJwtVerifier: { create: () => ({ verify: jest.fn() }) } }));
 
-const tokenPayload = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIn0.rTCH8cLoGxAm_xw68z-zXVKi9ie6xJn9tnVWjd_9ftE";
+const tokenPayload = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaXNzIjoiaHR0cHM6Ly9jb2duaXRvLWlkcC50ZXN0LmFtYXpvbmF3cy5jb20vdGVzdCJ9.nWwdUEX1IhGv-t6zEFMAcW2ybKVKKRNqDSloODmnR9A";
 const tokenResult = { sub: "1" } as Awaited<ReturnType<CognitoService["verifyIdToken"]>>;
 
 describe("CognitoService", () => {
@@ -17,7 +17,12 @@ describe("CognitoService", () => {
     const module = await Test.createTestingModule({
       providers: [
         CognitoService,
-        ConfigService,
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn().mockImplementation(() => "test"),
+          },
+        },
       ],
     }).compile();
 
@@ -26,6 +31,23 @@ describe("CognitoService", () => {
 
   afterEach(() => {
     jest.resetAllMocks();
+  });
+
+  describe("isPayloadFrom", () => {
+    it("should return true when token is from Cognito.", () => {
+      const [, payloadStr] = tokenPayload.split(".");
+      const payload = JSON.parse(globalThis.atob(payloadStr)) as Record<string, unknown>;
+      const isTokenFrom = service.isPayloadFrom(payload);
+      expect(isTokenFrom).toBe(true);
+    });
+
+    it("should return false when token is not from Cognito.", () => {
+      const [, payloadStr] = tokenPayload.split(".");
+      const payload = JSON.parse(globalThis.atob(payloadStr)) as Record<string, unknown>;
+      payload.iss = "http://localhost";
+      const isTokenFrom = service.isPayloadFrom(payload);
+      expect(isTokenFrom).toBe(false);
+    });
   });
 
   describe("verifyIdToken", () => {
