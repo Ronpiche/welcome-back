@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <title>Notifier le manager</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+      body {
+        color: #156082;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        text-align: left;
+      }
+
+      h3 {
+        color: #1c7aa5;
+      }
+
+      a {
+        color: #000000;
+        text-decoration: underline;
+      }
+
+      ol, p {
+        color: #156082;
+        margin-bottom: 20px;
+      }
+
+      strong {
+        color: #114b67;
+      }
+
+      button {
+        border: 0;
+        line-height: 2.5;
+        padding: 0 20px;
+        font-size: 1rem;
+        text-align: center;
+
+        color: #fff;
+        text-shadow: 1px 1px 1px #000;
+        border-radius: 10px;
+        background-color: #156082;
+        background-image: linear-gradient(
+          to top left,
+          rgba(0, 0, 0, 0.2),
+          rgba(0, 0, 0, 0.2) 30%,
+          rgba(0, 0, 0, 0)
+        );
+      }
+
+      .centre{
+        text-align: center;
+      }
+    </style>
+</head>
+
+<body>
+
+<p>
+  Hello <%= managerFirstName %> <%= managerLastName %>, <%= userFirstName %> <%= userLastName %> a terminé l’étape <%= stepId %> de <%= appName %>.<br>
+  Suis son évolution et ses réponses dans le back office de l’application.<br>
+  Cet email est un envoi automatique.<br>
+  Bien à toi. 
+</p>
+
+</body>
+</html>

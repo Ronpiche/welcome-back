@@ -48,9 +48,13 @@ export class WelcomeService {
 
   public async createUser(createUserDto: CreateUserDto): Promise<WelcomeUser> {
     const password = WelcomeService.generatePassword();
+    const step = await this.stepService.findOne('1');
+
+    const welcomeUser = this.mapCreateUserDtoToWelcomeUser(createUserDto)
 
     try {
       await this.mailService.inviteNewUserMail(createUserDto, password);
+      await this.mailService.sendStepMail(welcomeUser, step.unlockEmail, '1');
     } catch (error) {
       this.logger.error(error);
       throw new InternalServerErrorException();
@@ -133,8 +137,17 @@ export class WelcomeService {
    */
   public async updateSubStep(userId: WelcomeUser["_id"], stepId: Step["_id"], subStep: Step["subSteps"]): Promise<UserStep[]> {
     const completedAt = Timestamp.now();
+    const MAX_STEP_ID= 4;
+    const nextStepId=Number(stepId)+1;
     const user = await this.findOne(userId);
     const step = await this.stepService.findOne(stepId);
+    let nextStep: Step | undefined ;
+
+    if(nextStepId>MAX_STEP_ID){
+      nextStep=undefined;
+    }else{
+      nextStep=await this.stepService.findOne(nextStepId.toString());
+    }
     const newSteps = user.steps.map(s => {
       if (s._id !== stepId) {
         return s;
@@ -151,7 +164,7 @@ export class WelcomeService {
     await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.WELCOME_USERS, user._id, { steps: newSteps });
     try {
       if (isStepCompleted) {
-        await this.notifyCompletedStep(user, step);
+        await this.notifyCompletedStep(user, step, nextStep );
       }
     } catch (err) {
       Logger.error(err);
@@ -174,13 +187,17 @@ export class WelcomeService {
     });
   }
 
-  private async notifyCompletedStep(user: WelcomeUser, step: Step): Promise<void> {
-    if (step.completionEmailManager !== undefined) {
-      await this.mailService.sendStepMail(user, step.completionEmailManager, step._id);
+  private async notifyCompletedStep(user: WelcomeUser, step: Step, nextStep: Step ): Promise<void> {
+    if (step.completionEmailManager !== undefined ) {
+      await this.mailService.sendStepMailToManager(user, step.completionEmailManager, step._id);
+    }
+
+    if (nextStep!==undefined && nextStep.unlockEmail !== undefined ) {
+      await this.mailService.sendStepMail(user, nextStep.unlockEmail, nextStep._id);
     }
 
     if (step.completionEmail !== undefined) {
-      await this.mailService.sendStepMail(user, step.completionEmail, step._id);
+      await this.mailService.sendStepMail(user, step.completionEmail, 'completion');
     }
   }
 
@@ -203,5 +220,18 @@ export class WelcomeService {
     });
 
     return this.firestoreService.saveDocument(FIRESTORE_COLLECTIONS.WELCOME_USERS, dbUser);
+  }
+
+  private mapCreateUserDtoToWelcomeUser(createUserDto: CreateUserDto): WelcomeUser {
+    const welcomeUser = new WelcomeUser();
+    welcomeUser.email = createUserDto.email;
+    welcomeUser.firstName = createUserDto.firstName;
+    welcomeUser.lastName = createUserDto.lastName;
+    welcomeUser.hrReferent = {
+      firstName: createUserDto.hrReferent.firstName,
+      lastName: createUserDto.hrReferent.lastName,
+      email: createUserDto.hrReferent.email,
+    };
+    return welcomeUser;
   }
 }
