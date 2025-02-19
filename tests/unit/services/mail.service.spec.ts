@@ -158,7 +158,7 @@ describe("Mail Service Service", () => {
       mocks.services.config.get.mockReturnValueOnce("https://daveo.fr");
     });
   
-    it("should render mail template when called.", async () => {
+    it("should render mail template when called.", async() => {
       const user = createFakeWelcomeUser({
         firstName: "John",
         lastName: "Doe",
@@ -166,7 +166,7 @@ describe("Mail Service Service", () => {
         hrReferent: createFakeHrReferent({
           firstName: "Jane",
           lastName: "Doe",
-          email: "jane@doe.com", // Ensure the email is set correctly
+          email: "jane@doe.com",
         }),
       });
       const stepEmail = {
@@ -189,7 +189,7 @@ describe("Mail Service Service", () => {
       expect(mocks.ejs.renderFile).toHaveBeenCalledWith(expect.any(String), expectedStepMailData);
     });
   
-    it("should send mail when called.", async () => {
+    it("should send mail when called.", async() => {
       const user = createFakeWelcomeUser({
         firstName: "John",
         lastName: "Doe",
@@ -197,7 +197,7 @@ describe("Mail Service Service", () => {
         hrReferent: createFakeHrReferent({
           firstName: "Jane",
           lastName: "Doe",
-          email: "jane@doe.com", // Ensure the email is set correctly
+          email: "jane@doe.com",
         }),
       });
       const stepEmail = {
