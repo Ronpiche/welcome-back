@@ -143,7 +143,7 @@ export class WelcomeService {
     const step = await this.stepService.findOne(stepId);
     let nextStep: Step | undefined;
 
-    if (nextStepId > MAX_STEP_ID){
+    if (nextStepId > MAX_STEP_ID) {
       nextStep = undefined;
     } else {
       nextStep = await this.stepService.findOne(nextStepId.toString());
@@ -232,7 +232,7 @@ export class WelcomeService {
       lastName: createUserDto.hrReferent.lastName,
       email: createUserDto.hrReferent.email,
     };
-    
+
     return welcomeUser;
   }
 }

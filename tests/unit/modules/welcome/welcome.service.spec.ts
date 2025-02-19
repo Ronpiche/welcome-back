@@ -338,6 +338,5 @@ describe("Welcome Service", () => {
       await service["notifyCompletedStep"](user, steps[0], undefined);
       expect(service["mailService"].sendStepMail).not.toHaveBeenCalled();
     });
-   
   });
 });
