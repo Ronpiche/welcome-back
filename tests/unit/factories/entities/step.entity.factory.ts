@@ -13,6 +13,7 @@ function createFakeStep(step: Partial<T> = {}): T {
     completionEmail: step.completionEmail,
     completionEmailManager: step.completionEmailManager,
     subSteps: step.subSteps ?? faker.number.int({ min: 1, max: 10 }),
+    unlockEmail: step.unlockEmail ?? { subject: "Default Subject", body: "Default Body" },
   });
 }
 

@@ -37,11 +37,12 @@ const steps = [
   createFakeStep({
     _id: "1",
     cutAt: 0.25,
-    unlockEmail: { subject: "Test", body: "1234" },
+    unlockEmail: undefined,
     maxDays: 90,
     minDays: 30,
     subSteps: 1,
     completionEmailManager: createFakeStepEmail(),
+    completionEmail: undefined,
   }),
   createFakeStep({
     _id: "2",
@@ -50,7 +51,7 @@ const steps = [
     maxDays: 90,
     minDays: 30,
     subSteps: 1,
-    completionEmail: createFakeStepEmail(),
+    completionEmail: undefined,
   }),
   createFakeStep({
     _id: "3",
@@ -59,6 +60,7 @@ const steps = [
     maxDays: 90,
     minDays: 30,
     subSteps: 1,
+    completionEmail: createFakeStepEmail(),
   }),
 ];
 
@@ -81,6 +83,7 @@ describe("Welcome Service", () => {
           useValue: {
             inviteNewUserMail: jest.fn().mockResolvedValue(undefined),
             sendStepMail: jest.fn().mockResolvedValue(undefined),
+            sendStepMailToManager: jest.fn().mockResolvedValue(undefined),
           },
         },
         {
@@ -311,17 +314,29 @@ describe("Welcome Service", () => {
 
   describe("notifyCompletedStep", () => {
     it("should send step mail when completion email manager is set.", async() => {
-      await service["notifyCompletedStep"](user, steps[0]);
+      await service["notifyCompletedStep"](user, steps[0], steps[1]);
 
-      expect(service["mailService"].sendStepMail).toHaveBeenCalledTimes(1);
-      expect(service["mailService"].sendStepMail).toHaveBeenCalledWith(user, steps[0].completionEmailManager, steps[0]._id);
+      expect(service["mailService"].sendStepMailToManager).toHaveBeenCalledTimes(1);
+      expect(service["mailService"].sendStepMailToManager).toHaveBeenCalledWith(user, steps[0].completionEmailManager, steps[0]._id);
     });
 
-    it("should send step mail when completion email is set.", async() => {
-      await service["notifyCompletedStep"](user, steps[1]);
+    it("should send completion mail when completion email is set.", async() => {
+      await service["notifyCompletedStep"](user, steps[2], steps[3]);
 
       expect(service["mailService"].sendStepMail).toHaveBeenCalledTimes(1);
-      expect(service["mailService"].sendStepMail).toHaveBeenCalledWith(user, steps[1].completionEmail, steps[1]._id);
+      expect(service["mailService"].sendStepMail).toHaveBeenCalledWith(user, steps[2].completionEmail, "completion");
+    });
+
+    it("should send step mail when unlockEmail email is set.", async() => {
+      await service["notifyCompletedStep"](user, steps[0], steps[1]);
+     
+      expect(service["mailService"].sendStepMail).toHaveBeenCalledTimes(1);
+      expect(service["mailService"].sendStepMail).toHaveBeenCalledWith(user, steps[1].unlockEmail, steps[1]._id);
+    });
+
+    it("should handle case when nextStep is undefined", async() => {
+      await service["notifyCompletedStep"](user, steps[0], undefined);
+      expect(service["mailService"].sendStepMail).not.toHaveBeenCalled();
     });
   });
 });

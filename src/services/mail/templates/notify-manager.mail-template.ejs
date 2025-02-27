@@ -2,12 +2,10 @@
 <html lang="fr">
 
 <head>
-    <title>[Welcome] La 3e étape est accessible !</title>
+    <title>Notifier le manager</title>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>[Welcome] La 3e étape est accessible !</title>
 
     <style>
       body {
@@ -62,27 +60,12 @@
 </head>
 
 <body>
-<h3>[Welcome!]</h3><br>
-<p>
-  Félicitations ! <strong>Tu es déjà à mi-chemin de ton aventure de pré-boarding</strong>. Bravo à toi ! 👏 <br><br>
-  <strong>Prêt(e) à continuer l'exploration ?</strong> La prochaine étape promet d'être tout aussi passionnante ! Tu vas notamment <strong>découvrir la vie d'agence, l'innovation, comment devenir un ambassadeur...</strong> : plein de belles choses ! ✨ <br>
-  On passe à la suite ?  <br>
-</p>
-
-<br>
-
-<div class="centre">
-  <a href="<%= appUrl %>"><button>Accède à la 3ème étape</button></a>
-</div>
-
-<br>
 
 <p>
-    On a hâte de voir ce que tu vas en penser ! N'hésite pas à nous partager tes impressions ou tes questions. 😉 <br>
-</p>
-
-<p>À bientôt,<br>
-    <%= managerFirstName %> <%= managerLastName %>.<br>
+  Hello <%= managerFirstName %> <%= managerLastName %>, <%= userFirstName %> <%= userLastName %> a terminé l’étape <%= stepId %> de <%= appName %>.<br>
+  Suis son évolution et ses réponses dans le back office de l’application.<br>
+  Cet email est un envoi automatique.<br>
+  Bien à toi. 
 </p>
 
 </body>

@@ -6,7 +6,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { MAIL_APP_NAME, MAIL_FROM, MAIL_FROM_NAME } from "@src/services/mail/mail.constants";
 import { CommonMailData, InviteNewUserMailData, MailRequirement, MailTemplateName, StepMailData } from "@src/services/mail/mail.types";
-import { renderFile } from "ejs";
+import { render, renderFile } from "ejs";
 import path from "path";
 
 @Injectable()
@@ -31,6 +31,22 @@ export class MailService {
 
     await this.sendMail({
       to: user.email,
+      subject: stepEmail.subject,
+      html: await renderFile(templatePath, data),
+    });
+  }
+
+  public async sendStepMailToManager(user: WelcomeUser, stepEmail: StepEmail, stepId: string): Promise<void> {
+    const data: StepMailData = {
+      ...this.getCommonMailData(user),
+      stepId,
+    };
+
+    const templateName = `notify-manager` as MailTemplateName;
+    const templatePath = this.getMailTemplatePath(templateName);
+
+    await this.sendMail({
+      to: user.hrReferent.email,
       subject: stepEmail.subject,
       html: await renderFile(templatePath, data),
     });
