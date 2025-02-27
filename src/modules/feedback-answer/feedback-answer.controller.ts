@@ -1,9 +1,10 @@
 import { FeedbackAnswerService } from "@modules/feedback-answer/feedback-answer.service";
-import { Controller, Get, Post, Body, Param, Delete, HttpStatus, Put, HttpCode, Request, NotFoundException } from "@nestjs/common";
+import { Controller, Get, Post, Body, Param, Delete, HttpStatus, Put, HttpCode, Request, NotFoundException, Res } from "@nestjs/common";
 import { ApiBearerAuth, ApiConflictResponse, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { FeedbackAnswer } from "@modules/feedback-answer/entities/feedback-answer.entity";
 import { Role, Roles } from "@src/decorators/role";
 import { UserRequest } from "@src/guards/jwt.guard";
+import { Response } from 'express';
 
 @ApiTags("Feedback")
 @Controller("feedbacks")
@@ -93,5 +94,26 @@ export class FeedbackAnswerController {
   @ApiNotFoundResponse({ description: "Not found" })
   public async remove(@Param("id") id: string, @Param("questionId") questionId: string, @Param("userId") userId: string): Promise<void> {
     await this.feedbackAnswerService.remove(id, questionId, userId);
+  }
+
+  @Get("/answers/export/:userId")
+  @Roles(Role.ADMIN, Role.USER)
+  @ApiOperation({ summary: 'Export all feedback answers for a user' })
+  @ApiOkResponse({ description: 'Excel file with answers' })
+  @ApiNotFoundResponse({ description: 'User not found' })
+  public async exportAnswers( @Res() res: Response, @Param("userId") userId: string ) {
+    try {
+      const excelFile = await this.feedbackAnswerService.exportUserAnswersToExcel(userId);
+       // Get the current date and time
+      const now = new Date();
+      const formattedDate = now.toISOString().replace(/[:.]/g, '-'); 
+      // Set the response headers to prompt the file download
+      res.setHeader('Content-Disposition', `attachment; filename=feedback_answers_${formattedDate}.xlsx`);
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.send(excelFile);
+    } catch (err) {
+      console.error('Error exporting answers:', err);
+      res.status(500).send('Error exporting answers');
+    }
   }
 }
