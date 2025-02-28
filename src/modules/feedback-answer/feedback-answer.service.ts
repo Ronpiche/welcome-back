@@ -100,7 +100,6 @@ export class FeedbackAnswerService {
         });
       }
     }
-  
     // return all answers from the user across all feedbacks
     return userAnswers;
   }
@@ -118,18 +117,17 @@ export class FeedbackAnswerService {
       const formattedAnswers = userAnswers.map(answer => ({
         FeedbackID: answer.feedbackId,
         QuestionLabel: answer.questionLabel,
-        Answers: answer.answers.join(', '),  // convert the array of answers to a comma-separated string
+        Answers: answer.answers.join(", "), // convert the array of answers to a comma-separated string
       }));
-  
-      
+        
       // convert the data to a worksheet
       const ws = xlsx.utils.json_to_sheet(formattedAnswers);
 
-      ws['!cols'] = [
+      ws["!cols"] = [
         { wch: 25 }, // feedbackID column width
         { wch: 100 }, // questionLabel column width (increase for longer questions)
         { wch: 60 }, // answers column width (increase for longer answers)
-        ];
+      ];
   
       // create a new workbook and append the worksheet
       const wb = xlsx.utils.book_new();
@@ -138,8 +136,8 @@ export class FeedbackAnswerService {
       // generate the Excel file and send it to the user
       const excelFile = xlsx.write(wb, { bookType: "xlsx", type: "buffer" });
   
-      // save the file or send it to the client
-      // for example, you could use NestJS response to download the file:
+      /* save the file or send it to the client
+       for example, you could use NestJS response to download the file:*/
       return excelFile;
     } catch (error) {
       if (error.message === "No answers found for the user") {

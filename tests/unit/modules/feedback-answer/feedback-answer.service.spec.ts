@@ -30,9 +30,11 @@ const welcomeUser: WelcomeUser = {
       firstName: "",
       lastName: "",
       email: "",
-    }
-  ,
-  arrivalDate: "", lastUpdate: new Timestamp(1, 2), practices: [], steps: [],
+    },
+  arrivalDate: "",
+  lastUpdate: new Timestamp(1, 2),
+  practices: [],
+  steps: [],
 };
 
 describe("FeedbackAnswerService", () => {
@@ -48,7 +50,7 @@ describe("FeedbackAnswerService", () => {
           useValue: {
             getDoc: jest.fn().mockReturnValue(undefined),
             getAllDocuments: jest.fn().mockResolvedValue([feedbackAnswer]),
-            getDocument: jest.fn().mockImplementation(async (collection, id) => {
+            getDocument: jest.fn().mockImplementation(async(collection, id) => {
               if (collection === "WELCOME_USERS") {
                 return Promise.resolve(welcomeUser);
               }

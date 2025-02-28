@@ -101,7 +101,7 @@ export class FeedbackAnswerController {
   @ApiOperation({ summary: "Export all feedback answers for a user" })
   @ApiOkResponse({ description: "Excel file with answers" })
   @ApiNotFoundResponse({ description: "User not found" })
-  public async exportAnswers( @Res() res: Response, @Param("userId") userId: string) {
+  public async exportAnswers(@Res() res: Response, @Param("userId") userId: string) {
     try {
       const excelFile = await this.feedbackAnswerService.exportUserAnswersToExcel(userId);
       // get the current date and time
