@@ -161,5 +161,4 @@ export class FirestoreService {
   public getCollection(collectionName: string): FirebaseFirestore.CollectionReference {
     return this.firestore.collection(collectionName);
   }
- 
 }

@@ -24,15 +24,15 @@ const welcomeUser: WelcomeUser = {
   note: "",
   signupDate: "",
   agency: "",
-  creationDate: new Timestamp(1,2),
-  hrReferent: 
+  creationDate: new Timestamp(1, 2),
+  hrReferent:
     {
       firstName: "",
       lastName: "",
-      email: ""
+      email: "",
     }
   ,
-  arrivalDate:"", lastUpdate: new Timestamp(1,2), practices:[], steps:[]
+  arrivalDate: "", lastUpdate: new Timestamp(1, 2), practices: [], steps: [],
 };
 
 describe("FeedbackAnswerService", () => {
@@ -48,7 +48,7 @@ describe("FeedbackAnswerService", () => {
           useValue: {
             getDoc: jest.fn().mockReturnValue(undefined),
             getAllDocuments: jest.fn().mockResolvedValue([feedbackAnswer]),
-            getDocument: jest.fn().mockImplementation((collection, id) => {
+            getDocument: jest.fn().mockImplementation(async (collection, id) => {
               if (collection === "WELCOME_USERS") {
                 return Promise.resolve(welcomeUser);
               }
@@ -62,13 +62,13 @@ describe("FeedbackAnswerService", () => {
               get: jest.fn().mockResolvedValue({
                 docs: [
                   {
-                    id: "1", // ID of the Feedback document
+                    id: "1", // id of the Feedback document
                     ref: {
                       collection: jest.fn().mockReturnValue({
                         get: jest.fn().mockResolvedValue({
                           docs: [
                             {
-                              id: "question1", // ID of the Feedback Question document
+                              id: "question1", // id of the Feedback Question document
                               data: jest.fn().mockReturnValue({
                                 label: "Question 1",
                               }),
@@ -77,10 +77,10 @@ describe("FeedbackAnswerService", () => {
                                   get: jest.fn().mockResolvedValue({
                                     docs: [
                                       {
-                                        id: "user1", // ID of the Feedback Answer document (User's Answer)
+                                        id: "user1", // id of the Feedback Answer document (User's Answer)
                                         data: jest.fn().mockReturnValue({
-                                          _id: "user1", // The user's ID
-                                          answers: ["Answer 1"], // The user's answers
+                                          _id: "user1", // the user's ID
+                                          answers: ["Answer 1"], // the user's answers
                                         }),
                                       },
                                     ],
@@ -96,11 +96,6 @@ describe("FeedbackAnswerService", () => {
                 ],
               }),
             }),
-            
-            
-                  
-            
-            
           },
         },
       ],
@@ -203,7 +198,7 @@ describe("FeedbackAnswerService", () => {
           answers: [],
         },
         {
-          feedbackId: feedbackId,
+          feedbackId,
           questionLabel: "Question 1",
           answers: ["Answer 1"],
         },
@@ -221,7 +216,7 @@ describe("FeedbackAnswerService", () => {
   });
 
   describe("exportUserAnswersToExcel", () => {
-    it("should return an Excel file buffer when exportUserAnswersToExcel is called.", async () => {
+    it("should return an Excel file buffer when exportUserAnswersToExcel is called.", async() => {
       jest.spyOn(service, "getUserAnswers").mockResolvedValue([
         {
           feedbackId: "Nom du collaborateur",
@@ -229,7 +224,7 @@ describe("FeedbackAnswerService", () => {
           answers: [],
         },
         {
-          feedbackId: feedbackId,
+          feedbackId,
           questionLabel: "Question 1",
           answers: ["Answer 1"],
         },
@@ -238,18 +233,18 @@ describe("FeedbackAnswerService", () => {
       expect(excelFile).toBeInstanceOf(Buffer);
     });
 
-    it("should throw an Error when no answers are found for the user.", async () => {
+    it("should throw an Error when no answers are found for the user.", async() => {
       jest.spyOn(service, "getUserAnswers").mockResolvedValue([]);
-      const error: Error = await getError(async () => service.exportUserAnswersToExcel(userId));
+      const error: Error = await getError(async() => service.exportUserAnswersToExcel(userId));
       expect(error).not.toBeInstanceOf(NoErrorThrownError);
       expect(error.message).toBe("No answers found for the user");
     });
 
-    it("should throw an InternalServerError when database fails.", async () => {
+    it("should throw an InternalServerError when database fails.", async() => {
       jest.spyOn(service, "getUserAnswers").mockImplementation(() => {
         throw new InternalServerErrorException();
       });
-      const error: InternalServerErrorException = await getError(async () => service.exportUserAnswersToExcel(userId));
+      const error: InternalServerErrorException = await getError(async() => service.exportUserAnswersToExcel(userId));
       expect(error).not.toBeInstanceOf(NoErrorThrownError);
       expect(error).toBeInstanceOf(Error);
     });

@@ -4,7 +4,7 @@ import { ApiBearerAuth, ApiConflictResponse, ApiCreatedResponse, ApiNoContentRes
 import { FeedbackAnswer } from "@modules/feedback-answer/entities/feedback-answer.entity";
 import { Role, Roles } from "@src/decorators/role";
 import { UserRequest } from "@src/guards/jwt.guard";
-import { Response } from 'express';
+import { Response } from "express";
 
 @ApiTags("Feedback")
 @Controller("feedbacks")
@@ -98,22 +98,21 @@ export class FeedbackAnswerController {
 
   @Get("/answers/export/:userId")
   @Roles(Role.ADMIN, Role.USER)
-  @ApiOperation({ summary: 'Export all feedback answers for a user' })
-  @ApiOkResponse({ description: 'Excel file with answers' })
-  @ApiNotFoundResponse({ description: 'User not found' })
-  public async exportAnswers( @Res() res: Response, @Param("userId") userId: string ) {
+  @ApiOperation({ summary: "Export all feedback answers for a user" })
+  @ApiOkResponse({ description: "Excel file with answers" })
+  @ApiNotFoundResponse({ description: "User not found" })
+  public async exportAnswers( @Res() res: Response, @Param("userId") userId: string) {
     try {
       const excelFile = await this.feedbackAnswerService.exportUserAnswersToExcel(userId);
-       // Get the current date and time
+      // get the current date and time
       const now = new Date();
-      const formattedDate = now.toISOString().replace(/[:.]/g, '-'); 
-      // Set the response headers to prompt the file download
-      res.setHeader('Content-Disposition', `attachment; filename=feedback_answers_${formattedDate}.xlsx`);
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      const formattedDate = now.toISOString().replace(/[:.]/g, "-");
+      // set the response headers to prompt the file download
+      res.setHeader("Content-Disposition", `attachment; filename=feedback_answers_${formattedDate}.xlsx`);
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
       res.send(excelFile);
     } catch (err) {
-      console.error('Error exporting answers:', err);
-      res.status(500).send('Error exporting answers');
+      res.status(500).send("Error exporting answers");
     }
   }
 }
