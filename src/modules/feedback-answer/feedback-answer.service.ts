@@ -136,8 +136,7 @@ export class FeedbackAnswerService {
       // generate the Excel file and send it to the user
       const excelFile = xlsx.write(wb, { bookType: "xlsx", type: "buffer" });
   
-      /* save the file or send it to the client
-       for example, you could use NestJS response to download the file:*/
+      // save the file or send it to the client
       return excelFile;
     } catch (error) {
       if (error.message === "No answers found for the user") {
