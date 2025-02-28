@@ -101,18 +101,18 @@ export class FeedbackAnswerController {
   @ApiOperation({ summary: "Export all feedback answers for a user" })
   @ApiOkResponse({ description: "Excel file with answers" })
   @ApiNotFoundResponse({ description: "User not found" })
-  public async exportAnswers(@Res() res: Response, @Param("userId") userId: string) {
+  public async exportAnswers(@Res() res: Response, @Param("userId") userId: string): Promise<void> {
     try {
       const excelFile = await this.feedbackAnswerService.exportUserAnswersToExcel(userId);
       // get the current date and time
       const now = new Date();
-      const formattedDate = now.toISOString().replace(/[:.]/g, "-");
+      const formattedDate = now.toISOString().replace(/[:.]/gu, "-");
       // set the response headers to prompt the file download
       res.setHeader("Content-Disposition", `attachment; filename=feedback_answers_${formattedDate}.xlsx`);
       res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
       res.send(excelFile);
-    } catch (err) {
-      res.status(500).send("Error exporting answers");
+    } catch {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).send("Error exporting answers"); 
     }
   }
 }

@@ -54,8 +54,7 @@ export class FeedbackAnswerService {
     await this.firestoreService.deleteDocument(FIRESTORE_COLLECTIONS.FEEDBACKS_ANSWERS, userId, parentDoc);
   }
 
-  public async getUserAnswers(userId) {
-    // get all feedback documents
+  public async getUserAnswers(userId): Promise<any[]> {
     const feedbackRef = this.firestoreService.getCollection(FIRESTORE_COLLECTIONS.FEEDBACKS);
     const feedbackSnapshot = await feedbackRef.get();
 
@@ -72,25 +71,18 @@ export class FeedbackAnswerService {
       answers: [], // empty answers
     });
   
-    // loop through each feedback document
     for (const feedbackDoc of feedbackSnapshot.docs) {
       const feedbackId = feedbackDoc.id;
       
-      // get all the questions for the current feedback
       const questionsRef = feedbackDoc.ref.collection(FIRESTORE_COLLECTIONS.FEEDBACKS_QUESTIONS);
       const questionsSnapshot = await questionsRef.get();
-      
-      // loop through each question document
+
       for (const questionDoc of questionsSnapshot.docs) {
         const questionLabel = questionDoc.data().label;
-  
-        // get the answers for the current question
         const answersRef = questionDoc.ref.collection(FIRESTORE_COLLECTIONS.FEEDBACKS_ANSWERS);
         const answersSnapshot = await answersRef.get();
-        // loop through each answer document and check if it matches the user's ID
         answersSnapshot.docs.forEach(answerDoc => {
           if (answerDoc.data()._id === userId) {
-            // if the answer is from the user, add it to the results
             userAnswers.push({
               feedbackId,
               questionLabel,
@@ -100,8 +92,7 @@ export class FeedbackAnswerService {
         });
       }
     }
-    // return all answers from the user across all feedbacks
-    return userAnswers;
+    return userAnswers; 
   }
 
   public async exportUserAnswersToExcel(userId: string): Promise<void> {
