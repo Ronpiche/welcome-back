@@ -112,7 +112,7 @@ export class FeedbackAnswerController {
       res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
       res.send(excelFile);
     } catch {
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).send("Error exporting answers"); 
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).send("Error exporting answers");
     }
   }
 }

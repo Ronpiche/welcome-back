@@ -92,7 +92,7 @@ export class FeedbackAnswerService {
         });
       }
     }
-    return userAnswers; 
+    return userAnswers;
   }
 
   public async exportUserAnswersToExcel(userId: string): Promise<void> {
