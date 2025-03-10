@@ -95,7 +95,7 @@ export class FeedbackAnswerService {
     return userAnswers;
   }
 
-  public async exportUserAnswersToExcel(userId: string): Promise<void> {
+  public async exportUserAnswersToExcel(userId: string): Promise<Buffer> {
     try {
       // get the user's answers
       const userAnswers = await this.getUserAnswers(userId);
