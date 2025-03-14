@@ -84,6 +84,7 @@ describe("Welcome Service", () => {
             inviteNewUserMail: jest.fn().mockResolvedValue(undefined),
             sendStepMail: jest.fn().mockResolvedValue(undefined),
             sendStepMailToManager: jest.fn().mockResolvedValue(undefined),
+            scheduleMail: jest.fn().mockResolvedValue(undefined),
           },
         },
         {
@@ -327,16 +328,16 @@ describe("Welcome Service", () => {
       expect(service["mailService"].sendStepMail).toHaveBeenCalledWith(user, steps[2].completionEmail, "completion");
     });
 
-    it("should send step mail when unlockEmail email is set.", async() => {
+    it("should schedule mail when unlockEmail email is set.", async() => {
       await service["notifyCompletedStep"](user, steps[0], steps[1]);
      
-      expect(service["mailService"].sendStepMail).toHaveBeenCalledTimes(1);
-      expect(service["mailService"].sendStepMail).toHaveBeenCalledWith(user, steps[1].unlockEmail, steps[1]._id);
+      expect(service["mailService"].scheduleMail).toHaveBeenCalledTimes(1);
+      expect(service["mailService"].scheduleMail).toHaveBeenCalledWith(user, steps[1].unlockEmail, steps[1]._id);
     });
 
     it("should handle case when nextStep is undefined", async() => {
       await service["notifyCompletedStep"](user, steps[0], undefined);
-      expect(service["mailService"].sendStepMail).not.toHaveBeenCalled();
+      expect(service["mailService"].scheduleMail).not.toHaveBeenCalled();
     });
   });
 });

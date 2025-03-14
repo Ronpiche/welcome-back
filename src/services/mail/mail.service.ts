@@ -4,10 +4,12 @@ import { CreateUserDto } from "@modules/welcome/dto/input/create-user.dto";
 import { WelcomeUser } from "@modules/welcome/entities/user.entity";
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { SchedulerRegistry } from "@nestjs/schedule";
 import { MAIL_APP_NAME, MAIL_FROM, MAIL_FROM_NAME } from "@src/services/mail/mail.constants";
 import { CommonMailData, InviteNewUserMailData, MailRequirement, MailTemplateName, StepMailData } from "@src/services/mail/mail.types";
-import { render, renderFile } from "ejs";
+import { renderFile } from "ejs";
 import path from "path";
+import { CronJob } from "cron";
 
 @Injectable()
 export class MailService {
@@ -16,6 +18,7 @@ export class MailService {
   public constructor(
     private readonly logger: Logger,
     private readonly config: ConfigService,
+    private readonly schedulerRegistry: SchedulerRegistry,
   ) {
     const brevoApiKey = this.config.get<string>("BREVO_API_KEY");
     this.brevoMailingInstance.setApiKey(TransactionalEmailsApiApiKeys.apiKey, brevoApiKey);
@@ -89,6 +92,34 @@ export class MailService {
       this.logger.log(`Email successfully dispatched to ${mailRequirement.to}`);
     } catch (error) {
       this.logger.error("Error while sending email", error);
+      throw error;
+    }
+  }
+
+  public async scheduleMail(user: WelcomeUser, stepMail: StepEmail, stepId: string) {
+    const to = user.email;
+   
+    try {
+      const sendAt = user.steps.find((step) => step._id === stepId)?.unlockDate?.toDate();
+      if (!sendAt) {
+        throw new Error(`Unlock date not found for step ${stepId}`);
+      }
+
+      if (sendAt.getTime() < Date.now()) {
+        return;
+      }
+   
+      const job = new CronJob(sendAt, async () => {
+        await this.sendStepMail(user, stepMail, stepId);
+        this.schedulerRegistry.deleteCronJob(`email-${to}-${stepId}`);
+      });
+   
+      this.schedulerRegistry.addCronJob(`email-${to}-${stepId}`, job);
+      job.start();
+   
+      this.logger.log(`Email scheduled for ${to} at ${sendAt.toISOString()} for step ${stepId}`);
+    } catch (error) {
+      this.logger.error(`Error scheduling email for ${to} for step ${stepId}`, error);
       throw error;
     }
   }

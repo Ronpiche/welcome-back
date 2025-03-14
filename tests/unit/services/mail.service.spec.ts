@@ -12,6 +12,9 @@ import Ejs from "ejs";
 import { LoggerMock } from "@tests/unit/__mocks__/logger.mock";
 import { createFakeCreateUserDto } from "@tests/unit/factories/dtos/create-user.dto.factory";
 import { createFakeWelcomeUser } from "@tests/unit/factories/entities/user.entity.factory";
+import { SchedulerRegistry } from "@nestjs/schedule";
+import { Timestamp } from "@google-cloud/firestore";
+import { createFakeUserStep } from "../factories/entities/user-step.entity.factory";
 
 const transactionalEmailsApiMocks = {
   sendTransacEmail: jest.fn(),
@@ -24,8 +27,19 @@ jest.mock<typeof import("@getbrevo/brevo")>("@getbrevo/brevo", () => ({
   SendSmtpEmail: jest.fn(() => ({})) as unknown as typeof SendSmtpEmail,
 }));
 
+jest.mock('@google-cloud/firestore', () => ({
+  Timestamp: {
+    fromDate: jest.fn(date => ({
+      toDate: () => date,
+      seconds: Math.floor(date.getTime() / 1000),
+      nanoseconds: (date.getTime() % 1000) * 1e6
+    })),
+  },
+}));
+
 describe("Mail Service Service", () => {
   let services: { mail: MailService };
+  let schedulerRegistry: SchedulerRegistry;
   let mocks: {
     services: {
       config: {
@@ -33,6 +47,7 @@ describe("Mail Service Service", () => {
       };
       mail: {
         sendMail: jest.SpyInstance;
+        sendStepMail: jest.SpyInstance;
         getSmtpMailFromRequirement: jest.SpyInstance;
       };
     };
@@ -49,6 +64,7 @@ describe("Mail Service Service", () => {
         },
         mail: {
           sendMail: jest.fn(),
+          sendStepMail: jest.fn(),
           getSmtpMailFromRequirement: jest.fn(),
         },
       },
@@ -66,11 +82,19 @@ describe("Mail Service Service", () => {
           provide: ConfigService,
           useValue: mocks.services.config,
         },
+        {
+          provide: SchedulerRegistry,
+          useValue: {
+            addCronJob: jest.fn(),
+            deleteCronJob: jest.fn(),
+          },
+        },
         MailService,
       ],
     }).compile();
 
     services = { mail: module.get<MailService>(MailService) };
+    schedulerRegistry = module.get<SchedulerRegistry>(SchedulerRegistry);
   });
 
   afterEach(() => {
@@ -347,6 +371,69 @@ describe("Mail Service Service", () => {
       transactionalEmailsApiMocks.sendTransacEmail.mockRejectedValue(error);
 
       await expect(services.mail["sendMail"](mailRequirement)).rejects.toThrow(error);
+    });
+  });
+
+  describe('scheduleMail', () => {
+    const user = createFakeWelcomeUser({ 
+      email: 'test@example.com', 
+      steps: [
+        createFakeUserStep({ 
+          _id: '2', 
+          unlockDate: Timestamp.fromDate(new Date(Date.now() + 60000)),
+          subStepsCompleted: 0
+        })
+      ] 
+    });
+    const stepMail = {
+      subject: "Test Email",
+      body: "Test Body",
+    };
+    const stepId = '2';
+
+    it('should throw an error if unlock date is not found', async () => {
+      const invalidUser = createFakeWelcomeUser({ 
+        email: 'test@example.com', 
+        steps: [
+          createFakeUserStep({ 
+            _id: '1', 
+            unlockDate: Timestamp.fromDate(new Date(Date.now() + 60000)),
+            subStepsCompleted: 0
+          })
+        ] 
+      });
+
+      await expect(services.mail.scheduleMail(invalidUser, stepMail, stepId)).rejects.toThrow(
+        `Unlock date not found for step ${stepId}`
+      );
+    });
+
+    it('should not schedule an email if the unlock date is in the past', async () => {
+      const pastUser = createFakeWelcomeUser({ 
+        email: 'test@example.com', 
+        steps: [
+          createFakeUserStep({ 
+            _id: stepId, 
+            unlockDate: Timestamp.fromDate(new Date(Date.now() - 60000)),
+            subStepsCompleted: 0
+          })
+        ] 
+      });
+      await services.mail.scheduleMail(pastUser, stepMail, stepId);
+      expect(schedulerRegistry.addCronJob).not.toHaveBeenCalled();
+    });
+
+    it('should schedule an email if unlock date is in the future', async () => {
+      await services.mail.scheduleMail(user, stepMail, stepId);
+      expect(schedulerRegistry.addCronJob).toHaveBeenCalledTimes(1);
+    });
+
+    it('should delete the job after sending the email', async () => {
+      jest.spyOn(services.mail, 'sendStepMail').mockResolvedValue(undefined);
+      await services.mail.scheduleMail(user, stepMail, stepId);
+      await (schedulerRegistry.addCronJob as jest.Mock).mock.calls[0][1].fireOnTick();
+      expect(services.mail.sendStepMail).toHaveBeenCalledWith(user, stepMail, stepId);
+      expect(schedulerRegistry.deleteCronJob).toHaveBeenCalledWith(`email-${user.email}-${stepId}`);
     });
   });
 

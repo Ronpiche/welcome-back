@@ -193,7 +193,7 @@ export class WelcomeService {
     }
 
     if (nextStep !== undefined && nextStep.unlockEmail !== undefined) {
-      await this.mailService.sendStepMail(user, nextStep.unlockEmail, nextStep._id);
+      await this.mailService.scheduleMail(user, nextStep.unlockEmail, nextStep._id);
     }
 
     if (step.completionEmail !== undefined) {
