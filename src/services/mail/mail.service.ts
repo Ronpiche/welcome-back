@@ -100,7 +100,7 @@ export class MailService {
     const to = user.email;
    
     try {
-      const sendAt = user.steps.find((step) => step._id === stepId)?.unlockDate?.toDate();
+      const sendAt = user.steps.find(step => step._id === stepId)?.unlockDate?.toDate();
       if (!sendAt) {
         throw new Error(`Unlock date not found for step ${stepId}`);
       }
@@ -109,7 +109,7 @@ export class MailService {
         return;
       }
    
-      const job = new CronJob(sendAt, async () => {
+      const job = new CronJob(sendAt, async() => {
         await this.sendStepMail(user, stepMail, stepId);
         this.schedulerRegistry.deleteCronJob(`email-${to}-${stepId}`);
       });
