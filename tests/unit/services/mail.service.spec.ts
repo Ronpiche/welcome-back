@@ -32,7 +32,7 @@ jest.mock<typeof import("@google-cloud/firestore")>("@google-cloud/firestore", (
 
   class TimestampMock {
     seconds: number;
-    
+
     nanoseconds: number;
 
     constructor(seconds: number, nanoseconds: number) {
@@ -405,10 +405,9 @@ describe("Mail Service Service", () => {
         subject: "Hello",
         html: "<p>Hello</p>",
       };
-      const error = new Error("Error while sending email");
-      transactionalEmailsApiMocks.sendTransacEmail.mockRejectedValue(error);
+      transactionalEmailsApiMocks.sendTransacEmail.mockRejectedValue(new Error("Error while sending email"));
 
-      await expect(services.mail["sendMail"](mailRequirement)).rejects.toThrow(error);
+      await expect(services.mail["sendMail"](mailRequirement)).rejects.toThrow(new Error("Error while sending email"));
     });
   });
 
