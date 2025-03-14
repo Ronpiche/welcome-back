@@ -27,15 +27,53 @@ jest.mock<typeof import("@getbrevo/brevo")>("@getbrevo/brevo", () => ({
   SendSmtpEmail: jest.fn(() => ({})) as unknown as typeof SendSmtpEmail,
 }));
 
-jest.mock('@google-cloud/firestore', () => ({
-  Timestamp: {
-    fromDate: jest.fn(date => ({
-      toDate: () => date,
-      seconds: Math.floor(date.getTime() / 1000),
-      nanoseconds: (date.getTime() % 1000) * 1e6
-    })),
-  },
-}));
+jest.mock<typeof import("@google-cloud/firestore")>("@google-cloud/firestore", () => {
+  const actualFirestore = jest.requireActual<typeof import("@google-cloud/firestore")>("@google-cloud/firestore");
+
+  class TimestampMock {
+    seconds: number;
+    
+    nanoseconds: number;
+
+    constructor(seconds: number, nanoseconds: number) {
+      this.seconds = seconds;
+      this.nanoseconds = nanoseconds;
+    }
+
+    toDate(): Date {
+      return new Date(this.seconds * 1000);
+    }
+
+    toMillis(): number {
+      return this.seconds * 1000 + this.nanoseconds / 1e6;
+    }
+
+    isEqual(other: { seconds: number; nanoseconds: number }): boolean {
+      return this.seconds === other.seconds && this.nanoseconds === other.nanoseconds;
+    }
+
+    valueOf(): string {
+      return `${this.seconds}:${this.nanoseconds}`;
+    }
+
+    static now(): TimestampMock {
+      return new TimestampMock(Math.floor(Date.now() / 1000), 0);
+    }
+
+    static fromDate(date: Date): TimestampMock {
+      return new TimestampMock(Math.floor(date.getTime() / 1000), 0);
+    }
+
+    static fromMillis(millis: number): TimestampMock {
+      return new TimestampMock(Math.floor(millis / 1000), millis % 1000 * 1e6);
+    }
+  }
+
+  return {
+    ...actualFirestore,
+    Timestamp: TimestampMock,
+  };
+});
 
 describe("Mail Service Service", () => {
   let services: { mail: MailService };
@@ -374,64 +412,65 @@ describe("Mail Service Service", () => {
     });
   });
 
-  describe('scheduleMail', () => {
-    const user = createFakeWelcomeUser({ 
-      email: 'test@example.com', 
+  describe("scheduleMail", () => {
+    const user = createFakeWelcomeUser({
+      email: "test@example.com",
       steps: [
-        createFakeUserStep({ 
-          _id: '2', 
+        createFakeUserStep({
+          _id: "2",
           unlockDate: Timestamp.fromDate(new Date(Date.now() + 60000)),
-          subStepsCompleted: 0
-        })
-      ] 
+          subStepsCompleted: 0,
+        }),
+      ],
     });
     const stepMail = {
       subject: "Test Email",
       body: "Test Body",
     };
-    const stepId = '2';
+    const stepId = "2";
 
-    it('should throw an error if unlock date is not found', async () => {
-      const invalidUser = createFakeWelcomeUser({ 
-        email: 'test@example.com', 
+    it("should throw an error if unlock date is not found", async() => {
+      const invalidUser = createFakeWelcomeUser({
+        email: "test@example.com",
         steps: [
-          createFakeUserStep({ 
-            _id: '1', 
+          createFakeUserStep({
+            _id: "1",
             unlockDate: Timestamp.fromDate(new Date(Date.now() + 60000)),
-            subStepsCompleted: 0
-          })
-        ] 
+            subStepsCompleted: 0,
+          }),
+        ],
       });
 
-      await expect(services.mail.scheduleMail(invalidUser, stepMail, stepId)).rejects.toThrow(
-        `Unlock date not found for step ${stepId}`
-      );
+      await expect(services.mail.scheduleMail(invalidUser, stepMail, stepId))
+        .rejects.toThrow(`Unlock date not found for step ${stepId}`);
     });
 
-    it('should not schedule an email if the unlock date is in the past', async () => {
-      const pastUser = createFakeWelcomeUser({ 
-        email: 'test@example.com', 
+    it("should not schedule an email if the unlock date is in the past", async() => {
+      const pastUser = createFakeWelcomeUser({
+        email: "test@example.com",
         steps: [
-          createFakeUserStep({ 
-            _id: stepId, 
+          createFakeUserStep({
+            _id: stepId,
             unlockDate: Timestamp.fromDate(new Date(Date.now() - 60000)),
-            subStepsCompleted: 0
-          })
-        ] 
+            subStepsCompleted: 0,
+          }),
+        ],
       });
       await services.mail.scheduleMail(pastUser, stepMail, stepId);
       expect(schedulerRegistry.addCronJob).not.toHaveBeenCalled();
     });
 
-    it('should schedule an email if unlock date is in the future', async () => {
+    it("should schedule an email if unlock date is in the future", async() => {
       await services.mail.scheduleMail(user, stepMail, stepId);
       expect(schedulerRegistry.addCronJob).toHaveBeenCalledTimes(1);
     });
 
-    it('should delete the job after sending the email', async () => {
-      jest.spyOn(services.mail, 'sendStepMail').mockResolvedValue(undefined);
+    it("should delete the job after sending the email", async() => {
+      jest.spyOn(services.mail, "sendStepMail").mockResolvedValue(undefined);
+      jest.spyOn(schedulerRegistry, "addCronJob").mockImplementation((name, job) => {
+        job.fireOnTick();
+      });
       await services.mail.scheduleMail(user, stepMail, stepId);
-      await (schedulerRegistry.addCronJob as jest.Mock).mock.calls[0][1].fireOnTick();
       expect(services.mail.sendStepMail).toHaveBeenCalledWith(user, stepMail, stepId);
       expect(schedulerRegistry.deleteCronJob).toHaveBeenCalledWith(`email-${user.email}-${stepId}`);
     });
