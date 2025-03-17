@@ -75,14 +75,19 @@ jest.mock<typeof import("@google-cloud/firestore")>("@google-cloud/firestore", (
   };
 });
 
-jest.mock('cron', () => ({
-  CronJob: jest.fn().mockImplementation((time, callback) => ({
-    start: jest.fn(),  
-    stop: jest.fn(),
-    fireOnTick: jest.fn(() => callback()),   
-    callback,          
-  })),
-}));
+jest.mock("cron", () => {
+  const actualCron = jest.requireActual<typeof import("cron")>("cron");
+
+  return {
+    ...actualCron,
+    CronJob: jest.fn().mockImplementation((time, callback) => ({
+      start: jest.fn(),
+      stop: jest.fn(),
+      fireOnTick: jest.fn(() => callback()),
+      callback,
+    })),
+  };
+});
 
 describe("Mail Service Service", () => {
   let services: { mail: MailService };
@@ -102,7 +107,7 @@ describe("Mail Service Service", () => {
       renderFile: jest.SpyInstance;
     };
     schedulerRegistry: {
-      addCronJob: jest.SpyInstance; 
+      addCronJob: jest.SpyInstance;
       getCronJobs: jest.SpyInstance;
       deleteCronJob: jest.SpyInstance;
     },
@@ -124,8 +129,8 @@ describe("Mail Service Service", () => {
         renderFile: jest.spyOn(Ejs, "renderFile").mockResolvedValue("<h1>Mocked HTML</h1>"),
       },
       schedulerRegistry: {
-        addCronJob: jest.fn(), 
-        getCronJobs: jest.fn(), 
+        addCronJob: jest.fn(),
+        getCronJobs: jest.fn(),
         deleteCronJob: jest.fn(),
       },
     };
