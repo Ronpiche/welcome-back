@@ -75,6 +75,15 @@ jest.mock<typeof import("@google-cloud/firestore")>("@google-cloud/firestore", (
   };
 });
 
+jest.mock('cron', () => ({
+  CronJob: jest.fn().mockImplementation((time, callback) => ({
+    start: jest.fn(),  
+    stop: jest.fn(),
+    fireOnTick: jest.fn(() => callback()),   
+    callback,          
+  })),
+}));
+
 describe("Mail Service Service", () => {
   let services: { mail: MailService };
   let schedulerRegistry: SchedulerRegistry;
@@ -92,6 +101,11 @@ describe("Mail Service Service", () => {
     ejs: {
       renderFile: jest.SpyInstance;
     };
+    schedulerRegistry: {
+      addCronJob: jest.SpyInstance; 
+      getCronJobs: jest.SpyInstance;
+      deleteCronJob: jest.SpyInstance;
+    },
   };
 
   beforeEach(async() => {
@@ -109,6 +123,11 @@ describe("Mail Service Service", () => {
       ejs: {
         renderFile: jest.spyOn(Ejs, "renderFile").mockResolvedValue("<h1>Mocked HTML</h1>"),
       },
+      schedulerRegistry: {
+        addCronJob: jest.fn(), 
+        getCronJobs: jest.fn(), 
+        deleteCronJob: jest.fn(),
+      },
     };
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -122,10 +141,7 @@ describe("Mail Service Service", () => {
         },
         {
           provide: SchedulerRegistry,
-          useValue: {
-            addCronJob: jest.fn(),
-            deleteCronJob: jest.fn(),
-          },
+          useValue: mocks.schedulerRegistry,
         },
         MailService,
       ],
