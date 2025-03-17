@@ -75,6 +75,7 @@ jest.mock<typeof import("@google-cloud/firestore")>("@google-cloud/firestore", (
   };
 });
 
+/* eslint-disable jest/no-untyped-mock-factory */
 jest.mock("cron", () => {
   const actualCron = jest.requireActual<typeof import("cron")>("cron");
 
@@ -88,6 +89,7 @@ jest.mock("cron", () => {
     })),
   };
 });
+/* eslint-enable jest/no-untyped-mock-factory */
 
 describe("Mail Service Service", () => {
   let services: { mail: MailService };
@@ -110,7 +112,7 @@ describe("Mail Service Service", () => {
       addCronJob: jest.SpyInstance;
       getCronJobs: jest.SpyInstance;
       deleteCronJob: jest.SpyInstance;
-    },
+    };
   };
 
   beforeEach(async() => {
