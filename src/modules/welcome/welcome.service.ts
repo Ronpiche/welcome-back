@@ -107,7 +107,7 @@ export class WelcomeService {
 
     if (userToUpdate.signupDate !== userInDb.signupDate || userToUpdate.arrivalDate !== userInDb.arrivalDate) {
       if (!userInDb.steps) {
-        throw new Error(`User with ID ${id} not found or has no steps.`);
+        throw new Error(`User with ID ${id} has no steps.`);
       }
 
       const steps = await this.stepService.generateSteps(
