@@ -242,7 +242,7 @@ export class WelcomeService {
   }
 
   /**
-   * Creates a new user in the database with the provided data.
+   * creates a new user in the database with the provided data.
    * Generates steps for the user based on their signup and arrival dates.
    * Initializes the user's steps with default values and timestamps.
    * Saves the user to the Firestore database.
