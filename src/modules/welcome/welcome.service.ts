@@ -94,7 +94,7 @@ export class WelcomeService {
    * @param id - The ID of the user to update.
    * @param updateUserDto - The data used to update the user.
    * @returns The updated user as stored in the database.
-  */
+   */
   public async update(id: string, updateUserDto: UpdateUserDto): Promise<WelcomeUser> {
     const userToUpdate = Object.assign(instanceToPlain(updateUserDto), { lastUpdate: Timestamp.now() });
 
@@ -102,7 +102,6 @@ export class WelcomeService {
     let updatedUser = userToUpdate;
 
     if (userToUpdate.signupDate !== userInDb.signupDate || userToUpdate.arrivalDate !== userInDb.arrivalDate) {
-
       if (!userInDb || !userInDb.steps) {
         throw new Error(`User with ID ${id} not found or has no steps.`);
       }
@@ -243,13 +242,13 @@ export class WelcomeService {
   }
 
   /**
-  * creates a new user in the database with the provided data.
-  * Generates steps for the user based on their signup and arrival dates.
-  * Initializes the user's steps with default values and timestamps.
-  * Saves the user to the Firestore database.
-  * @param createUserDto - The data used to create the user.
-  * @returns The newly created user as stored in the database.
-  */
+   * Creates a new user in the database with the provided data.
+   * Generates steps for the user based on their signup and arrival dates.
+   * Initializes the user's steps with default values and timestamps.
+   * Saves the user to the Firestore database.
+   * @param createUserDto - The data used to create the user.
+   * @returns The newly created user as stored in the database.
+   */
   private async createDbUser(createUserDto: CreateUserDto): Promise<WelcomeUser> {
     const now = Timestamp.now();
 
