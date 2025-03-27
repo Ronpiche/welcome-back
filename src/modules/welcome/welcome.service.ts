@@ -101,8 +101,12 @@ export class WelcomeService {
     const userInDb = await this.findOne(id);
     let updatedUser = userToUpdate;
 
+    if (!userInDb) {
+      throw new Error(`User with ID ${id} not found.`);
+    }
+
     if (userToUpdate.signupDate !== userInDb.signupDate || userToUpdate.arrivalDate !== userInDb.arrivalDate) {
-      if (!userInDb || !userInDb.steps) {
+      if (!userInDb.steps) {
         throw new Error(`User with ID ${id} not found or has no steps.`);
       }
 
