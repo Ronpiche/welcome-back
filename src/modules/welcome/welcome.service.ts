@@ -87,21 +87,21 @@ export class WelcomeService {
   }
 
   /**
-   * Updates an existing user in the database with the provided data.
+   * updates an existing user in the database with the provided data.
    * Regenerates and updates steps based on the user's signup and arrival dates.
    * Preserves existing step progress and timestamps.
    * Saves the updated user to the Firestore database.
    * @param id - The ID of the user to update.
    * @param updateUserDto - The data used to update the user.
    * @returns The updated user as stored in the database.
- */
+  */
   public async update(id: string, updateUserDto: UpdateUserDto): Promise<WelcomeUser> {
     const userToUpdate = Object.assign(instanceToPlain(updateUserDto), { lastUpdate: Timestamp.now() });
 
-    const userInDb=await  this.findOne(id);
+    const userInDb = await this.findOne(id);
     let updatedUser = userToUpdate;
 
-    if(userToUpdate.signupDate !==userInDb.signupDate || userToUpdate.arrivalDate !==userInDb.arrivalDate ){
+    if (userToUpdate.signupDate !== userInDb.signupDate || userToUpdate.arrivalDate !== userInDb.arrivalDate) {
 
       if (!userInDb || !userInDb.steps) {
         throw new Error(`User with ID ${id} not found or has no steps.`);
@@ -115,9 +115,10 @@ export class WelcomeService {
       updatedUser = Object.assign(instanceToPlain(userToUpdate), {
         steps: steps.map(s => {
           const matchingStep = userInDb.steps.find(sInDb => s.step._id === sInDb._id);
+
           return {
             _id: s.step._id,
-            unlockDate: matchingStep && matchingStep.completedAt ? matchingStep.unlockDate: Timestamp.fromDate(s.dt),
+            unlockDate: matchingStep && matchingStep.completedAt ? matchingStep.unlockDate : Timestamp.fromDate(s.dt),
             subStepsCompleted: matchingStep ? matchingStep.subStepsCompleted : 0,
             ...matchingStep?.completedAt ? { completedAt: matchingStep.completedAt } : {},
             ...matchingStep?.unlockEmailSentAt ? { unlockEmailSentAt: matchingStep.unlockEmailSentAt } : {},
@@ -241,14 +242,14 @@ export class WelcomeService {
     }
   }
 
-   /**
-  * Creates a new user in the database with the provided data.
- * Generates steps for the user based on their signup and arrival dates.
- * Initializes the user's steps with default values and timestamps.
- * Saves the user to the Firestore database.
- * @param createUserDto - The data used to create the user.
- * @returns The newly created user as stored in the database.
- */
+  /**
+  * creates a new user in the database with the provided data.
+  * Generates steps for the user based on their signup and arrival dates.
+  * Initializes the user's steps with default values and timestamps.
+  * Saves the user to the Firestore database.
+  * @param createUserDto - The data used to create the user.
+  * @returns The newly created user as stored in the database.
+  */
   private async createDbUser(createUserDto: CreateUserDto): Promise<WelcomeUser> {
     const now = Timestamp.now();
 

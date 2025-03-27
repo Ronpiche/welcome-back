@@ -261,15 +261,15 @@ describe("Welcome Service", () => {
       expect(error).toBeInstanceOf(InternalServerErrorException);
     });
 
-    it("should correctly map steps when updating a user", async () => {
+    it("should correctly map steps when updating a user", async() => {
       const updatedUser = await service.update(user._id, createUserDto);
     
       expect(updatedUser.steps).toEqual(user.steps);
     });
-    it("should throw an error if userInDb has no steps", async () => {
+    it("should throw an error if userInDb has no steps", async() => {
       jest.spyOn(service, "findOne").mockResolvedValueOnce({ ...user, steps: [] });
     
-      const error = await getError(() => service.update(user._id, createUserDto));
+      const error = await getError(async() => service.update(user._id, createUserDto));
     
       expect(error).toBeInstanceOf(Error);
     });
