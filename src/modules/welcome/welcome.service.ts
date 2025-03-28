@@ -1,5 +1,5 @@
 import { Step } from "@modules/step/entities/step.entity";
-import { toISO8601Format } from "@src/helpers/date.helpers";
+import { isSameDate, toISO8601Format } from "@src/helpers/date.helpers";
 import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
 import { CreateUserDto } from "@modules/welcome/dto/input/create-user.dto";
 import { UpdateUserDto } from "@modules/welcome/dto/input/update-user.dto";
@@ -48,13 +48,9 @@ export class WelcomeService {
 
   public async createUser(createUserDto: CreateUserDto): Promise<WelcomeUser> {
     const password = WelcomeService.generatePassword();
-    const step = await this.stepService.findOne("1");
-
-    const welcomeUser = this.mapCreateUserDtoToWelcomeUser(createUserDto);
 
     try {
       await this.mailService.inviteNewUserMail(createUserDto, password);
-      await this.mailService.sendStepMail(welcomeUser, step.unlockEmail, "1");
     } catch (error) {
       this.logger.error(error);
       throw new InternalServerErrorException();
@@ -121,10 +117,12 @@ export class WelcomeService {
 
           return {
             _id: s.step._id,
-            unlockDate: matchingStep && matchingStep.completedAt ? matchingStep.unlockDate : Timestamp.fromDate(s.dt),
+            unlockDate: matchingStep && (matchingStep.completedAt || matchingStep.subStepsCompleted>0 ) ? matchingStep.unlockDate : Timestamp.fromDate(s.dt),
             subStepsCompleted: matchingStep ? matchingStep.subStepsCompleted : 0,
             ...matchingStep?.completedAt ? { completedAt: matchingStep.completedAt } : {},
-            ...matchingStep?.unlockEmailSentAt ? { unlockEmailSentAt: matchingStep.unlockEmailSentAt } : {},
+
+            ...matchingStep?.unlockEmailSentAt && (matchingStep.completedAt || matchingStep.subStepsCompleted>0||isSameDate( matchingStep.unlockDate.toDate(), s.dt))
+            ? { unlockEmailSentAt: matchingStep.unlockEmailSentAt } : {},
             
           };
         }),
@@ -181,17 +179,9 @@ export class WelcomeService {
    */
   public async updateSubStep(userId: WelcomeUser["_id"], stepId: Step["_id"], subStep: Step["subSteps"]): Promise<UserStep[]> {
     const completedAt = Timestamp.now();
-    const MAX_STEP_ID = 4;
-    const nextStepId = Number(stepId) + 1;
     const user = await this.findOne(userId);
     const step = await this.stepService.findOne(stepId);
-    let nextStep: Step | undefined;
 
-    if (nextStepId > MAX_STEP_ID) {
-      nextStep = undefined;
-    } else {
-      nextStep = await this.stepService.findOne(nextStepId.toString());
-    }
     const newSteps = user.steps.map(s => {
       if (s._id !== stepId) {
         return s;
@@ -208,7 +198,7 @@ export class WelcomeService {
     await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.WELCOME_USERS, user._id, { steps: newSteps });
     try {
       if (isStepCompleted) {
-        await this.notifyCompletedStep(user, step, nextStep);
+        await this.notifyCompletedStep(user, step);
       }
     } catch (err) {
       Logger.error(err);
@@ -231,13 +221,9 @@ export class WelcomeService {
     });
   }
 
-  private async notifyCompletedStep(user: WelcomeUser, step: Step, nextStep: Step): Promise<void> {
+  private async notifyCompletedStep(user: WelcomeUser, step: Step): Promise<void> {
     if (step.completionEmailManager !== undefined) {
       await this.mailService.sendStepMailToManager(user, step.completionEmailManager, step._id);
-    }
-
-    if (nextStep !== undefined && nextStep.unlockEmail !== undefined) {
-      await this.mailService.scheduleMail(user, nextStep.unlockEmail, nextStep._id);
     }
 
     if (step.completionEmail !== undefined) {
@@ -256,20 +242,41 @@ export class WelcomeService {
   private async createDbUser(createUserDto: CreateUserDto): Promise<WelcomeUser> {
     const now = Timestamp.now();
 
+    const firstStep = await this.stepService.findOne("1");
+    const welcomeUser = this.mapCreateUserDtoToWelcomeUser(createUserDto);
+
     const steps = await this.stepService.generateSteps(
       new Date(createUserDto.signupDate),
       new Date(createUserDto.arrivalDate),
     );
 
+    let emailSent = false; // Flag to ensure the email is sent only once
+
     const dbUser = Object.assign(instanceToPlain(createUserDto), {
-      steps: steps.map(s => ({
-        _id: s.step._id,
-        unlockDate: Timestamp.fromDate(s.dt),
-        subStepsCompleted: 0,
-      })),
+      steps: steps.map(s => {
+        const stepData = {
+          _id: s.step._id,
+          unlockDate: Timestamp.fromDate(s.dt),
+          subStepsCompleted: 0,
+        };
+
+        // Check if the unlockDate matches today's date
+        if (isSameDate(stepData.unlockDate.toDate(), new Date())) {
+          // Send the email only once
+          if (!emailSent) {
+            emailSent = true;
+            this.mailService.sendStepMail(welcomeUser, firstStep.unlockEmail, "1");
+          }
+
+          // Add unlockEmailSentAt for all matching steps
+          return { ...stepData, unlockEmailSentAt: now };
+        }
+
+        return stepData; // Return the step as is if the date doesn't match
+      }),
       creationDate: now,
       lastUpdate: now,
-    });
+      });
 
     return this.firestoreService.saveDocument(FIRESTORE_COLLECTIONS.WELCOME_USERS, dbUser);
   }
