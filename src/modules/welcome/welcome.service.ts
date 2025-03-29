@@ -121,7 +121,7 @@ export class WelcomeService {
             subStepsCompleted: matchingStep ? matchingStep.subStepsCompleted : 0,
             ...matchingStep?.completedAt ? { completedAt: matchingStep.completedAt } : {},
 
-            ...matchingStep?.unlockEmailSentAt && (matchingStep.completedAt || matchingStep.subStepsCompleted > 0 || isSameDate(matchingStep.unlockDate.toDate(), s.dt))? { unlockEmailSentAt: matchingStep.unlockEmailSentAt } : {},
+            ...matchingStep?.unlockEmailSentAt && (matchingStep.completedAt || matchingStep.subStepsCompleted > 0 || isSameDate(matchingStep.unlockDate.toDate(), s.dt)) ? { unlockEmailSentAt: matchingStep.unlockEmailSentAt } : {},
             
           };
         }),
