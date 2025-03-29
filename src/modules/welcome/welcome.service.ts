@@ -117,12 +117,11 @@ export class WelcomeService {
 
           return {
             _id: s.step._id,
-            unlockDate: matchingStep && (matchingStep.completedAt || matchingStep.subStepsCompleted>0 ) ? matchingStep.unlockDate : Timestamp.fromDate(s.dt),
+            unlockDate: matchingStep && (matchingStep.completedAt || matchingStep.subStepsCompleted > 0) ? matchingStep.unlockDate : Timestamp.fromDate(s.dt),
             subStepsCompleted: matchingStep ? matchingStep.subStepsCompleted : 0,
             ...matchingStep?.completedAt ? { completedAt: matchingStep.completedAt } : {},
 
-            ...matchingStep?.unlockEmailSentAt && (matchingStep.completedAt || matchingStep.subStepsCompleted>0||isSameDate( matchingStep.unlockDate.toDate(), s.dt))
-            ? { unlockEmailSentAt: matchingStep.unlockEmailSentAt } : {},
+            ...matchingStep?.unlockEmailSentAt && (matchingStep.completedAt || matchingStep.subStepsCompleted > 0 || isSameDate(matchingStep.unlockDate.toDate(), s.dt))? { unlockEmailSentAt: matchingStep.unlockEmailSentAt } : {},
             
           };
         }),
@@ -250,7 +249,7 @@ export class WelcomeService {
       new Date(createUserDto.arrivalDate),
     );
 
-    let emailSent = false; // Flag to ensure the email is sent only once
+    let emailSent = false; // flag to ensure the email is sent only once
 
     const dbUser = Object.assign(instanceToPlain(createUserDto), {
       steps: steps.map(s => {
@@ -260,23 +259,21 @@ export class WelcomeService {
           subStepsCompleted: 0,
         };
 
-        // Check if the unlockDate matches today's date
+        // check if the unlockDate matches today's date
         if (isSameDate(stepData.unlockDate.toDate(), new Date())) {
-          // Send the email only once
+          // send the email only once
           if (!emailSent) {
             emailSent = true;
             this.mailService.sendStepMail(welcomeUser, firstStep.unlockEmail, "1");
           }
-
-          // Add unlockEmailSentAt for all matching steps
+          // add unlockEmailSentAt for all matching steps
           return { ...stepData, unlockEmailSentAt: now };
         }
-
-        return stepData; // Return the step as is if the date doesn't match
+        return stepData; // return the step as is if the date doesn't match
       }),
       creationDate: now,
       lastUpdate: now,
-      });
+    });
 
     return this.firestoreService.saveDocument(FIRESTORE_COLLECTIONS.WELCOME_USERS, dbUser);
   }
