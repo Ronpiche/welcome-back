@@ -1,5 +1,5 @@
 import { Step } from "@modules/step/entities/step.entity";
-import { toISO8601Format } from "@src/helpers/date.helpers";
+import { isSameDate, toISO8601Format } from "@src/helpers/date.helpers";
 import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
 import { CreateUserDto } from "@modules/welcome/dto/input/create-user.dto";
 import { UpdateUserDto } from "@modules/welcome/dto/input/update-user.dto";
@@ -48,13 +48,9 @@ export class WelcomeService {
 
   public async createUser(createUserDto: CreateUserDto): Promise<WelcomeUser> {
     const password = WelcomeService.generatePassword();
-    const step = await this.stepService.findOne("1");
-
-    const welcomeUser = this.mapCreateUserDtoToWelcomeUser(createUserDto);
 
     try {
       await this.mailService.inviteNewUserMail(createUserDto, password);
-      await this.mailService.sendStepMail(welcomeUser, step.unlockEmail, "1");
     } catch (error) {
       this.logger.error(error);
       throw new InternalServerErrorException();
@@ -86,9 +82,54 @@ export class WelcomeService {
     await this.gipService.deleteUser(id);
   }
 
+  /**
+   * updates an existing user in the database with the provided data.
+   * Regenerates and updates steps based on the user's signup and arrival dates.
+   * Preserves existing step progress and timestamps.
+   * Saves the updated user to the Firestore database.
+   * @param id - The ID of the user to update.
+   * @param updateUserDto - The data used to update the user.
+   * @returns The updated user as stored in the database.
+   */
   public async update(id: string, updateUserDto: UpdateUserDto): Promise<WelcomeUser> {
     const userToUpdate = Object.assign(instanceToPlain(updateUserDto), { lastUpdate: Timestamp.now() });
-    await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.WELCOME_USERS, id, userToUpdate);
+
+    const userInDb = await this.findOne(id);
+    let updatedUser = userToUpdate;
+
+    if (!userInDb) {
+      throw new Error(`User with ID ${id} not found.`);
+    }
+
+    if (userToUpdate.signupDate !== userInDb.signupDate || userToUpdate.arrivalDate !== userInDb.arrivalDate) {
+      if (!userInDb.steps) {
+        throw new Error(`User with ID ${id} has no steps.`);
+      }
+
+      const steps = await this.stepService.generateSteps(
+        new Date(userToUpdate.signupDate),
+        new Date(userToUpdate.arrivalDate),
+      );
+
+      updatedUser = Object.assign(instanceToPlain(userToUpdate), {
+        steps: steps.map(s => {
+          const matchingStep = userInDb.steps.find(sInDb => s.step._id === sInDb._id);
+
+          return {
+            _id: s.step._id,
+            unlockDate: matchingStep && (matchingStep.completedAt || matchingStep.subStepsCompleted > 0) ? matchingStep.unlockDate : Timestamp.fromDate(s.dt),
+            subStepsCompleted: matchingStep ? matchingStep.subStepsCompleted : 0,
+            ...matchingStep?.completedAt ? { completedAt: matchingStep.completedAt } : {},
+
+            ...matchingStep?.unlockEmailSentAt && (matchingStep.completedAt || matchingStep.subStepsCompleted > 0 || isSameDate(matchingStep.unlockDate.toDate(), s.dt)) ? { unlockEmailSentAt: matchingStep.unlockEmailSentAt } : {},
+            
+          };
+        }),
+        lastUpdate: Timestamp.now(),
+      });
+    }
+
+    await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.WELCOME_USERS, id, updatedUser);
 
     return this.findOne(id);
   }
@@ -137,17 +178,9 @@ export class WelcomeService {
    */
   public async updateSubStep(userId: WelcomeUser["_id"], stepId: Step["_id"], subStep: Step["subSteps"]): Promise<UserStep[]> {
     const completedAt = Timestamp.now();
-    const MAX_STEP_ID = 4;
-    const nextStepId = Number(stepId) + 1;
     const user = await this.findOne(userId);
     const step = await this.stepService.findOne(stepId);
-    let nextStep: Step | undefined;
 
-    if (nextStepId > MAX_STEP_ID) {
-      nextStep = undefined;
-    } else {
-      nextStep = await this.stepService.findOne(nextStepId.toString());
-    }
     const newSteps = user.steps.map(s => {
       if (s._id !== stepId) {
         return s;
@@ -164,7 +197,7 @@ export class WelcomeService {
     await this.firestoreService.updateDocument(FIRESTORE_COLLECTIONS.WELCOME_USERS, user._id, { steps: newSteps });
     try {
       if (isStepCompleted) {
-        await this.notifyCompletedStep(user, step, nextStep);
+        await this.notifyCompletedStep(user, step);
       }
     } catch (err) {
       Logger.error(err);
@@ -187,13 +220,9 @@ export class WelcomeService {
     });
   }
 
-  private async notifyCompletedStep(user: WelcomeUser, step: Step, nextStep: Step): Promise<void> {
+  private async notifyCompletedStep(user: WelcomeUser, step: Step): Promise<void> {
     if (step.completionEmailManager !== undefined) {
       await this.mailService.sendStepMailToManager(user, step.completionEmailManager, step._id);
-    }
-
-    if (nextStep !== undefined && nextStep.unlockEmail !== undefined) {
-      await this.mailService.scheduleMail(user, nextStep.unlockEmail, nextStep._id);
     }
 
     if (step.completionEmail !== undefined) {
@@ -201,20 +230,47 @@ export class WelcomeService {
     }
   }
 
+  /**
+   * creates a new user in the database with the provided data.
+   * Generates steps for the user based on their signup and arrival dates.
+   * Initializes the user's steps with default values and timestamps.
+   * Saves the user to the Firestore database.
+   * @param createUserDto - The data used to create the user.
+   * @returns The newly created user as stored in the database.
+   */
   private async createDbUser(createUserDto: CreateUserDto): Promise<WelcomeUser> {
     const now = Timestamp.now();
+
+    const firstStep = await this.stepService.findOne("1");
+    const welcomeUser = this.mapCreateUserDtoToWelcomeUser(createUserDto);
 
     const steps = await this.stepService.generateSteps(
       new Date(createUserDto.signupDate),
       new Date(createUserDto.arrivalDate),
     );
 
+    let emailSent = false; // flag to ensure the email is sent only once
+
     const dbUser = Object.assign(instanceToPlain(createUserDto), {
-      steps: steps.map(s => ({
-        _id: s.step._id,
-        unlockDate: Timestamp.fromDate(s.dt),
-        subStepsCompleted: 0,
-      })),
+      steps: steps.map(s => {
+        const stepData = {
+          _id: s.step._id,
+          unlockDate: Timestamp.fromDate(s.dt),
+          subStepsCompleted: 0,
+        };
+
+        // check if the unlockDate matches today's date
+        if (isSameDate(stepData.unlockDate.toDate(), new Date())) {
+          // send the email only once
+          if (!emailSent) {
+            emailSent = true;
+            this.mailService.sendStepMail(welcomeUser, firstStep.unlockEmail, "1");
+          }
+          // add unlockEmailSentAt for all matching steps
+          return { ...stepData, unlockEmailSentAt: now };
+        }
+        return stepData; // return the step as is if the date doesn't match
+      }),
       creationDate: now,
       lastUpdate: now,
     });
