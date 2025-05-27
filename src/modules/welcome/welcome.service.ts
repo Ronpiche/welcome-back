@@ -221,10 +221,6 @@ export class WelcomeService {
   }
 
   private async notifyCompletedStep(user: WelcomeUser, step: Step): Promise<void> {
-    if (step.completionEmailManager !== undefined) {
-      await this.mailService.sendStepMailToManager(user, step.completionEmailManager, step._id);
-    }
-
     if (step.completionEmail !== undefined) {
       await this.mailService.sendStepMail(user, step.completionEmail, "completion");
     }
