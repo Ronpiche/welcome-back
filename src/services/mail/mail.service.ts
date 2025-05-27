@@ -36,22 +36,6 @@ export class MailService {
     });
   }
 
-  public async sendStepMailToManager(user: WelcomeUser, stepEmail: StepEmail, stepId: string): Promise<void> {
-    const data: StepMailData = {
-      ...this.getCommonMailData(user),
-      stepId,
-    };
-
-    const templateName = `notify-manager` as MailTemplateName;
-    const templatePath = this.getMailTemplatePath(templateName);
-
-    await this.sendMail({
-      to: user.hrReferent.email,
-      subject: stepEmail.subject,
-      html: await renderFile(templatePath, data),
-    });
-  }
-
   public async inviteNewUserMail(createUserDto: CreateUserDto, password: string): Promise<void> {
     const data: InviteNewUserMailData = {
       ...this.getCommonMailData(createUserDto),

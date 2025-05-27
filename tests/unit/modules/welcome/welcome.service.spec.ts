@@ -327,12 +327,6 @@ describe("Welcome Service", () => {
   });
 
   describe("notifyCompletedStep", () => {
-    it("should send step mail when completion email manager is set.", async() => {
-      await service["notifyCompletedStep"](user, steps[0]);
-
-      expect(service["mailService"].sendStepMailToManager).toHaveBeenCalledTimes(1);
-      expect(service["mailService"].sendStepMailToManager).toHaveBeenCalledWith(user, steps[0].completionEmailManager, steps[0]._id);
-    });
 
     it("should send completion mail when completion email is set.", async() => {
       await service["notifyCompletedStep"](user, steps[2]);
