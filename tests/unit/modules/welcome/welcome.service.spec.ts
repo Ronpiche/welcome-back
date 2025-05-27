@@ -327,7 +327,6 @@ describe("Welcome Service", () => {
   });
 
   describe("notifyCompletedStep", () => {
-
     it("should send completion mail when completion email is set.", async() => {
       await service["notifyCompletedStep"](user, steps[2]);
 
