@@ -157,4 +157,8 @@ export class FirestoreService {
       throw new InternalServerErrorException();
     }
   }
+
+  public getCollection(collectionName: string): FirebaseFirestore.CollectionReference {
+    return this.firestore.collection(collectionName);
+  }
 }

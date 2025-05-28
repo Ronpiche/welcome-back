@@ -4,6 +4,8 @@ import { NoErrorThrownError, getError } from "@tests/unit/utils";
 import { FeedbackAnswerService } from "@modules/feedback-answer/feedback-answer.service";
 import { FirestoreService } from "@src/services/firestore/firestore.service";
 import type { FeedbackAnswer } from "@modules/feedback-answer/entities/feedback-answer.entity";
+import { WelcomeUser } from "@src/modules/welcome/entities/user.entity";
+import { Timestamp } from "@google-cloud/firestore";
 
 const feedbackId = "1";
 const feedbackQuestionId = "1";
@@ -13,8 +15,31 @@ const feedbackAnswer: FeedbackAnswer = {
 };
 const createFeedbackAnswerDto: string[] = ["a", "b"];
 
+const userId = "user1";
+const welcomeUser: WelcomeUser = {
+  _id: "user1",
+  firstName: "John",
+  lastName: "Doe",
+  email: "john.doe@example.com",
+  note: "",
+  signupDate: "",
+  agency: "",
+  creationDate: new Timestamp(1, 2),
+  hrReferent:
+    {
+      firstName: "",
+      lastName: "",
+      email: "",
+    },
+  arrivalDate: "",
+  lastUpdate: new Timestamp(1, 2),
+  practices: [],
+  steps: [],
+};
+
 describe("FeedbackAnswerService", () => {
   let service: FeedbackAnswerService;
+  let firestoreService: FirestoreService;
 
   beforeEach(async() => {
     const module = await Test.createTestingModule({
@@ -25,17 +50,61 @@ describe("FeedbackAnswerService", () => {
           useValue: {
             getDoc: jest.fn().mockReturnValue(undefined),
             getAllDocuments: jest.fn().mockResolvedValue([feedbackAnswer]),
-            getDocument: jest.fn().mockResolvedValue(feedbackAnswer),
+            getDocument: jest.fn().mockImplementation(async(collection, id) => {
+              if (collection === "WELCOME_USERS") {
+                return Promise.resolve(welcomeUser);
+              }
+              return Promise.resolve(feedbackAnswer);
+            }),
             saveDocument: jest.fn().mockResolvedValue(feedbackAnswer),
             updateDocument: jest.fn().mockResolvedValue(feedbackAnswer),
             deleteDocument: jest.fn().mockResolvedValue(undefined),
             deleteCollection: jest.fn().mockResolvedValue(undefined),
+            getCollection: jest.fn().mockReturnValue({
+              get: jest.fn().mockResolvedValue({
+                docs: [
+                  {
+                    id: "1", // id of the Feedback document
+                    ref: {
+                      collection: jest.fn().mockReturnValue({
+                        get: jest.fn().mockResolvedValue({
+                          docs: [
+                            {
+                              id: "question1", // id of the Feedback Question document
+                              data: jest.fn().mockReturnValue({
+                                label: "Question 1",
+                              }),
+                              ref: {
+                                collection: jest.fn().mockReturnValue({
+                                  get: jest.fn().mockResolvedValue({
+                                    docs: [
+                                      {
+                                        id: "user1", // id of the Feedback Answer document (User's Answer)
+                                        data: jest.fn().mockReturnValue({
+                                          _id: "user1", // the user's ID
+                                          answers: ["Answer 1"], // the user's answers
+                                        }),
+                                      },
+                                    ],
+                                  }),
+                                }),
+                              },
+                            },
+                          ],
+                        }),
+                      }),
+                    },
+                  },
+                ],
+              }),
+            }),
           },
         },
       ],
     }).compile();
 
     service = module.get<FeedbackAnswerService>(FeedbackAnswerService);
+    firestoreService = module.get<FirestoreService>(FirestoreService);
   });
 
   afterEach(() => {
@@ -117,6 +186,69 @@ describe("FeedbackAnswerService", () => {
       const error: InternalServerErrorException = await getError(async() => service.update(feedbackId, feedbackQuestionId, feedbackAnswer._id, createFeedbackAnswerDto));
       expect(error).not.toBeInstanceOf(NoErrorThrownError);
       expect(error).toBeInstanceOf(InternalServerErrorException);
+    });
+  });
+
+  describe("getUserAnswers", () => {
+    it("should return user answers when getUserAnswers is called.", async() => {
+      jest.spyOn(service["firestoreService"], "getDocument").mockResolvedValueOnce(welcomeUser);
+      const userAnswers = await service.getUserAnswers(userId);
+      expect(userAnswers).toEqual([
+        {
+          feedbackId: "Nom du collaborateur",
+          questionLabel: "John Doe",
+          answers: [],
+        },
+        {
+          feedbackId,
+          questionLabel: "Question 1",
+          answers: ["Answer 1"],
+        },
+      ]);
+    });
+  
+    it("should throw an InternalServerError when database fails.", async() => {
+      jest.spyOn(service["firestoreService"], "getCollection").mockImplementation(() => {
+        throw new InternalServerErrorException();
+      });
+      const error: InternalServerErrorException = await getError(async() => service.getUserAnswers(userId));
+      expect(error).not.toBeInstanceOf(NoErrorThrownError);
+      expect(error).toBeInstanceOf(InternalServerErrorException);
+    });
+  });
+
+  describe("exportUserAnswersToExcel", () => {
+    it("should return an Excel file buffer when exportUserAnswersToExcel is called.", async() => {
+      jest.spyOn(service, "getUserAnswers").mockResolvedValue([
+        {
+          feedbackId: "Nom du collaborateur",
+          questionLabel: "John Doe",
+          answers: [],
+        },
+        {
+          feedbackId,
+          questionLabel: "Question 1",
+          answers: ["Answer 1"],
+        },
+      ]);
+      const excelFile = await service.exportUserAnswersToExcel(userId);
+      expect(excelFile).toBeInstanceOf(Buffer);
+    });
+
+    it("should throw an Error when no answers are found for the user.", async() => {
+      jest.spyOn(service, "getUserAnswers").mockResolvedValue([]);
+      const error: Error = await getError(async() => service.exportUserAnswersToExcel(userId));
+      expect(error).not.toBeInstanceOf(NoErrorThrownError);
+      expect(error.message).toBe("No answers found for the user");
+    });
+
+    it("should throw an InternalServerError when database fails.", async() => {
+      jest.spyOn(service, "getUserAnswers").mockImplementation(() => {
+        throw new InternalServerErrorException();
+      });
+      const error: InternalServerErrorException = await getError(async() => service.exportUserAnswersToExcel(userId));
+      expect(error).not.toBeInstanceOf(NoErrorThrownError);
+      expect(error).toBeInstanceOf(Error);
     });
   });
 });

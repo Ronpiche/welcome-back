@@ -84,6 +84,7 @@ describe("Welcome Service", () => {
             inviteNewUserMail: jest.fn().mockResolvedValue(undefined),
             sendStepMail: jest.fn().mockResolvedValue(undefined),
             sendStepMailToManager: jest.fn().mockResolvedValue(undefined),
+            scheduleMail: jest.fn().mockResolvedValue(undefined),
           },
         },
         {
@@ -259,6 +260,19 @@ describe("Welcome Service", () => {
       expect(error).not.toBeInstanceOf(NoErrorThrownError);
       expect(error).toBeInstanceOf(InternalServerErrorException);
     });
+
+    it("should correctly map steps when updating a user", async() => {
+      const updatedUser = await service.update(user._id, createUserDto);
+    
+      expect(updatedUser.steps).toEqual(user.steps);
+    });
+    it("should throw an error if userInDb has no steps", async() => {
+      jest.spyOn(service, "findOne").mockResolvedValueOnce({ ...user, steps: [] });
+    
+      const error = await getError(async() => service.update(user._id, createUserDto));
+    
+      expect(error).toBeInstanceOf(Error);
+    });
   });
 
   describe("run", () => {
@@ -313,30 +327,11 @@ describe("Welcome Service", () => {
   });
 
   describe("notifyCompletedStep", () => {
-    it("should send step mail when completion email manager is set.", async() => {
-      await service["notifyCompletedStep"](user, steps[0], steps[1]);
-
-      expect(service["mailService"].sendStepMailToManager).toHaveBeenCalledTimes(1);
-      expect(service["mailService"].sendStepMailToManager).toHaveBeenCalledWith(user, steps[0].completionEmailManager, steps[0]._id);
-    });
-
     it("should send completion mail when completion email is set.", async() => {
-      await service["notifyCompletedStep"](user, steps[2], steps[3]);
+      await service["notifyCompletedStep"](user, steps[2]);
 
       expect(service["mailService"].sendStepMail).toHaveBeenCalledTimes(1);
       expect(service["mailService"].sendStepMail).toHaveBeenCalledWith(user, steps[2].completionEmail, "completion");
-    });
-
-    it("should send step mail when unlockEmail email is set.", async() => {
-      await service["notifyCompletedStep"](user, steps[0], steps[1]);
-     
-      expect(service["mailService"].sendStepMail).toHaveBeenCalledTimes(1);
-      expect(service["mailService"].sendStepMail).toHaveBeenCalledWith(user, steps[1].unlockEmail, steps[1]._id);
-    });
-
-    it("should handle case when nextStep is undefined", async() => {
-      await service["notifyCompletedStep"](user, steps[0], undefined);
-      expect(service["mailService"].sendStepMail).not.toHaveBeenCalled();
     });
   });
 });

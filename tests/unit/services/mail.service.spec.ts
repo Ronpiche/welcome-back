@@ -12,6 +12,9 @@ import Ejs from "ejs";
 import { LoggerMock } from "@tests/unit/__mocks__/logger.mock";
 import { createFakeCreateUserDto } from "@tests/unit/factories/dtos/create-user.dto.factory";
 import { createFakeWelcomeUser } from "@tests/unit/factories/entities/user.entity.factory";
+import { SchedulerRegistry } from "@nestjs/schedule";
+import { Timestamp } from "@google-cloud/firestore";
+import { createFakeUserStep } from "../factories/entities/user-step.entity.factory";
 
 const transactionalEmailsApiMocks = {
   sendTransacEmail: jest.fn(),
@@ -24,8 +27,73 @@ jest.mock<typeof import("@getbrevo/brevo")>("@getbrevo/brevo", () => ({
   SendSmtpEmail: jest.fn(() => ({})) as unknown as typeof SendSmtpEmail,
 }));
 
+jest.mock<typeof import("@google-cloud/firestore")>("@google-cloud/firestore", () => {
+  const actualFirestore = jest.requireActual<typeof import("@google-cloud/firestore")>("@google-cloud/firestore");
+
+  class TimestampMock {
+    seconds: number;
+
+    nanoseconds: number;
+
+    constructor(seconds: number, nanoseconds: number) {
+      this.seconds = seconds;
+      this.nanoseconds = nanoseconds;
+    }
+
+    toDate(): Date {
+      return new Date(this.seconds * 1000);
+    }
+
+    toMillis(): number {
+      return this.seconds * 1000 + this.nanoseconds / 1e6;
+    }
+
+    isEqual(other: { seconds: number; nanoseconds: number }): boolean {
+      return this.seconds === other.seconds && this.nanoseconds === other.nanoseconds;
+    }
+
+    valueOf(): string {
+      return `${this.seconds}:${this.nanoseconds}`;
+    }
+
+    static now(): TimestampMock {
+      return new TimestampMock(Math.floor(Date.now() / 1000), 0);
+    }
+
+    static fromDate(date: Date): TimestampMock {
+      return new TimestampMock(Math.floor(date.getTime() / 1000), 0);
+    }
+
+    static fromMillis(millis: number): TimestampMock {
+      return new TimestampMock(Math.floor(millis / 1000), millis % 1000 * 1e6);
+    }
+  }
+
+  return {
+    ...actualFirestore,
+    Timestamp: TimestampMock,
+  };
+});
+
+/* eslint-disable jest/no-untyped-mock-factory */
+jest.mock("cron", () => {
+  const actualCron = jest.requireActual<typeof import("cron")>("cron");
+
+  return {
+    ...actualCron,
+    CronJob: jest.fn().mockImplementation((time, callback) => ({
+      start: jest.fn(),
+      stop: jest.fn(),
+      fireOnTick: jest.fn(() => callback()),
+      callback,
+    })),
+  };
+});
+/* eslint-enable jest/no-untyped-mock-factory */
+
 describe("Mail Service Service", () => {
   let services: { mail: MailService };
+  let schedulerRegistry: SchedulerRegistry;
   let mocks: {
     services: {
       config: {
@@ -33,11 +101,17 @@ describe("Mail Service Service", () => {
       };
       mail: {
         sendMail: jest.SpyInstance;
+        sendStepMail: jest.SpyInstance;
         getSmtpMailFromRequirement: jest.SpyInstance;
       };
     };
     ejs: {
       renderFile: jest.SpyInstance;
+    };
+    schedulerRegistry: {
+      addCronJob: jest.SpyInstance;
+      getCronJobs: jest.SpyInstance;
+      deleteCronJob: jest.SpyInstance;
     };
   };
 
@@ -49,11 +123,17 @@ describe("Mail Service Service", () => {
         },
         mail: {
           sendMail: jest.fn(),
+          sendStepMail: jest.fn(),
           getSmtpMailFromRequirement: jest.fn(),
         },
       },
       ejs: {
         renderFile: jest.spyOn(Ejs, "renderFile").mockResolvedValue("<h1>Mocked HTML</h1>"),
+      },
+      schedulerRegistry: {
+        addCronJob: jest.fn(),
+        getCronJobs: jest.fn(),
+        deleteCronJob: jest.fn(),
       },
     };
     const module: TestingModule = await Test.createTestingModule({
@@ -66,11 +146,16 @@ describe("Mail Service Service", () => {
           provide: ConfigService,
           useValue: mocks.services.config,
         },
+        {
+          provide: SchedulerRegistry,
+          useValue: mocks.schedulerRegistry,
+        },
         MailService,
       ],
     }).compile();
 
     services = { mail: module.get<MailService>(MailService) };
+    schedulerRegistry = module.get<SchedulerRegistry>(SchedulerRegistry);
   });
 
   afterEach(() => {
@@ -147,71 +232,6 @@ describe("Mail Service Service", () => {
         html: "<h1>Mocked HTML</h1>",
       };
 
-      expect(services.mail["sendMail"]).toHaveBeenCalledTimes(1);
-      expect(services.mail["sendMail"]).toHaveBeenCalledWith(dummyMailRequirement);
-    });
-  });
-
-  describe("sendStepMailToManager", () => {
-    beforeEach(() => {
-      mocks.services.mail.sendMail = jest.spyOn(services.mail as unknown as { sendMail }, "sendMail").mockResolvedValue(undefined);
-      mocks.services.config.get.mockReturnValueOnce("https://daveo.fr");
-    });
-  
-    it("should render mail template when called.", async() => {
-      const user = createFakeWelcomeUser({
-        firstName: "John",
-        lastName: "Doe",
-        email: "john@doe.com",
-        hrReferent: createFakeHrReferent({
-          firstName: "Jane",
-          lastName: "Doe",
-          email: "jane@doe.com",
-        }),
-      });
-      const stepEmail = {
-        subject: "Manager Notification",
-        body: "Hey Jane, John has completed a step!",
-      };
-      const stepId = "456";
-      await services.mail.sendStepMailToManager(user, stepEmail, stepId);
-      const expectedStepMailData: StepMailData = {
-        appName: "Daveo",
-        appUrl: "https://daveo.fr",
-        userFirstName: "John",
-        userLastName: "Doe",
-        managerFirstName: "Jane",
-        managerLastName: "Doe",
-        stepId,
-      };
-  
-      expect(mocks.ejs.renderFile).toHaveBeenCalledTimes(1);
-      expect(mocks.ejs.renderFile).toHaveBeenCalledWith(expect.any(String), expectedStepMailData);
-    });
-  
-    it("should send mail when called.", async() => {
-      const user = createFakeWelcomeUser({
-        firstName: "John",
-        lastName: "Doe",
-        email: "john@doe.com",
-        hrReferent: createFakeHrReferent({
-          firstName: "Jane",
-          lastName: "Doe",
-          email: "jane@doe.com",
-        }),
-      });
-      const stepEmail = {
-        subject: "Manager Notification",
-        body: "Hey Jane, John has completed a step!",
-      };
-      const stepId = "456";
-      await services.mail.sendStepMailToManager(user, stepEmail, stepId);
-      const dummyMailRequirement: MailRequirement = {
-        to: "jane@doe.com",
-        subject: "Manager Notification",
-        html: "<h1>Mocked HTML</h1>",
-      };
-  
       expect(services.mail["sendMail"]).toHaveBeenCalledTimes(1);
       expect(services.mail["sendMail"]).toHaveBeenCalledWith(dummyMailRequirement);
     });
@@ -343,10 +363,9 @@ describe("Mail Service Service", () => {
         subject: "Hello",
         html: "<p>Hello</p>",
       };
-      const error = new Error("Error while sending email");
-      transactionalEmailsApiMocks.sendTransacEmail.mockRejectedValue(error);
+      transactionalEmailsApiMocks.sendTransacEmail.mockRejectedValue(new Error("Error while sending email"));
 
-      await expect(services.mail["sendMail"](mailRequirement)).rejects.toThrow(error);
+      await expect(services.mail["sendMail"](mailRequirement)).rejects.toThrow(new Error("Error while sending email"));
     });
   });
 
