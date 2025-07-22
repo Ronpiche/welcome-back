@@ -12,7 +12,7 @@ export class Member {
   public lastName: string;
 
   @ApiProperty()
-  public gender?: "male" | "female";
+  public gender?: "male" | "female" | "other";
 
   @ApiProperty()
   public email: string;
