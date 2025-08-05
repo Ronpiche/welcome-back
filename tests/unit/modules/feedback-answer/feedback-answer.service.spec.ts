@@ -4,7 +4,7 @@ import { NoErrorThrownError, getError } from "@tests/unit/utils";
 import { FeedbackAnswerService } from "@modules/feedback-answer/feedback-answer.service";
 import { FirestoreService } from "@src/services/firestore/firestore.service";
 import type { FeedbackAnswer } from "@modules/feedback-answer/entities/feedback-answer.entity";
-import { WelcomeUser } from "@src/modules/welcome/entities/user.entity";
+import type { WelcomeUser } from "@src/modules/welcome/entities/user.entity";
 import { Timestamp } from "@google-cloud/firestore";
 
 const feedbackId = "1";
@@ -195,7 +195,7 @@ describe("FeedbackAnswerService", () => {
       const userAnswers = await service.getUserAnswers(userId);
       expect(userAnswers).toEqual([
         {
-          feedbackId: "Nom du collaborateur",
+          feedbackId: "Nom du collab",
           questionLabel: "John Doe",
           answers: [],
         },
