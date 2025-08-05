@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { FirestoreService } from "@src/services/firestore/firestore.service";
 import { FIRESTORE_COLLECTIONS } from "@src/configs/types/Firestore.types";
 import { FeedbackAnswer } from "@modules/feedback-answer/entities/feedback-answer.entity";
-import * as xlsx from "xlsx";
+import * as ExcelJS from "exceljs";
 import { WelcomeUser } from "../welcome/entities/user.entity";
 
 @Injectable()
@@ -66,7 +66,7 @@ export class FeedbackAnswerService {
 
     // add user name as the first element in bold
     userAnswers.push({
-      feedbackId: "Nom du collaborateur",
+      feedbackId: "Nom du collab",
       questionLabel: fullName, // make it bold (assuming markdown export)
       answers: [], // empty answers
     });
@@ -99,36 +99,53 @@ export class FeedbackAnswerService {
     try {
       // get the user's answers
       const userAnswers = await this.getUserAnswers(userId);
-  
+
       if (userAnswers.length === 0) {
         throw new Error("No answers found for the user");
       }
-  
-      // prepare the data to be written to Excel
-      const formattedAnswers = userAnswers.map(answer => ({
-        FeedbackID: answer.feedbackId,
-        QuestionLabel: answer.questionLabel,
-        Answers: answer.answers.join(", "), // convert the array of answers to a comma-separated string
-      }));
-        
-      // convert the data to a worksheet
-      const ws = xlsx.utils.json_to_sheet(formattedAnswers);
 
-      ws["!cols"] = [
-        { wch: 25 }, // feedbackID column width
-        { wch: 100 }, // questionLabel column width (increase for longer questions)
-        { wch: 60 }, // answers column width (increase for longer answers)
+      // prepare the data to be written to Excel
+      const formattedAnswers = userAnswers.map(answer => [
+        Number(answer.feedbackId) ? `Etape ${answer.feedbackId}` : answer.feedbackId,
+        answer.questionLabel,
+        answer.answers.join(", "),
+      ]);
+
+      // create a new workbook and worksheet
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("User Feedback Answers");
+
+      // define columns
+      worksheet.columns = [
+        { header: "Feedback", key: "feedback", width: 15 },
+        { header: "Questions", key: "question", width: 100 },
+        { header: "Réponses", key: "answers", width: 60 },
       ];
-  
-      // create a new workbook and append the worksheet
-      const wb = xlsx.utils.book_new();
-      xlsx.utils.book_append_sheet(wb, ws, "User Feedback Answers");
-  
-      // generate the Excel file and send it to the user
-      const excelFile = xlsx.write(wb, { bookType: "xlsx", type: "buffer" });
-  
-      // save the file or send it to the client
-      return excelFile;
+
+      // add rows
+      formattedAnswers.forEach(row => worksheet.addRow(row));
+
+      // style the first row (title): bold and center
+      worksheet.getRow(1).eachCell(cell => {
+        cell.font = { bold: true, size: 14 };
+        cell.alignment = { horizontal: "center" };
+      });
+
+      // style the second row (first data row): yellow background
+      if (worksheet.rowCount > 1) {
+        worksheet.getRow(2).eachCell(cell => {
+          cell.fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "B8CCE4" },
+          };
+        });
+      }
+
+      // generate buffer
+      const buffer = await workbook.xlsx.writeBuffer();
+      
+      return Buffer.from(buffer);
     } catch (error) {
       if (error.message === "No answers found for the user") {
         throw error;
