@@ -13,9 +13,9 @@ export class CreateMemberDto {
   public lastName: string;
 
   @ApiProperty({ example: "male" })
-  @IsIn(["male", "female"], { message: "Gender must be either male or female" })
+  @IsIn(["male", "female", "other"], { message: "Gender must be either male or female or other" })
   @IsOptional()
-  public gender?: "male" | "female";
+  public gender?: "male" | "female" | "other";
 
   @ApiProperty({ example: "john.doe@127.0.0.1" })
   @IsString()

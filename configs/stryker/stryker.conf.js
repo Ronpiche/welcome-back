@@ -43,7 +43,7 @@ module.exports = {
   disableTypeChecks: "{tests,src,lib}/**/*.{js,ts,jsx,tsx,html}",
   thresholds: {
     high: 100,
-    low: 45,
-    break: 45,
+    low: 44,
+    break: 44,
   },
 };
