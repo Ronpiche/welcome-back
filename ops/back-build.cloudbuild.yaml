@@ -19,3 +19,6 @@ steps:
 # 3. (Optional) Set the image as the "latest" tag
 images:
   - 'europe-west1-docker.pkg.dev/$PROJECT_ID/welcome-hub/welcome-hub-api:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
