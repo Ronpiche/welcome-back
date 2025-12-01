@@ -1,0 +1,21 @@
+steps:
+  # 1. Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'build',
+        '-t', 'europe-west1-docker.pkg.dev/$PROJECT_ID/welcome-hub/welcome-hub-api:$SHORT_SHA',
+        '.'
+      ]
+
+  # 2. Push the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'push',
+        'europe-west1-docker.pkg.dev/$PROJECT_ID/welcome-hub/welcome-hub-api:$SHORT_SHA'
+      ]
+
+# 3. (Optional) Set the image as the "latest" tag
+images:
+  - 'europe-west1-docker.pkg.dev/$PROJECT_ID/welcome-hub/welcome-hub-api:latest'
